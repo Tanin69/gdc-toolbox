@@ -1,0 +1,209 @@
+<script src="/javascript/dropzone/dropzone.js"></script>
+<link rel="stylesheet" href="/dropzone.css">
+<link rel="stylesheet" href="/basic.css">
+        
+<style>
+  .dropzone {
+    border: dashed 3px #bd5734;
+    border-radius: 30px;
+    background-color: #a79e84;
+    margin: 35px 60px 30px 30px;
+    height: 35%;
+  }
+</style>
+
+
+<h1>Publier une mission</h1>
+
+<script>
+
+infoMissionsJS = "";
+
+Dropzone.options.myDZ = {
+  //Client side controls
+  maxFiles: 1,
+  acceptedFiles: ".pbo",
+  maxFilesize: 20, // MB
+  //Checks GDC naming convention
+  accept: function(file, done) {
+    const regex = new RegExp(/(CPC-.*]-.*)-V(.*)\.(.*)/i);
+    const match = regex.exec(file.name);
+    console.log(match);
+    if (!match) {
+      done("Le nom de la mission n'est pas conforme aux règles de nommage GDC !");
+    }
+    else { done(); }
+  },
+  addRemoveLinks: true,
+  dictDefaultMessage: "Pbo dropzone here ! (or click to choose a file)",
+  success: function( file, response ){
+        infoMissionsJS = response;
+        objRes = JSON.parse(response);
+        //console.log(objRes); 
+        author.innerText = objRes.author;
+        gameType.innerText = objRes.gameType;
+        loadScreen.innerText = objRes.loadScreen;
+        minPlayers.innerText = objRes.minPlayers;
+        maxPlayers.innerText = objRes.maxPlayers;
+        missionMap.innerText = objRes.missionMap;
+        missionPbo.innerText = objRes.missionPbo;
+        missionVersion.innerText = objRes.missionVersion;
+        onLoadMission.innerText = objRes.onLoadMission;
+        onLoadName.innerText = objRes.onLoadName;
+        pboFileDateM.innerText = objRes.pboFileDateM;
+        pboFileSize.innerText = objRes.pboFileSize;
+        missionTitle.innerText = objRes.missionTitle;
+  }
+    
+};
+
+
+//In case local modifications to mission infos are performed (to be implemented), we send this info from local html elements
+function postMissionInfos() {
+  //Grab mission infos in html elements
+  const lauthor = author.innerText;
+  const lgameType = gameType.innerText;
+  const lloadScreen = loadScreen.innerText;
+  const lminPlayers = parseInt(minPlayers.innerText,10);
+  const lmaxPlayers = parseInt(maxPlayers.innerText,10);
+  const lmissionMap = missionMap.innerText;
+  const lmissionPbo = missionPbo.innerText;
+  const lmissionVersion = parseInt(missionVersion.innerText,10);
+  const lonLoadMission = onLoadMission.innerText;
+  const lonLoadName = onLoadName.innerText;
+  const lpboFileDateM = pboFileDateM.innerText;
+  const lpboFileSize = parseInt(pboFileSize.innerText,10);
+  const lmissionTitle = missionTitle.innerText;
+
+  //console.log(infoMissionsJS);
+  fetch("/missions/add/confirm", {
+    method: "POST",
+    headers: { "content-type": "application/json"},
+    body: JSON.stringify({author: lauthor, gameType: lgameType, loadScreen: lloadScreen, minPlayers: lminPlayers, maxPlayers: lmaxPlayers, missionMap: lmissionMap, missionPbo: lmissionPbo, missionVersion: lmissionVersion, onLoadMission: lonLoadMission, onLoadName: lonLoadName, pboFileDateM: lpboFileDateM, pboFileSize: lpboFileSize, missionTitle: lmissionTitle})
+  })
+  //.then((response) => response.json())
+  .then((response) => response.text())
+  .then(()=>{console.log("OK: ", infoMissionsJS);})
+  .catch((error => {console.error("Error: ", error);}))
+};
+
+</script>
+
+<!--layout fluide + responsive-->
+
+<div class="w3-row">
+
+  <!--colonne gauche-->
+  <div class="w3-container w3-third w3-padding">
+    <h2>Check ton pbo</h2>
+    <form action="/missions/add/check" method="POST" class="dropzone" id="myDZ">
+      <div class="dz-message"><i class="fas fa-file-upload" style="font-size:100px"></i><br><br>
+      <span>Pbo dropzone here !<br>(or click to choose a file)</span></div>
+    </form>
+  </div>
+
+  <!--colonne centre-->
+  <div class="w3-container w3-third w3-padding">
+    <h2>Vérifie les infos de mission</h2>
+    <div class="w3-xlarge" id="missionTitle"></div>
+    <div class="w3-tooltip w3-margin-top">
+      <img id="loadScreen" src="" class="w3-round w3-image w3-card-4"><br>
+      <div class="w3-panel w3-leftbar w3-text w3-animate-opacity">
+        <i id="onLoadMission" class="w3-small" style="font-style: italic;"></i>
+      </div>
+    </div>
+        
+    <div class="w3-card-4 w3-padding w3-margin-top w3-large gdc-color-light" onclick="showHide('infosMission')">
+      Infos sur la mission&nbsp;<i class="fa fa-caret-down w3-right"></i>
+    </div>
+    <div id="infosMission" class="w3-hide w3-card-4 gdc-color-light">
+      <ul class="w3-ul">
+        <li class="w3-bar">
+          <div class="w3-bar-item">
+            <span>Type de jeu&nbsp;:&nbsp;</span><span id="gameType"></span>
+          </div>
+        </li>
+        <li class="w3-bar">
+          <div class="w3-bar-item">
+            <span>Auteur&nbsp;:&nbsp;</span><span id="author"></span>
+          </div>
+        </li>
+        <li class="w3-bar">
+          <div class="w3-bar-item">
+            <span>Carte&nbsp;:&nbsp;</span><span id="missionMap"></span>
+          </div>
+        </li>
+        <li class="w3-bar">
+          <div class="w3-bar-item">
+            <span>Nombre de joueurs&nbsp;:&nbsp;</span><span>mini&nbsp;:&nbsp;</span><span id="minPlayers"></span><span>, maxi&nbsp;:&nbsp;</span><span id="maxPlayers"></span>
+          </div>
+        </li>
+        <li class="w3-bar">
+          <div class="w3-bar-item">
+            <span>onLoadName&nbsp;:&nbsp;</span><span id="onLoadName"></span>
+          </div>
+        </li>
+      </ul>
+    </div>
+      
+    <div class="w3-card-4 w3-padding w3-margin-top w3-large gdc-color-light" onclick="showHide('donneesTechniquesMission')" >
+      Données techniques&nbsp;<i class="fa fa-caret-down w3-right"></i>
+    </div>
+    <div id="donneesTechniquesMission" class="w3-hide w3-card-4 gdc-color-light">
+      <ul class="w3-ul">
+        <li class="w3-bar">
+          <div class="w3-bar-item">
+            <span>Nom du fichier&nbsp;:&nbsp;</span><span id="missionPbo"></span>
+          </div>
+        </li>
+        <li class="w3-bar">
+          <div class="w3-bar-item">
+            <span>Version en cours&nbsp;:&nbsp;</span><span id="missionVersion"></span>
+          </div>
+        </li>
+        <li class="w3-bar">
+          <div class="w3-bar-item">
+            <span>Date de la version en cours&nbsp;:&nbsp;</span><span id="pboFileDateM"></span>
+          </div>
+        </li>
+        <li class="w3-bar">
+          <div class="w3-bar-item">
+            <span>Taille du pbo&nbsp;:&nbsp;</span><span id="pboFileSize"></span>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!--colonne droite-->
+  <div class="w3-container w3-third w3-padding"></div>
+  <div>
+    <h2>Content de toi ? Publie ta mission !</h2>
+    <form>
+    <input type="button" value="Subscribe!" onclick="postMissionInfos()">
+    </form>
+  </div>
+
+</div>
+
+
+<!--
+<div class="w3-container">
+  X <div id="loadScreen">loadScreen : </div> 
+  X <div id="missionTitle">Titre : </div>
+  X <div id="onLoadMission">onLoadMission : </div>
+  <div id="onLoadName">onLoadName : </div>
+  X <div id="author">Auteur : </div>
+  X <div id="missionMap">Carte : </div>  
+  X <div id="gameType">Type de jeu : </div>
+  X <div id="minPlayers">Joueurs mini : </div>
+  X <div id="maxPlayers">Joueurs maxi : </div>
+  X <div id="missionVersion">Version: </div>
+  X <div id="pboFileDateM">Date de modif : </div>
+  X <div id="missionPbo">Fichier pbo : </div>
+  X div id="pboFileSize">Taille du pbo</div>
+</div>
+-->
+
+
+
