@@ -1,0 +1,17 @@
+# .env
+PORT=3000
+APP_NAME=gdc-server
+
+#
+# Be careful : node fs module used. File path must be in native form
+#
+# Path to the mikero tool 
+DEPBO_EXE_PATH=""
+# A directory where pbo are dpo
+TMP_DIR=""
+# Directory where users uploads their pbo.
+INPUT_DIR=""
+# Directory where briefing and images are saved (! not implemented at the moment, but mandatory !)
+OUTPUT_DIR=""
+# Arma 3 missions directory
+MISSIONS_DIR=""
