@@ -24,7 +24,7 @@ router.get ("/", function (req, res) {
 
 // Missions page, 
 router.get ("/missions", function (req, res, next) {
-  res.render("list", {subtitle: "Missions"});
+  res.render("listMissions", {subtitle: "Missions"});
 });
 
 // List of missions, contained in mission page, called by tabulator component (AJAX request) from client side
@@ -40,11 +40,5 @@ router.post("/missions/add/check", missionCheckController.checkMission);
 
 // Mission publication confirmated
 router.post ("/missions/add/confirm",missionAddController.addMission);
-/*
-router.post("/missions/add/confirm", function (req,res) {
-  console.log(req.body.missionTitle);
-  res.render("addMission");
-});
-*/
 
 module.exports = router;

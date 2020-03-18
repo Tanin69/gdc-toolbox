@@ -4,6 +4,10 @@ const exphbs  = require('express-handlebars');
 const path = require('path');
 const favicon = require('serve-favicon');
 const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+
+// Read environment variables
+dotenv.config();
 
 // App specific imports
 const routes = require("./routes");
@@ -41,7 +45,7 @@ app.use ("/", routes);
 
 // Static assets
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(favicon(path.join(__dirname, 'public/img', 'favicon.ico')));
 
 /* Global error handling */
 
@@ -59,19 +63,16 @@ app.use(function(err, req, res, next) {
     res.locals.error = req.app.get('env') === 'development' ? err : {};
     // Render the error page
     res.status(err.status || 500);
-    res.render("error");
+    res.render("error", {appErrMsg: err.status +": " + err.message});
 });
 
 // Launch the server app
 try {
-    app.listen(3000);
-    console.log("gdc-server-dev listening on port 3000");
+    app.listen(process.env.PORT);
+    console.log(`${process.env.APP_NAME} listening on port ${process.env.PORT}`);
 }
 catch (e) {
     console.error(e);
 }
 
 module.exports = app;
-
-
-

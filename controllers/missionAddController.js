@@ -1,43 +1,56 @@
+// External module imports
 const Mission = require("../models/mission");
+const fs = require("fs");
+const dotenv = require('dotenv');
 
-//Add a mission in a DB
+// Read environment variables
+dotenv.config();
+
+//Adds a mission in the DB and copies the pbo to the missions directory
 exports.addMission = function(req, res) {
-    const mission = new Mission({
-      missionTitle: req.body.missionTitle,
-      missionPbo: req.body.missionPbo,
-      pboFileDateM: req.body.pboFileDateM,
-      pboFileSize: req.body.pboFileSize,
-      missionVersion: req.body.missionVersion,
-      missionMap: req.body.missionMap,
-      onLoadName: req.body.onLoadName,
-      onLoadMission: req.body.onLoadMission,
-      author: req.body.author,
-      gameType: req.body.gameType,
-      minPlayers: req.body.minPlayers,
-      maxPlayers: req.body.maxPlayers,
-    });
-    console.log({mission});
-    Mission.find({missionPbo: req.body.missionPbo}, function(err, data){
-      
+    //Adding in the DB...
+    Mission.find({missionPbo: req.body.missionPbo}, function(err, data){    
       if(err){
           console.log(err);
           return;
       }
-  
       if(data.length > 0) {
-        Mission.deleteOne({missionPbo: req.body.missionPbo})
-          .then(() => res.status(201).json({mission}))
-          .catch(error => res.status(400).json({ error }));
-          console.log("Mission mise à jour");
-          return;
-      } 
+        Mission.deleteMany({missionPbo: req.body.missionPbo}, function(err, result) {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log("Supprimé: " + result.deletedCount);
+            }
+        });
+      }
+      const mission = new Mission({
+        pboDoesntExist: req.body.pboDoesntExist,
+        fileExtensionIsOk: req.body.fileExtensionIsOk,
+        fileNameConventionIsOk: req.body.fileNameConventionIsOk,
+        fileIsPbo: req.body.fileIsPbo,
+        missionPbo: req.body.missionPbo,
+        pboFileSize: req.body.pboFileSize,
+        pboFileDateM: req.body.pboFileDateM,
+        owner:  req.body.owner, 
+        missionTitle: req.body.missionTitle,
+        missionVersion: req.body.missionVersion,
+        missionMap: req.body.missionMap,
+        author: req.body.author,
+        onLoadName: req.body.onLoadName,
+        onLoadMission: req.body.onLoadMission,
+        overviewText: req.body.overviewText,
+        gameType: req.body.gameType.toUpperCase(),
+        minPlayers: req.body.minPlayers,
+        maxPlayers: req.body.maxPlayers,
+        missionIsPlayable: req.body.missionIsPlayable,
+      });
       mission.save()
         .then(() => res.status(201).json({mission}))
         .catch(error => res.status(400).json({ error }));
-      console.log("Mission ajoutée");
-      return;
-    
+      console.log("La mission a été ajoutée");
   });
 
-
+  //...and moves it to the missions directory
+  fs.renameSync(process.env.INPUT_DIR + req.body.missionPbo, process.env.MISSIONS_DIR + req.body.missionPbo);
+  
 };

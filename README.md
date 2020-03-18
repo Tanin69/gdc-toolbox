@@ -30,9 +30,9 @@ Here is a visual representation of the app architecture (from the same source) :
         /node_modules
             [many modules]
         /public
-            /images
-            /javascripts
-            /style.css
+            /css
+            /img
+            /javascript
         /routes
             index.js
         /views
@@ -66,7 +66,7 @@ const MissionSchema = new Schema({
     onLoadName: {type: String},
     onLoadMission: {type: String},
     gameType: {type: String},
-    minPLayers: {type: Number},
+    minPlayers: {type: Number},
     maxPlayers: {type: Number}
 });
 
@@ -79,8 +79,11 @@ Views are generated with [handlebars](https://handlebarsjs.com/) template engine
 
 ### Controllers
 
-Controllers are javascript code portions.
+Coontrollers are portions of code that manage business logic.
 
 ### Client side components
 
-"Heavy load" computing, as list management are delegated to a javascript client component : [tabulator](http://tabulator.info/). Tabulator is an open source (MIT licence) javascript library. It is very well maintained, documented and very very powerfull. You should definitly take a look at tabulator !
+Much of the logic is delegated to  javascript client components
+
+* List management : [tabulator](http://tabulator.info/). Tabulator is an open source (MIT licence) javascript library. It is very well maintained, documented and very very powerfull. You should definitly take a look at tabulator !
+* File uploads : [dropzoneJS](https://www.dropzonejs.com/)

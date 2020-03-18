@@ -7,47 +7,18 @@
       background-position:center center;  
     }
   </style>
+  
   {{> header}}
 
     <h1>Liste</h1>
     <h2>{{ subtitle }}</h2>
 
-    <div id="table"></div>
+    <div id="missionsList" class="w3-container w3-opacity-min"></div>
 
-    <link href="https://unpkg.com/tabulator-tables@4.5.3/dist/css/tabulator.min.css" rel="stylesheet">
-    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.5.3/dist/js/tabulator.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/tabulator-tables@4.5.3/dist/css/tabulator.min.css" >
+    <script src="https://unpkg.com/tabulator-tables@4.5.3/dist/js/tabulator.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.23.0/moment.min.js"></script>
-
-    <script>
-
-        const table = new Tabulator("#table", {
-            ajaxURL:"/missions/list", //ajax URL
-            placeholder:"No Data Available",
-            height:400,
-            layout:"fitDataStretch",
-            movableColumns: true,
-            persistence:{
-                sort:true,
-                filter:true,
-                columns:true,
-            },
-            columns:[
-                {title:"Titre", field:"missionTitle", formatter:"link"},
-                {title:"Pbo de mission", field:"missionPbo"},
-                {title:"Date de modif du pbo", field:"pboFileDateM", formatter:"datetime"},
-                {title:"Taille du pbo", field:"pboFileSize", formatter:"money", formatterParams:{precision:0, thousand:" "}},
-                {title:"Version", field:"missionVersion"},
-                {title:"Carte", field:"missionMap"},
-                {title:"Auteur", field:"author"},
-                {title:"texte Mission", field:"onLoadName"},
-                {title:"texte onLoad", field:"onLoadMission"},
-                {title:"Type de jeu", field:"gameType"},
-                {title:"Joueurs Min", field:"minPlayers"},
-                {title:"Joueurs Max", field:"maxPlayers"},
-            ]
-        });
-
-    </script>
+    <script src="/javascript/listMissions.js"></script>  
 
   {{> footer}}   
 </body>
