@@ -3,7 +3,7 @@ PORT=3000
 APP_NAME=gdc-server
 
 #
-# Be careful : node fs module used. File path must be in native form
+# Be careful : node fs module used. On Windows Server, you should you unix like name path, without any escape characters
 #
 # Path to the mikero tool 
 DEPBO_EXE_PATH=""

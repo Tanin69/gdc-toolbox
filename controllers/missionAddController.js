@@ -19,7 +19,7 @@ exports.addMission = function(req, res) {
             if (err) {
               console.log(err);
             } else {
-              console.log("Supprimé: " + result.deletedCount);
+              console.log("DBG/missionAddController.js/-> " + result.deletedCount + " mission supprimée de la base (already exists)");
             }
         });
       }
@@ -47,7 +47,7 @@ exports.addMission = function(req, res) {
       mission.save()
         .then(() => res.status(201).json({mission}))
         .catch(error => res.status(400).json({ error }));
-      console.log("La mission a été ajoutée");
+      console.log("DBG/missionAddController.js/-> la mission " + req.body.missionTitle + " a été ajoutée à la base");
   });
 
   //...and moves it to the missions directory

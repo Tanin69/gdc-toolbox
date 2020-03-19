@@ -14,14 +14,15 @@ exports.checkMission = function (req,res) {
     
     // Traps upload request to redirect it to the correct path
     .on("fileBegin", (name, file) => {
-      file.path = "./uploads/" + file.name;
+        console.log("DBG/missionCheckController.js/-> Début de réception du fichier " + file.name);
+        file.path = "./uploads/" + file.name;
     })
     
     // Here is the magic
     .on("file", (name, file) => {
-    
+        
         const fileName = file.name;
-        console.log("Début du check de mission: " + fileName);
+        console.log("DBG/missionCheckController.js/-> Taille du fichier reçu: " + file.size)
         const mapRet = grabMissionInfos (fileName);
         for (const [key, value] of mapRet.entries()) {
             mapRet.set(key, value);
@@ -30,10 +31,12 @@ exports.checkMission = function (req,res) {
         mapRet.set("owner", "admin");
         if (!mapRet.get("fileExtensionIsOk") || !mapRet.get("fileNameConventionIsOk") || !mapRet.get("fileIsPbo") || !mapRet.get("missionSqmFound") || !mapRet.get("briefingSqfFound") || !mapRet.get("pboDoesntExist")){
             // Failure. HTTP status 202 ("The request has been accepted for processing, but the processing has not been completed")
+            console.log("DBG/missionCheckController.js/-> Fin de check du fichier code 202 : " + l_fileName); 
             fs.unlinkSync(process.env.INPUT_DIR + file.name);
             res.status(202).json(Object.fromEntries(mapRet));
         } else {
             // Success. HTTP status 200
+            console.log("DBG/missionCheckController.js/-> Fin de check du fichier code 200 : " + l_fileName); 
             res.status(200).json(Object.fromEntries(mapRet));
         }
 
@@ -51,12 +54,12 @@ exports.checkMission = function (req,res) {
     })
     
     //end management
-    .on("end", () => {
+    .on("end", (files) => {
       //Sends the result to dropzone client component
-      //console.log (endStatusMsg);
-      console.log("fin du check de mission");
+      //console.log(files);
+ 
     });
-
+    
 };
 
 /**
@@ -64,6 +67,7 @@ exports.checkMission = function (req,res) {
  * Grabs many mission informations by reading file name, file infos and different files in the pbo 
  * @TODO: check if HC_slot exists
  * @TODO: replace map with a JSON object
+ * @TODO: code a real error handling :-)
  * @param {string} filename - the mission filename to be checked
  * @returns {(Map)} - Map with return values
  */
@@ -71,6 +75,7 @@ function grabMissionInfos (fileName) {
 
     const logLevel = 2;
     l_fileName = process.env.INPUT_DIR + fileName;
+    console.log("DBG/missionCheckController.js/-> Début de check du fichier: " + l_fileName);
 
     //Initializes a map to store all mission infos, initializing all fields at their default value
     const mapRetour = new Map();
@@ -93,7 +98,6 @@ function grabMissionInfos (fileName) {
     mapRetour.set("minPlayers", NaN);
     mapRetour.set("maxPlayers", NaN);
     mapRetour.set("missionIsPlayable", false);
-    //console.log(mapMission);
 
     //Informations from uploaded file
     //-File extension
@@ -101,8 +105,7 @@ function grabMissionInfos (fileName) {
     let match = regex.exec(l_fileName);
     if (match) {
         mapRetour.set ("fileExtensionIsOk", true);
-    }
-    //console.log(match);        
+    }     
     //-Mission file naming convention
     regex = new RegExp(/(CPC-.*]-.*)-V(\d*)\.(.*)\.pbo/i);
     match = regex.exec(l_fileName);
@@ -114,28 +117,39 @@ function grabMissionInfos (fileName) {
         const stats = fs.statSync(l_fileName);
         mapRetour.set ("pboFileSize", stats.size);
         mapRetour.set ("pboFileDateM", stats.mtime);
+        console.log("DBG/missionCheckController.js/-> taille du fichier sur le disque:" + stats.size);
     } 
     catch (err) {
-        //TODO: Améliorer la gestion de cette erreur
+        //TODO: Améliorer la gestion de cette erreur (bon, OK et de toutes les autres)
         console.error(err);
     }
     //-Wether file is really a pbo file
-    const retDpbo = spawnSync(process.env.DEPBO_EXE_PATH, ["-P", l_fileName, process.env.TMP_DIR]);
-    //console.log(process.env.DEPBO_EXE_PATH);
-    if (retDpbo.status == 0) {
-        mapRetour.set ("fileIsPbo", true);
+    try {
+        console.log("DBG/missionCheckController.js/-> Variable ENV DPBO_PATH: " + process.env.DEPBO_EXE_PATH);
+        const retDpbo = spawnSync(process.env.DEPBO_EXE_PATH, ["-P", l_fileName, process.env.TMP_DIR]);
+        console.log("DBG/missionCheckController.js/-> Code retour ExtractPbo: " + retDpbo.status);
+        switch (retDpbo.status) {
+            case 0:
+                mapRetour.set ("fileIsPbo", true);
+                console.log("DBG/missionCheckController.js/-> fileIsPbo: " + mapRetour.get("fileIsPbo"));
+                break;
+            case 56:
+                console.log ("ERR: filealready exists on tmp dir");
+                break;
+            case null:
+                console.log ("ERR: Mikero's extractPBO failed");
+        }
+    }
+    catch (err) {
+        console.log (err);
     }
     //-Checks is pbo file already exists in missions directory
     if (fs.existsSync(process.env.MISSIONS_DIR + fileName)){
-        //console.log(process.env.MISSIONS_DIR + fileName);
         mapRetour.set ("pboDoesntExist", false);
-    } 
-
-    //console.log(mapRetour);
+    }
 
     //Splits mission name elements to grab infos
-    const missionDir = l_fileName.replace(/.*\\.*?(.+)(.pbo)/,"$1");
-    //const matchMissionNameParts = regex.exec(missionDir);
+    const missionDir = l_fileName.replace(/.*\/.*?(.+)(.pbo)/,"$1");
     const matchMissionNameParts = regex.exec(fileName);
     if (matchMissionNameParts !== null) {
         mapRetour.set("missionTitle", matchMissionNameParts[1]);
@@ -146,10 +160,11 @@ function grabMissionInfos (fileName) {
 
   //Array of files used to grab mission info
   const infoFiles = ["description.ext","mission.sqm","briefing.sqf"];
-  //const infoFiles = ["description.ext","mission.sqm"];   
   //Iterate over files to find information
   for (let infoFile of infoFiles) {
-      const infoFilePath = process.env.TMP_DIR + missionDir + "\\" + infoFile; 
+      //const infoFilePath = process.env.TMP_DIR + missionDir + "\\" + infoFile;
+      const infoFilePath = process.env.TMP_DIR + missionDir + "/" + infoFile 
+      console.log("DBG/missionCheckController.js/-> infoFilePath: " + infoFilePath);
       try {
           const dataStr = String(fs.readFileSync(infoFilePath));
           switch (infoFile) {
@@ -232,6 +247,8 @@ function grabMissionInfos (fileName) {
           }
       }
   }
+  // BE AWARE : fs.rmdirSync experimental in node -> removes mission directory
+  fs.rmdirSync(process.env.TMP_DIR+missionDir, {recursive: true});
 
   return mapRetour;
 
@@ -245,11 +262,12 @@ function grabMissionInfos (fileName) {
  * @returns {(object|boolean)} - error if failure or true if success
  */
 function copyMissionImage (missionImageFileName,missionDir) {
+  //Be careful ! regex must match with directory separator
   missionImageFileExt = missionImageFileName.replace(/.*\.(.*)/i,"$1");
-  const sourceMissionImageFile = process.env.TMP_DIR + missionDir + "\\" + missionImageFileName;
+  const sourceMissionImageFile = process.env.TMP_DIR + missionDir + "/" + missionImageFileName;
   const destMissionImageFile = process.env.OUTPUT_DIR + missionDir + "." + missionImageFileExt;
   try {
-      fs.copyFileSync(sourceMissionImageFile, destMissionImageFile);
+      //fs.copyFileSync(sourceMissionImageFile, destMissionImageFile);
       return true;
   }
   catch(e) {
