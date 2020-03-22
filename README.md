@@ -2,7 +2,47 @@
 
 ## Features
 
+### Mission publication
+
+Allows mission makers to :
+
+* Check their pbo (controls pbo integrity, some files presence and pbo file naming rules)
+* Publish their mission to a mission directory, as defined by server admin
+
+### List missions
+
+Allows players to access the missions list
+
 ## Installation
+
+### First installation
+
+#### Download and install Mikero tools on your server
+
+[Mikero tools](https://mikero.bytex.digital/Downloads).
+
+At least :
+
+* ExtractPbo
+* DeOgg
+* (maybe) DePbo
+
+#### Download and install node
+
+[node](https://nodejs.org/)
+
+#### Clone git repository
+
+git clone https://github.com/Tanin69/gdc-server
+
+#### Install modules
+
+In the server directory, run ```npm install```
+
+#### Define environment variables
+
+* Copy ```.sample-env``` to ```.env```
+* Edit path with your configuration
 
 ## Tech notes
 
@@ -20,13 +60,12 @@ Here is a visual representation of the app architecture (from the same source) :
 
     /gdc-server (app root)
         app.js
+        .env
         package.json
         package-lock.json
         README.md
         /controllers
-            ...
         /models
-            ...
         /node_modules
             [many modules]
         /public
@@ -37,11 +76,7 @@ Here is a visual representation of the app architecture (from the same source) :
             index.js
         /views
             /layouts
-                main.hbs
-                ...
-            error.hbs
-            home.hbs
-            layout.pug
+            /partials
             ...
 
 ### Models and database

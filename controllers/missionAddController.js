@@ -1,13 +1,19 @@
 // External module imports
-const Mission = require("../models/mission");
 const fs = require("fs");
 const dotenv = require('dotenv');
+
+// App module imports
+const Mission = require("../models/mission");
 
 // Read environment variables
 dotenv.config();
 
 //Adds a mission in the DB and copies the pbo to the missions directory
 exports.addMission = function(req, res) {
+    
+    //console.log("DBG/missionAddController.js/-> missionBriefing received from the client");
+    //console.log(req.body);
+  
     //Adding in the DB...
     Mission.find({missionPbo: req.body.missionPbo}, function(err, data){    
       if(err){
@@ -39,15 +45,18 @@ exports.addMission = function(req, res) {
         onLoadName: req.body.onLoadName,
         onLoadMission: req.body.onLoadMission,
         overviewText: req.body.overviewText,
-        gameType: req.body.gameType.toUpperCase(),
+        gameType: req.body.gameType,
         minPlayers: req.body.minPlayers,
         maxPlayers: req.body.maxPlayers,
         missionIsPlayable: req.body.missionIsPlayable,
+        missionBriefing: req.body.missionBriefing,
+        loadScreen: req.body.loadScreen,
       });
       mission.save()
         .then(() => res.status(201).json({mission}))
+        .then(() => console.log("DBG/missionAddController.js/-> la mission " + req.body.missionTitle + " a été ajoutée à la base"))
         .catch(error => res.status(400).json({ error }));
-      console.log("DBG/missionAddController.js/-> la mission " + req.body.missionTitle + " a été ajoutée à la base");
+      
   });
 
   //...and moves it to the missions directory

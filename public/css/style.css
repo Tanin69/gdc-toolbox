@@ -1,23 +1,24 @@
 /* Palette de couleurs */
 
 .gdc-color-dark {
-    color:#fff  !important;
-    background:#454140  !important
+    color: #fff  !important;
+    background: #454140  !important
 }
 
 .gdc-color-light {
-    color:rgb(0, 0, 0)  !important;
+    color: rgb(0, 0, 0)  !important;
     background:#a79e84  !important
 }
 
 .gdc-color-tonic {
-    color:rgb(0, 0, 0)  !important;
-    background:#bd5734  !important
+    color: rgb(0, 0, 0)  !important;
+    background: #bd5734  !important
 }
 
 /* body */
 
 body {
     font-family: comfortaa, sans-serif;
-    height:1500px;
+    height: 1500px;
+    background: #454140;
 }

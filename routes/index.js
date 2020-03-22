@@ -16,13 +16,14 @@ const router = express.Router();
 const missionListController = require("../controllers/missionListController");
 const missionAddController = require("../controllers/missionAddController");
 const missionCheckController = require("../controllers/missionCheckController");
+const missionShowController = require("../controllers/missionShowController");
 
 // Home page
 router.get ("/", function (req, res) {
   res.render("home");
 });
 
-// Missions page, 
+// Missions list page, 
 router.get ("/missions", function (req, res, next) {
   res.render("listMissions", {subtitle: "Missions"});
 });
@@ -39,6 +40,9 @@ router.get ("/missions/add", function (req, res) {
 router.post("/missions/add/check", missionCheckController.checkMission);
 
 // Mission publication confirmated
-router.post ("/missions/add/confirm",missionAddController.addMission);
+router.post ("/missions/add/confirm", missionAddController.addMission);
+
+// Mission show
+router.get ("/missions/show/:missionPbo", missionShowController.showMission);
 
 module.exports = router;

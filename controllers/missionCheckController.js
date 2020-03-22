@@ -1,8 +1,16 @@
+/**
+ *
+ * Controller that checks a mission pbo before it can be published (with addMissionController)
+ * @TODO: extract grabMissionInfos() and buildBriefing() functions in an external module
+ * @TODO: clean debug code
+ * 
+ */
+
 // External module imports
 const formidable  = require("formidable");
 const fs          = require("fs");
 const {spawnSync} = require("child_process");
-const dotenv = require('dotenv');
+const dotenv      = require('dotenv');
 
 // Read environment variables
 dotenv.config();
@@ -19,24 +27,27 @@ exports.checkMission = function (req,res) {
     })
     
     // Here is the magic
+    // TODO : check file size because it's only checked on client side at the moment
     .on("file", (name, file) => {
         
         const fileName = file.name;
-        console.log("DBG/missionCheckController.js/-> Taille du fichier reçu: " + file.size)
+        console.log("DBG/missionCheckController.js/-> Taille du fichier reçu: " + file.size);
         const mapRet = grabMissionInfos (fileName);
         for (const [key, value] of mapRet.entries()) {
             mapRet.set(key, value);
         }
-        //@TODO: owner management
+        // TODO: owner management
         mapRet.set("owner", "admin");
         if (!mapRet.get("fileExtensionIsOk") || !mapRet.get("fileNameConventionIsOk") || !mapRet.get("fileIsPbo") || !mapRet.get("missionSqmFound") || !mapRet.get("briefingSqfFound") || !mapRet.get("pboDoesntExist")){
             // Failure. HTTP status 202 ("The request has been accepted for processing, but the processing has not been completed")
-            console.log("DBG/missionCheckController.js/-> Fin de check du fichier code 202 : " + l_fileName); 
+            console.log("DBG/missionCheckController.js/-> Fin de check du fichier code 202 : " + fileName); 
             fs.unlinkSync(process.env.INPUT_DIR + file.name);
             res.status(202).json(Object.fromEntries(mapRet));
         } else {
             // Success. HTTP status 200
-            console.log("DBG/missionCheckController.js/-> Fin de check du fichier code 200 : " + l_fileName); 
+            console.log("DBG/missionCheckController.js/-> Fin de check du fichier code 200 : " + fileName); 
+            //console.log("DBG/missionCheckController.js/-> map finale :");
+            //console.log(mapRet);
             res.status(200).json(Object.fromEntries(mapRet));
         }
 
@@ -88,6 +99,7 @@ function grabMissionInfos (fileName) {
     mapRetour.set("pboFileDateM", false);
     mapRetour.set("owner", false);
     mapRetour.set("missionTitle", false);
+    mapRetour.set("missionIsPlayable", false);
     mapRetour.set("missionVersion", NaN);
     mapRetour.set("missionMap", false);
     mapRetour.set("author", false);
@@ -97,7 +109,8 @@ function grabMissionInfos (fileName) {
     mapRetour.set("gameType", false);
     mapRetour.set("minPlayers", NaN);
     mapRetour.set("maxPlayers", NaN);
-    mapRetour.set("missionIsPlayable", false);
+    mapRetour.set("missionBriefing", "");
+    mapRetour.set("loadScreen", false);
 
     //Informations from uploaded file
     //-File extension
@@ -163,7 +176,7 @@ function grabMissionInfos (fileName) {
   //Iterate over files to find information
   for (let infoFile of infoFiles) {
       //const infoFilePath = process.env.TMP_DIR + missionDir + "\\" + infoFile;
-      const infoFilePath = process.env.TMP_DIR + missionDir + "/" + infoFile 
+      const infoFilePath = process.env.TMP_DIR + missionDir + "/" + infoFile;
       console.log("DBG/missionCheckController.js/-> infoFilePath: " + infoFilePath);
       try {
           const dataStr = String(fs.readFileSync(infoFilePath));
@@ -182,10 +195,11 @@ function grabMissionInfos (fileName) {
                   missionImageFileName = searchMissionInfo("loadScreen", dataStr, logLevel);
                   if (missionImageFileName != false) {
                       ret = copyMissionImage (missionImageFileName, missionDir);
-                      if (ret.errno === undefined) {
+                      console.log("DBG/missionCheckController.js/-> valeur de retour de copuMissionImage: " + ret);
+                      if (ret === undefined) {
                           mapRetour.set("loadScreen", missionDir + "." + missionImageFileExt);
                       } else if (ret.errno === -4058) {
-                          mapRetour.set("loadScreen", missionImageFileName + ": image file not found !"); 
+                          mapRetour.set("loadScreen", missionImageFileName + ": loadScreen image file not found !"); 
                       } else {
                           mapRetour.set("loadScreen", ret); 
                       }
@@ -212,12 +226,13 @@ function grabMissionInfos (fileName) {
                               missionImageFileName = searchMissionInfo("loadScreen", dataStr, logLevel);
                               if (missionImageFileName != false) {
                                   ret = copyMissionImage (missionImageFileName, missionDir);
-                                  if (ret.errno === undefined) {
+                                  console.log("DBG/missionCheckController.js/-> valeur de retour de copuMissionImage: " + ret); 
+                                  if (ret === undefined) {
                                       mapRetour.set("loadScreen", missionDir + "." + missionImageFileExt);
                                   } else if (ret.errno === -4058) {
                                       mapRetour.set("loadScreen", missionImageFileName + ": image file not found !"); 
                                   } else {
-                                      mapRetour.set("loadScreen", ret); 
+                                      mapRetour.set("loadScreen", ret);
                                   }
                               }
                           }
@@ -235,6 +250,8 @@ function grabMissionInfos (fileName) {
                   break;
               case "briefing.sqf":
                 mapRetour.set("briefingSqfFound", true);
+                ret = buildBriefing(infoFilePath);
+                mapRetour.set("missionBriefing",ret);
                 break;
           }
       } catch (e) {
@@ -267,8 +284,8 @@ function copyMissionImage (missionImageFileName,missionDir) {
   const sourceMissionImageFile = process.env.TMP_DIR + missionDir + "/" + missionImageFileName;
   const destMissionImageFile = process.env.OUTPUT_DIR + missionDir + "." + missionImageFileExt;
   try {
-      //fs.copyFileSync(sourceMissionImageFile, destMissionImageFile);
-      return true;
+      fs.copyFileSync(sourceMissionImageFile, destMissionImageFile);
+      //return true;
   }
   catch(e) {
       //console.log(e);
@@ -294,4 +311,48 @@ function searchMissionInfo (infoMission, dataStr, logLevel) {
       match[1] = match[1].replace(/\"/g,"");
       return match[1];
   }                    
+}
+
+/** 
+*
+* Build an array containing appropriate briefing elements by reading a briefing.sqf file
+* @param {String} sqfPath - path to briefing.sqf file
+* @returns {(Boolean|Array)} - false in case of failure, 2D array os trings otherwise : [["tabTitle_1","tabContent_1"],...,["tabTitle_n","tabContent_n"]]
+*/
+
+function buildBriefing(sqfPath) {
+    //Array that stores the briefing elements. Returned to calling function.
+    const brfElements = [];
+    
+    console.log ("DBG/missionCheckController.js/-> construction du briefing: " + sqfPath);
+                
+    //Look for createDiaryRecord entries
+    const regex = /player.*creatediaryrecord\s*\[\s*"\s*diary\s*"\s*,\s*\[\s*"([^"]*)"\s*,\s*"([^"]*)/gmi;
+    let str = fs.readFileSync(sqfPath, {encoding: "UTF-8"} );
+    //console.log("DBG/missionCheckController.js/-> contenu du fichier briefing.sqf: " + str);
+    let m;
+    while ((m = regex.exec(str)) !== null) {
+        // This is necessary to avoid infinite loops with zero-width matches
+        if (m.index === regex.lastIndex) {
+            regex.lastIndex++;
+        }
+        //console.log("DBG/missionCheckController.js/-> Extraction du briefing :\n\n***" + m[1] + "\n" + m[2]);
+        //m[1] (capture group $1) is the tab title, m[2] ($2 the tab content). Add it all to array
+        //Cleaning tab content : line end
+        m[2] = m[2].replace(/\r?\n/gi,"");
+        //Cleaning tab content : <marker... tags
+        m[2] = m[2].replace(/(<\s*marker\s*name\s*='\S+'>)([^>]*)(<\/marker>)/gi,`$2`);
+        //Cleaning tab content : <img... tags
+        m[2] = m[2].replace(/(<\s*img[^>]*>)/gi,"");
+        //Store tab title and cleaned tab content in the output array
+        brfElements.push([m[1],m[2]]);
+    }
+    // We have to reverse the array, thanks to Bohemia briefing format ;-)
+    brfElements.reverse();
+    //console.log("DBG/missionCheckController.js/-> contenu du tableau de sortie brfElements: ");
+    //console.log(brfElements);
+
+    return brfElements;
+
+    //TODO: look for createSimpleTask and setSimpleTaskDescription
 }

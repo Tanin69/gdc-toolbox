@@ -1,12 +1,29 @@
+callShowMission = function(e,cell) {
+    window.open("/missions/show/" + cell.getData().missionPbo, "_blank");   
+};
+
 customFalseFmt = function(cell){
     var cellValue = cell.getValue();
-    var cellElement = cell.getElement();
     if (cellValue === "false" || cellValue === "") {
         return "<span style='font-style: italic'>Non renseigné</span>";
     }
     else {
         return cell.getValue();
     }
+};
+
+customBrfFmt = function(cell) {
+    cellData = cell.getData();
+    cellData = cellData.missionBriefing;
+    cellValue = cell.getValue();
+    if (cellData !== "" || cellData === null) {
+        cellValue ="<span class='w3-tag w3-blue'>Click me !</span>";
+    } else {
+        cellValue = "";
+    }
+    //console.log(cellData);
+    //console.log(cellValue);
+    return cellValue;
 };
 
 
@@ -24,9 +41,10 @@ const table = new Tabulator("#missionsList", {
     },
     */
     columns:[
-        {title:"Type de jeu", field:"gameType", headerFilter:true, formatter:customFalseFmt},
+        {title:"Type de jeu", field:"gameType", headerFilter:true, formatter: customFalseFmt},
         {title:"Jouable", field:"missionIsPlayable", formatter:"tickCross"},
-        {title:"Titre", field:"missionTitle", formatter:"link"},
+        {title:"Titre", field:"missionTitle"},
+        {title:"Briefing", field:"missionBriefing", formatter: customBrfFmt, cellClick: callShowMission},
         //{title:"Pbo de mission", field:"missionPbo"},
         {title:"Date de publication", field:"pboFileDateM", align:"right", formatter:"datetime", formatterParams:{outputFormat:"DD/MM/YYYY"}},
         //{title:"Taille du pbo", field:"pboFileSize", formatter:"money", formatterParams:{precision:0, thousand:" "}},

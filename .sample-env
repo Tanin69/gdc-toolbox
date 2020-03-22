@@ -3,8 +3,12 @@ PORT=3000
 APP_NAME=gdc-server
 
 #
-# Be careful : node fs module used. On Windows Server, you should you unix like name path, without any escape characters
+# Be careful : node fs module used. On Windows Server, you should use unix like name path, without any escape characters
+# Don't forget to include the last slash
+# ex. 
+# TMP_DIR="c:/gdc-server/tmp/"
 #
+
 # Path to the mikero tool 
 DEPBO_EXE_PATH=""
 # A directory where pbo are dpo

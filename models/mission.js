@@ -11,6 +11,7 @@ const MissionSchema = new Schema({
     pboFileSize: {type: Number},
     pboFileDateM: {type: String},
     owner:  {type: String},
+    missionIsPlayable: {type: Boolean},
     missionTitle: {type: String, required: true},
     missionVersion: {type: Number},
     missionMap: {type: String},
@@ -21,7 +22,9 @@ const MissionSchema = new Schema({
     gameType: {type: String},
     minPlayers: {type: Number},
     maxPlayers: {type: Number},
-    missionIsPlayable: {type: Boolean},
+    loadScreen: {type: String},
+    missionBriefing: {type: Array , "default" : []},
+
 });
 
 module.exports = mongoose.model("Mission", MissionSchema);

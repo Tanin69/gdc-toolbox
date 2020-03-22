@@ -113,9 +113,13 @@ function publishMission() {
         document.getElementById("modalSuccess").style.display="none";
         resetPage();
     }
+    else {
+      console.log("Huho... Somethin' went wrong. Server has responded :");
+      console.log(response.status);
+    }
   })
   .catch(function(error) {
-    document.getElementById('modalSuccess').style.display='none';
+    document.getElementById("modalSuccess").style.display="none";
     errMsg.innerText = error;
     showHide("msgError");
     setTimeout(function(){ showHide("msgError");}, 10000);
