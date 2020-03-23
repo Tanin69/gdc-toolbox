@@ -1,7 +1,7 @@
 {
-  "name": "gdc-server-dev",
+  "name": "gdc-toolbox",
   "version": "0.1.0",
-  "description": "An arma 3 community server",
+  "description": "An arma 3 community toolbox",
   "main": "app.js",
   "dependencies": {
     "child_process": "^1.0.2",

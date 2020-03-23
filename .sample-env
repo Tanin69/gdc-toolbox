@@ -1,21 +1,26 @@
 # .env
 PORT=3000
-APP_NAME=gdc-server
+APP_NAME=gdc-toolbox
 
 #
-# Be careful : node fs module used. On Windows Server, you should use unix like name path, without any escape characters
+# Be careful : node fs module used. Even on Microsoft Windows Server, you MUST use unix like name path, without any escape characters
 # Don't forget to include the last slash
 # ex. 
-# TMP_DIR="c:/gdc-server/tmp/"
+# TMP_DIR="c:/server/tmp/"
 #
 
-# Path to the mikero tool 
+# Path to the mikero tool
+# Should be "C:/Program Files (x86)/Mikero/DePboTools/bin/Extractpbo.exe"
 DEPBO_EXE_PATH=""
 # A directory where pbo are dpo
 TMP_DIR=""
-# Directory where users uploads their pbo.
-INPUT_DIR=""
-# Directory where briefing and images are saved (! not implemented at the moment, but mandatory !)
-OUTPUT_DIR=""
 # Arma 3 missions directory
 MISSIONS_DIR=""
+# Directory where users upload their pbo. MUST be directly under server root
+# Example  : "c:/server/upload/"
+UPLOAD_DIR=""
+# Directory where briefing images are saved. MUST be in the ./public directory
+# Example  : "c:/server/public/img/brf/"
+OUTPUT_DIR=""
+# Database connection string
+DB_CONNECT=""

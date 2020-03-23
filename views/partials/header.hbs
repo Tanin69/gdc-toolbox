@@ -1,14 +1,3 @@
-<script>
-  function showHide(id) {
-    var x = document.getElementById(id);
-    if (x.className.indexOf("w3-show") == -1) {
-      x.className += " w3-show";
-    } else { 
-      x.className = x.className.replace(" w3-show", "");
-    }
-  }
-</script>
-
 
  <div class="w3-bar gdc-color-tonic">
   <a href="javascript:void(0)" class="w3-bar-item w3-button w3-left w3-hide-large w3-hide-medium" onclick="showHide('navbarMenus')">&#9776;</a>
@@ -22,30 +11,6 @@
   </div>
 </div>
 <div id="navbarMenus" class="w3-bar-block w3-hide w3-hide-large w3-hide-medium gdc-color-tonic">
-    <a href="/" class="w3-bar-item w3-button">Home</a>
-    <a href="/missions" class="w3-bar-item w3-button">Missions</a>
-    <a href="/missions/add" class="w3-bar-item w3-button">->Publier</a>
+    <a href="/missions" class="w3-bar-item w3-button">Missions: liste</a>
+    <a href="/missions/add" class="w3-bar-item w3-button">Missions: publier</a>
 </div>
-
-
-<!--
-<div class="w3-bar w3-card-2 gdc-color-tonic">
-    <a href="javascript:void(0)" class="w3-bar-item w3-button w3-left w3-hide-large w3-hide-medium" onclick="showHide('navbarMenus')">&#9776;</a>
-    <a href="/" class="w3-bar-item w3-button">Home</a>
-    <div class="w3-dropdown-hover">
-      <button class="w3-button w3-hide-small" onclick="showHide(missionsMenu)">Missions</a>
-      <div id="missionsMenu" class="w3-dropdown-content w3-bar-block w3-card">
-          <a href="/missions/add" class="w3-bar-item w3-button">Publier</a>
-      </div>
-    </div>
-    <a href="#" class="w3-bar-item w3-button w3-hide-small">Link 2</a>
-    <a href="/about" class="w3-bar-item w3-button w3-hide-small">Link 3</a>
-</div>
-<div id="navbarMenus" class="w3-bar-block w3-hide w3-hide-large w3-hide-medium gdc-color-tonic" style="z-index: 1500;">
-    <a href="/" class="w3-bar-item w3-button">Home</a>
-    <a href="/missions" class="w3-bar-item w3-button">Missions</a>
-    <a href="#" class="w3-bar-item w3-button">Link 2</a>
-    <a href="/about" class="w3-bar-item w3-button">Link 3</a>
-</div>
-<br><br>
--->

@@ -1,4 +1,10 @@
-# gdc-server, an arma 3 community webserver
+# gdc-server, an arma 3 community toolbox
+
+## Target users
+
+This application is intended for players, mission creators and administrators of Arma 3 community servers.
+
+Arma 3 is a military simulation video game from Bohema Studios.
 
 ## Features
 
@@ -6,12 +12,36 @@
 
 Allows mission makers to :
 
-* Check their pbo (controls pbo integrity, some files presence and pbo file naming rules)
-* Publish their mission to a mission directory, as defined by server admin
+* Check the pbo file :
+  * File size
+  * File extension : must bo ```pbo```
+  * pbo integrity
+  * file naming convention
+  * a briefing.sqf must exist in the pbo
+  * a mission.sqm file must exist in the pbo
+
+* If the pbo conformity check is successful, allow the mision maker to :
+  * publish his mission to a directory, as defined by server admin
+  * save key informations in a database
 
 ### List missions
 
-Allows players to access the missions list
+Allows players to access the list of missions. Mission briefing can be accessed from this list.
+
+### Automatic briefing generation
+
+The briefing is rendered as an html page, using the view ```showBriefing.hbs```.
+
+Briefing is automatically generated from a ```briefing.sqf``` file, by reading his content and computing it with some regex :
+
+```player createDiaryRecord ["Diary", ["Mission", "Notre commando a réussi à s'infiltrer près de l'aérodrome..."]];```
+
+* Where the string ```"Mission"``` is considered as a title
+* and ```"Notre commando..."``` as a content. This content is rendered as pure html.
+
+All other strings are ignored.
+
+If an ```onLoadImage``` is found in the mission .pbo, it is used as an illustrative image for the briefing.
 
 ## Installation
 
@@ -64,6 +94,7 @@ Here is a visual representation of the app architecture (from the same source) :
         package.json
         package-lock.json
         README.md
+        CHANGELOG.md
         /controllers
         /models
         /node_modules

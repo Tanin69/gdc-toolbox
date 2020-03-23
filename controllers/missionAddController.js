@@ -5,16 +5,20 @@ const dotenv = require('dotenv');
 // App module imports
 const Mission = require("../models/mission");
 
+//DBG variable
+const DBG_PREF = "DBG/missionAddController.js-> ";
+
 // Read environment variables
 dotenv.config();
 
 //Adds a mission in the DB and copies the pbo to the missions directory
 exports.addMission = function(req, res) {
     
-    //console.log("DBG/missionAddController.js/-> missionBriefing received from the client");
-    //console.log(req.body);
+    //console.log(DBG_PREF + missionBriefing received from the client");
+    console.log(`${DBG_PREF}req.body reçu du client: `);
+    console.log(req.body);
   
-    //Adding in the DB...
+    //Adding json in the DB...
     Mission.find({missionPbo: req.body.missionPbo}, function(err, data){    
       if(err){
           console.log(err);
@@ -25,10 +29,11 @@ exports.addMission = function(req, res) {
             if (err) {
               console.log(err);
             } else {
-              console.log("DBG/missionAddController.js/-> " + result.deletedCount + " mission supprimée de la base (already exists)");
+              console.log(DBG_PREF + result.deletedCount + " mission supprimée de la base (already exists)");
             }
         });
       }
+      
       const mission = new Mission({
         pboDoesntExist: req.body.pboDoesntExist,
         fileExtensionIsOk: req.body.fileExtensionIsOk,
@@ -54,12 +59,20 @@ exports.addMission = function(req, res) {
       });
       mission.save()
         .then(() => res.status(201).json({mission}))
-        .then(() => console.log("DBG/missionAddController.js/-> la mission " + req.body.missionTitle + " a été ajoutée à la base"))
+        .then(() => console.log(DBG_PREF + "la mission " + req.body.missionTitle + " a été ajoutée à la base"))
         .catch(error => res.status(400).json({ error }));
       
   });
 
-  //...and moves it to the missions directory
-  fs.renameSync(process.env.INPUT_DIR + req.body.missionPbo, process.env.MISSIONS_DIR + req.body.missionPbo);
+  // In case the script has been called by addMission.js from the client, we move the uploaded pbo it to the missions directory
+  //fs.renameSync(process.env.UPLOAD_DIR + req.body.missionPbo, process.env.MISSIONS_DIR + req.body.missionPbo);
+  fs.rename(process.env.UPLOAD_DIR + req.body.missionPbo, process.env.MISSIONS_DIR + req.body.missionPbo, (err) => {
+    if (err) {
+      console.log (`${DBG_PREF}aucun pbo à déplacer !`);
+    } else {
+      console.log(`${DBG_PREF}${req.body.missionPbo} copié dans ${process.env.MISSIONS_DIR}`);
+    }
+    
+  });
   
 };

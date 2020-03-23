@@ -1,3 +1,10 @@
+/**
+ *
+ * Adds a mission to the database
+ * @TODO: this script is a piece of shit -> to refactor ASAP
+ */
+
+
 var servResponse = "";
 
 Dropzone.options.myDZ = {

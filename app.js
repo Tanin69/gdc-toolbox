@@ -22,22 +22,22 @@ app.use(express.json());
 
 /* Database connection */
 
-mongoose.connect("mongodb+srv://tanin69:CleDaLu69@cluster0-chdbc.mongodb.net/gdc?retryWrites=true&w=majority",
+mongoose.connect(process.env.DB_CONNECT,
   { useNewUrlParser: true,
     useUnifiedTopology: true })
-  .then(() => console.log('MongoDB connection success'))
-  .catch(() => console.log('MongoDB connection failed !'));
+  .then(() => console.log("MongoDB connection success"))
+  .catch(() => console.log("MongoDB connection failed !"));
 
 /* View engine instanciation and configuration */
 
 // express-handlerbars instanciation
 const hbs = exphbs.create({
      extname: ".hbs",
-     partialsDir: __dirname + '/views/partials/',
+     partialsDir: __dirname + "/views/partials/",
 });
 
 // Inform express about template engine to use
-app.engine('.hbs', hbs.engine);
+app.engine(".hbs", hbs.engine);
 app.set('view engine', '.hbs');
 
 // Connect all routes to application
