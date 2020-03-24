@@ -1,6 +1,7 @@
 const fs          = require("fs");
 const {spawnSync} = require("child_process");
-const dotenv      = require('dotenv');
+const dotenv      = require("dotenv");
+const sanitizeHtml = require("sanitize-html");
 
 // Read environment variables
 dotenv.config();
@@ -11,6 +12,7 @@ dotenv.config();
  * @TODO: check if HC_slot exists
  * @TODO: replace map with a JSON object
  * @TODO: code a real error handling :-)
+ * @TODO (later) try to extract check rules from code
  * @param {string} filename - the mission filename to be checked
  * @returns {(Map)} - Map with return values
  */
@@ -276,13 +278,21 @@ function buildBriefing(sqfPath) {
         m[2] = m[2].replace(/(<\s*marker\s*name\s*='\S+'>)([^>]*)(<\/marker>)/gi,"$2");
         //Cleaning tab content : <img... tags
         m[2] = m[2].replace(/(<\s*img[^>]*>)/gi,"");
+        //Sanitizises html to prevent code injection
+        m[1]=sanitizeHtml(m[1]);
+        m[2]=sanitizeHtml(m[2], {
+            allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'font' ]),
+            allowedAttributes: {
+                font: ['color']
+            },
+        });
+        //console.log(`DBG/missionCheckController.js/-> tabContent sanitized: ${m[2]}`);
         //Store tab title and cleaned tab content in the output array
         brfElements.push([m[1],m[2]]);
     }
     // We have to reverse the array, thanks to Bohemia briefing format ;-)
     brfElements.reverse();
     //console.log("DBG/missionCheckController.js/-> contenu du tableau de sortie brfElements: ");
-    //console.log(brfElements);
 
     return brfElements;
 
