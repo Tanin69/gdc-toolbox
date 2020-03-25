@@ -63,7 +63,7 @@ At least :
 
 #### Clone git repository
 
-git clone https://github.com/Tanin69/gdc-server
+git clone <https://github.com/Tanin69/gdc-server>
 
 #### Install modules
 
