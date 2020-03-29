@@ -12,6 +12,7 @@ const formidable  = require("formidable");
 const fs          = require("fs");
 const dotenv      = require('dotenv');
 
+const checkMission = require("../common/checkMission");
 const grabMissionInfos = require("../common/grabMissionInfos");
 
 // Read environment variables
@@ -33,25 +34,31 @@ exports.checkMission = function (req,res) {
     // TODO : check file size because it's only checked on client side at the moment
     .on("file", (name, file) => {
         
-        const fileName = file.name;
+        const pboFileName = file.name;
         console.log("DBG/missionCheckController.js/-> Taille du fichier reçu: " + file.size);
-        const mapRet = grabMissionInfos.grabMissionInfos (fileName);
-        for (const [key, value] of mapRet.entries()) {
-            mapRet.set(key, value);
-        }
-        // TODO: owner management
-        mapRet.set("owner", "admin");
-        if (!mapRet.get("fileExtensionIsOk") || !mapRet.get("fileNameConventionIsOk") || !mapRet.get("fileIsPbo") || !mapRet.get("missionSqmFound") || !mapRet.get("briefingSqfFound") || !mapRet.get("pboDoesntExist")){
-            // Check found some blocking errors. HTTP status 202 ("The request has been accepted for processing, but the processing has not been completed")
-            console.log("DBG/missionCheckController.js/-> Fin de check du fichier code 202 : " + fileName); 
-            fs.unlinkSync(process.env.UPLOAD_DIR + file.name);
-            res.status(202).json(Object.fromEntries(mapRet));
+        //Verifies if the mission pbo was previously published. If yes, we launch a 202 http code and return a well formed JSON.
+        if (fs.existsSync(process.env.MISSIONS_DIR + pboFileName)){
+          res.status(202).json({
+            "missionNotPublished": {"isOK": false, "isBlocking": true, "label": "Cette mission n'a pas encore été publiée"},
+            "isMissionValid": false,
+            "nbBlockingErr": 1,
+          });
         } else {
+          //checkResult = checkMission.checkMission(pboFileName, {"block_briefingSqfFound": false});// <- example to pass an option : no briefing.sqf is not a blocking error 
+          checkResult = checkMission.checkMission(pboFileName);
+          // If mission is not valid, returns a 202 to the client with resulting JSON
+          if (!checkResult.isMissionValid) {
+            console.log("DBG/missionCheckController.js/-> Fin de check du fichier code 202 : " + pboFileName); 
+            fs.unlinkSync(process.env.UPLOAD_DIR + file.name);
+            res.status(202).json(checkResult);
+          } else {
             // No blocking error, success. HTTP status 200
-            console.log("DBG/missionCheckController.js/-> Fin de check du fichier code 200 : " + fileName); 
-            //console.log("DBG/missionCheckController.js/-> map finale :");
-            //console.log(mapRet);
-            res.status(200).json(Object.fromEntries(mapRet));
+            jsonRes = grabMissionInfos.grabMissionInfos(pboFileName);
+            console.log("DBG/missionCheckController.js/-> Fin de check du fichier code 200 : " + pboFileName); 
+            //console.log("DBG/missionCheckController.js/-> JSON final :");
+            //console.log(jsonRes);
+            res.status(200).json(jsonRes);
+          }
         }
 
     })

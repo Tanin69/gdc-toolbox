@@ -2,35 +2,52 @@
 
 ## Target users
 
-This application is intended for players, mission creators and administrators of Arma 3 community servers.
+This software is intended for players, mission creators and administrators of Arma 3 community servers.
 
-Arma 3 is a military simulation video game from Bohema Studios.
+Arma 3 is a military simulation video game created and edited by Bohemia Interactive Studios.
 
 ## Features
 
-### Mission publication
+### Mission checking
 
-Allows mission makers to :
+Checks mission .pbo file integrity and conformity to certain rules. Each rule can be configured as blocking if not satisfied :
+  
+* File extension : should be ```pbo``` (default: true)
+* pbo integrity : the file should be a real pbo and could be dpbo without any error (default: true)
+* file naming convention : the file name should follow a defined regexp (default: true)
+* briefing.sqf : a briefing.sqf should exist in the pbo file (default: true)
+* mission.sqm : a mission.sqm should exist in the pbo file (default: true)
+* description.ext : a descrption.ext should exist in the pbo file (default: false)
 
-* Check the pbo file :
-  * File size
-  * File extension : must bo ```pbo```
-  * pbo integrity
-  * file naming convention
-  * a briefing.sqf must exist in the pbo
-  * a mission.sqm file must exist in the pbo
+### Informations gathering about mission
 
-* If the pbo conformity check is successful, allow the mision maker to :
-  * publish his mission to a directory, as defined by server admin
-  * save key informations in a database
+By reading different files contained in the pbo, by the pbo file name and other means, grab a maximum of informations about the mission.
 
-### List missions
+* missionPbo: pbo file name
+* pboFileSize: pbo file size
+* pboFileDateM: pbo publication date
+* owner: mission owner (not implemented yet : "admin" for every mission)
+* missionTitle: mission title. Extracted from mission file name
+* missionIsPlayable: mission playabilty status (editable)
+* missionVersion: mission version number. Extracted from mission file name
+* missionMap: Arma map used by mission. Extracted from mission file name
+* author: mission author. Extracted from description.ext, or from mission.sqm if not found in deccription.ext
+* onLoadName: text that appears above the image during mission loading screen. Extracted from description.ext, or from mission.sqm if not found in deccription.ext
+* onLoadMission": text that appears under the image during mission loading screen. Extracted from description.ext, or from mission.sqm if not found in deccription.ext
+* overviewText": text that appears on the mission choice screen or in the lobby screen. Extracted from description.ext, or from mission.sqm if not found in deccription.ext
+* gameType": the type of game (Coop, TVT, etc.). Extracted from description.ext, or from mission.sqm if not found in deccription.ext
+* minPlayers": Minimum number of players as determined by the mission maker. Extracted from description.ext, or from mission.sqm if not found in deccription.ext
+* maxPlayers": Maximum number of players as determined by the mission maker. Extracted from description.ext, or from mission.sqm if not found in deccription.ext
+* missionBriefing": briefing content, extracted from a briefing.sqf file if this file exists in the mission pbo
+* loadScreen": image file, if this file exists in the mission pbo. Extracted from description.ext, or from mission.sqm if not found in deccription.ext
 
-Allows players to access the list of missions. Mission briefing can be accessed from this list.
+### Briefing extraction and rendering
 
-### Automatic briefing generation
+If a briefing.sqf file is present in the mission pbo, its content is extracted to allow further web rendering.
 
-The briefing is rendered as an html page, using the view ```showBriefing.hbs```.
+#### Technical details
+
+The briefing is rendered as an html page, using the ```showBriefing.hbs``` view.
 
 Briefing is automatically generated from a ```briefing.sqf``` file, by reading his content and computing it with some regex :
 
@@ -42,6 +59,24 @@ Briefing is automatically generated from a ```briefing.sqf``` file, by reading h
 All other strings are ignored.
 
 If an ```onLoadImage``` is found in the mission .pbo, it is used as an illustrative image for the briefing.
+
+### Mission publication
+
+Allows mission makers to publish their mission pbo to a directory located on the server, as defined by admin. Before publication, mission pbo is checked. If check is sucessfull, informations about the mission are grabbed and added to a database.
+
+### Missions listing
+
+Allows players to access the list of missions. The list :
+
+* allows to render mission briefing if the briefing had successfully been extracted from mission pbo (see above)
+* allows to edit ```missionIsPlayable``` field (true or false)
+* is sortable
+* can be filtered
+
+Moreover :
+
+* user can change list order and width
+* the configuration of the list is locally saved (column order, height, sort, etc)
 
 ## Installation
 
@@ -88,27 +123,27 @@ Here is a visual representation of the app architecture (from the same source) :
 
 ### Directory structure
 
-    /gdc-server (app root)
-        app.js
-        .env
-        package.json
-        package-lock.json
-        README.md
-        CHANGELOG.md
-        /controllers
-        /models
-        /node_modules
-            [many modules]
-        /public
-            /css
-            /img
-            /javascript
-        /routes
-            index.js
-        /views
-            /layouts
-            /partials
-            ...
+```code
+/gdc-server (app root)
+    app.js
+    README.md
+    CHANGELOG.md
+    ...
+    /controllers
+    /models
+    /node_modules
+        [many modules]
+    /public
+        /css
+        /img
+        /javascript
+    /routes
+        index.js
+    /views
+        /layouts
+        /partials
+        ...
+```
 
 ### Models and database
 

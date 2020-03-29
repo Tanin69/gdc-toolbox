@@ -1,3 +1,8 @@
+/**
+ *
+ * Adds a mission in the DB and copies the pbo to the missions directory 
+ */
+
 // External module imports
 const fs = require("fs");
 const dotenv = require('dotenv');
@@ -11,7 +16,6 @@ const DBG_PREF = "DBG/missionAddController.js-> ";
 // Read environment variables
 dotenv.config();
 
-//Adds a mission in the DB and copies the pbo to the missions directory
 exports.addMission = function(req, res) {
     
     //console.log(DBG_PREF + missionBriefing received from the client");
@@ -46,6 +50,7 @@ exports.addMission = function(req, res) {
         missionTitle: req.body.missionTitle,
         missionVersion: req.body.missionVersion,
         missionMap: req.body.missionMap,
+        descriptionExtFound: req.body.descriptionExtFound,
         author: req.body.author,
         onLoadName: req.body.onLoadName,
         onLoadMission: req.body.onLoadMission,

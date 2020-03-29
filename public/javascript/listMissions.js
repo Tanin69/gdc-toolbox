@@ -1,6 +1,6 @@
 /**
  *
- * Displays the list of missions by calling /missions/list route on the server
+ * Displays the list of missions by calling /mission/list route on the server
  */
 
 /* Custom formatters */
@@ -36,7 +36,7 @@ customUpcaseFmt = function(cell) {
 /* Calls briefing render */
 
 callShowMission = function(e,cell) {
-    window.open("/missions/show/" + cell.getData().missionPbo, "_blank");   
+    window.open("/mission/show/" + cell.getData().missionPbo, "_blank");   
 };
 
 /* Updates data and synchronizes database */
@@ -52,7 +52,7 @@ updateCol = function(event,cell) {
 
     //console.log (cell.getRow().getData());
 
-    fetch("/missions/add/confirm", {
+    fetch("/mission/add/confirm", {
         method: "POST",
         headers: { "content-type": "application/json"},
         body: JSON.stringify(cell.getRow().getData()),
@@ -77,7 +77,7 @@ updateCol = function(event,cell) {
 /* Tabulator construct */
 
 const table = new Tabulator("#missionsList", {
-    ajaxURL:"/missions/list", //ajax URL
+    ajaxURL:"/mission/list", //ajax URL
     placeholder:"No Data Available",
     layout:"fitColumns",
     responsiveLayout:"collapse",

@@ -1,5 +1,6 @@
 node_modules
 package-lock.json
-uploads
+upload
 .env
 public/img/brf/
+.markdownlint.json

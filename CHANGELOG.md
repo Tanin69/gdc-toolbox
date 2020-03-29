@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.2.0 - 2020-03-28
+
+### Changed
+
+* Major code refactoring. The previous version was mainly a proof of concept. The code managing mission functions was monolithic. This code has been split into unitary functions. Mainly :
+  * Mission checking code
+  * Mission information gathering code
+
+### Added
+
+* Mission checking rules are configurable by passing a JSON object as second optionnal parameter in the checkMission function call.
+
 ## 0.1.1 - 2020-03-24
 
 ### Changed

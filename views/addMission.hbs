@@ -11,7 +11,7 @@
 
   {{> header}}
 
-  <!--dropzone component-->
+  <!--dropzone js component-->
   <link rel="stylesheet" href="/css/dz/dropzone.css">
   <link rel="stylesheet" href="/css/dz/basic.css">
   <link rel="stylesheet" href="/css/dz/dz-local.css">
@@ -19,10 +19,9 @@
   <!--client side js-->
   <script src="/javascript/addMission.js"></script>
 
-
   <!--Dropzone-->
   <div class="w3-container w3-padding w3-display-middle">
-    <form action="/missions/add/check" method="POST" class="dropzone" id="myDZ">
+    <form action="/mission/add/check" method="POST" class="dropzone" id="myDZ">
       <div class="dz-message w3-display-middle "><i class="fas fa-file-upload" style="font-size:100px;color:#bd5734"></i><br><br>
       <span class="w3-large" style="color:#bd5734">Pbo dropzone here !<br>(or click to choose a file)</span></div>
     </form>
@@ -46,7 +45,7 @@
         <h3>C'est en bonne voie !</h3>
         <span class="w3-button w3-xlarge w3-display-topright" onclick="document.getElementById('modalSuccess').style.display='none'">&times;</span>
       </header>
-      <table class="w3-table">
+      <table class="w3-table" id="msgSuccessContent">
         <tr>
           <td class="w3-text-grey" style="width: 25%">Titre</td>
           <td id="missionTitle" class="w3-text-black w3-large" style="font-weight: bold"></td>
@@ -114,40 +113,21 @@
         <button class="w3-button w3-right w3-round w3-white w3-border" onclick="publishMission()">Publier la mission&nbsp;<i class="fas fa-check"></i></button>
       </footer>
     </div>
+
   </div>
 
   <!--Modal pannel on mission check failure-->
   <div id="modalFailure" class="w3-modal" style="z-index: 1500">
     <div class="w3-modal-content w3-card-4 w3-animate-zoom">
       <header class="w3-container w3-red">
-        <h3>Oh non, c'est un échec...</h3>
+        <h3 id="msgHead">Oh non, c'est un échec</h3>
         <span onclick="document.getElementById('modalFailure').style.display='none'"
-        class="w3-button w3-display-topright">&times;</span>
+        class="w3-button w3-xlarge w3-display-topright">&times;</span>
       </header>
-      <table class="w3-table">
-        <tr>
-          <td class="w3-text-grey" style="width: 40%">Pbo non publié</td>
-          <td id="pboDoesntExist" class="w3-text-black"></td>
-        </tr>
-        <tr>
-          <td class="w3-text-grey" style="width: 40%">briefing.sqf présent</td>
-          <td id="briefingSqfFound" class="w3-text-black"></td>
-        </tr>
-        <tr>
-          <td class="w3-text-grey">Extension ".pbo"</td>
-          <td id="fileExtensionIsOk" class="w3-text-black"></td>    
-        </tr>
-        <tr>
-          <td class="w3-text-grey">Le fichier est un pbo</td>
-          <td id="fileIsPbo" class="w3-text-black"></td>
-        </tr>
-        <tr>
-          <td class="w3-text-grey">Respect de la convention de nommage</td>
-          <td id="fileNameConventionIsOk" class="w3-text-black"></td>
-        </tr>
-      </table>
+      <ul id="msgFailContent" class="w3-ul">
+      </ul>
       <footer class="w3-container w3-light-grey w3-padding">
-        <button class="w3-button w3-block w3-round w3-white w3-border" onclick="document.getElementById('modalFailure').style.display='none';resetPage()">Annuler</button>
+        <button class="w3-button w3-block w3-round w3-white w3-border" onclick="document.getElementById('modalFailure').style.display='none';resetPage('msgFailContent')">Annuler</button>
       </footer>
     </div>
   </div>

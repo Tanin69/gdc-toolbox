@@ -1,12 +1,11 @@
-/* 
-
-  This is the main route index.
-  Each endpoint delegates his code to a controller (with a few exceptions for very simple endpoints).
-
-  Delegated code must be called like that :
-  router.get|post|etc ("view", controllerName.controllerFunction).
-
-*/
+/**
+ *
+ * This is the main route index.
+ * Each endpoint delegates his code to a controller (with a few exceptions for very simple endpoints).
+ * render delegated to a controller code must be called like that :
+ * router.get|post|etc ("view", controllerName.controllerFunction). 
+ * 
+ */
 
 // External modules imports
 const express = require("express");
@@ -23,26 +22,27 @@ router.get ("/", function (req, res) {
   res.render("home");
 });
 
-// Missions list page, 
-router.get ("/missions", function (req, res, next) {
+// Renders the page that contains the list of missions. The list handling (display, sort, filter, etc.) is delagated to tabulator client component (cf. /mission/list route), 
+router.get ("/mission", function (req, res, next) {
   res.render("listMissions", {subtitle: "Missions"});
 });
 
-// List of missions, contained in mission page, called by tabulator component (AJAX request) from client side
-router.get ("/missions/list", missionListController.listMissions);
+// Renders list of missions in listMission view. Called by Ajax request from tabulator client component (delegated to controller)
+router.get ("/mission/list", missionListController.listMissions);
 
-// Displays mission publication page
-router.get ("/missions/add", function (req, res) {
+// Renders mission publication page
+router.get ("/mission/add", function (req, res) {
   res.render("addMission");
 });
 
-// Mission check
-router.post("/missions/add/check", missionCheckController.checkMission);
+// Renders mission infos and briefing (delegated to controller)
+router.get ("/mission/show/:missionPbo", missionShowController.showMission);
 
-// Mission publication confirmated
-router.post ("/missions/add/confirm", missionAddController.addMission);
+// Checks a mission (delegated to controller)
+router.post("/mission/add/check", missionCheckController.checkMission);
 
-// Mission show
-router.get ("/missions/show/:missionPbo", missionShowController.showMission);
+// Confirms the publication of a mission (delegated to controller)
+router.post ("/mission/add/confirm", missionAddController.addMission);
+
 
 module.exports = router;
