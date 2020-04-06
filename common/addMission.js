@@ -4,6 +4,7 @@
  * Used by : missionAddController and ./private/bulkImport
  * @param {Object} - A JSON object with all collection properties
  * @returns {boolean|err} - true if success, err object in other case
+ * @todo - labels should be initialized here and not in checkMission.js and grabMissionINfos.js 
  */
 
 //App module imports
@@ -31,100 +32,104 @@ exports.addMission = function (jsRes) {
 
     const mission = new Mission({
         fileIsPbo: {
-        "isOK": jsRes.fileIsPbo.isOK,
-        "label": jsRes.fileIsPbo.label,
+            "isOK": jsRes.fileIsPbo.isOK,
+            "label": jsRes.fileIsPbo.label,
         },
         filenameConvention: {
-        "isOK": jsRes.filenameConvention.isOK,
-        "label": jsRes.filenameConvention.label,
+            "isOK": jsRes.filenameConvention.isOK,
+            "label": jsRes.filenameConvention.label,
         },
         descriptionExtFound: {
-        "isOK": jsRes.descriptionExtFound.isOK,
-        "label": jsRes.descriptionExtFound.label,
+            "isOK": jsRes.descriptionExtFound.isOK,
+            "label": jsRes.descriptionExtFound.label,
         },
         missionSqmFound: {
-        "isOK": jsRes.missionSqmFound.isOK,
-        "label": jsRes.missionSqmFound.label,
+            "isOK": jsRes.missionSqmFound.isOK,
+            "label": jsRes.missionSqmFound.label,
         },
         briefingSqfFound: {
-        "isOK": jsRes.briefingSqfFound.isOK,
-        "label": jsRes.briefingSqfFound.label,
+            "isOK": jsRes.briefingSqfFound.isOK,
+            "label": jsRes.briefingSqfFound.label,
         },
         missionSqmNotBinarized: {
-        "isOK": jsRes.missionSqmNotBinarized.isOK,
-        "label": jsRes.missionSqmNotBinarized.label,
+            "isOK": jsRes.missionSqmNotBinarized.isOK,
+            "label": jsRes.missionSqmNotBinarized.label,
         },
         HCSlotFound: {
-        "isOK": jsRes.HCSlotFound.isOK,
-        "label": jsRes.HCSlotFound.label,
+            "isOK": jsRes.HCSlotFound.isOK,
+            "label": jsRes.HCSlotFound.label,
         },
         isMissionValid: jsRes.isMissionValid,
         nbBlockingErr: jsRes.nbBlockingErr,
         missionTitle: {
-        "val": jsRes.missionTitle.val,
-        "label": jsRes.missionTitle.label,
+            "val": jsRes.missionTitle.val,
+            "label": jsRes.missionTitle.label,
         },
         missionVersion: {
-        "val": jsRes.missionVersion.val,
-        "label": jsRes.missionVersion.label,
+            "val": jsRes.missionVersion.val,
+            "label": jsRes.missionVersion.label,
         },
         missionMap: {
-        "val": jsRes.missionMap.val,
-        "label": jsRes.missionMap.label,
+            "val": jsRes.missionMap.val,
+            "label": jsRes.missionMap.label,
         },
         gameType: {
-        "val": jsRes.gameType.val,
-        "label": jsRes.gameType.label,
+            "val": jsRes.gameType.val,
+            "label": jsRes.gameType.label,
         },
         author: {
-        "val": jsRes.author.val,
-        "label": jsRes.author.label,
+            "val": jsRes.author.val,
+            "label": jsRes.author.label,
         },
         minPlayers: {
-        "val": jsRes.minPlayers.val,
-        "label": jsRes.minPlayers.label,
+            "val": jsRes.minPlayers.val,
+            "label": jsRes.minPlayers.label,
         },
         maxPlayers: {
-        "val": jsRes.maxPlayers.val,
-        "label": jsRes.maxPlayers.label,
+            "val": jsRes.maxPlayers.val,
+            "label": jsRes.maxPlayers.label,
         },
         onLoadName: {
-        "val": jsRes.onLoadName.val,
-        "label": jsRes.onLoadName.label,
+            "val": jsRes.onLoadName.val,
+            "label": jsRes.onLoadName.label,
         },
         onLoadMission: {
-        "val": jsRes.onLoadMission.val,
-        "label": jsRes.onLoadMission.label,
+            "val": jsRes.onLoadMission.val,
+            "label": jsRes.onLoadMission.label,
         },
         overviewText: {
-        "val": jsRes.overviewText.val,
-        "label": jsRes.overviewText.label,
+            "val": jsRes.overviewText.val,
+            "label": jsRes.overviewText.label,
         },
         missionPbo: {
-        "val": jsRes.missionPbo.val,
-        "label": jsRes.missionPbo.label,
+            "val": jsRes.missionPbo.val,
+            "label": jsRes.missionPbo.label,
         },
         pboFileSize: {
-        "val": jsRes.pboFileSize.val,
-        "label": jsRes.pboFileSize.label,
+            "val": jsRes.pboFileSize.val,
+            "label": jsRes.pboFileSize.label,
         },
         pboFileDateM: {
-        "val": jsRes.pboFileDateM.val,
-        "label": jsRes.pboFileDateM.label,
+            "val": jsRes.pboFileDateM.val,
+            "label": jsRes.pboFileDateM.label,
         },
         owner: {
-        "val": jsRes.owner.val,
-        "label": jsRes.owner.label,
+            "val": jsRes.owner.val,
+            "label": jsRes.owner.label,
         },
         missionIsPlayable: {
-        "val": jsRes.missionIsPlayable.val,
-        "label": jsRes.missionIsPlayable.label,
+            "val": jsRes.missionIsPlayable.val,
+            "label": jsRes.missionIsPlayable.label,
         },
         missionBriefing: jsRes.missionBriefing,
         loadScreen: {
-        "val": jsRes.loadScreen.val,
-        "label": jsRes.loadScreen.label,
+            "val": jsRes.loadScreen.val,
+            "label": jsRes.loadScreen.label,
         },
+        IFA3mod: {
+            "val": jsRes.IFA3mod.val,
+            "label": jsRes.IFA3mod.label,
+        }
     });
     //console.log(`${DBG_PREF} ${receivedPboName} : nouvel objet mission créé avec succès...`);
     //console.log(`${mission}`);

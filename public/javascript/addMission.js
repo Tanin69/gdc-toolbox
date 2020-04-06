@@ -48,6 +48,7 @@ function loadSuccess(response) {
     let node = "";
     const list = document.getElementById("msgSuccessContent");
     const classIfFalse = "w3-text-deep-orange";
+    const classWarning = "w3-deep-orange";
     for (const key in response) {
       
       switch (key) {
@@ -67,7 +68,7 @@ function loadSuccess(response) {
         case "loadScreen":
           node = document.createElement("LI");
           if (!response[key].val) {
-            textNode = document.createTextNode(response[key].label + " : la mission ne contient pas d'image");
+            textNode = document.createTextNode(response[key].label + " : pas d'image de présentation trouvée");
             node.classList.add(classIfFalse);
           } else if (response[key].val === "Image not found") {
             textNode = document.createTextNode(response[key].label + " : l'image référencée dans la mission n'a pas été trouvée");
@@ -76,11 +77,18 @@ function loadSuccess(response) {
             textNode = document.createTextNode(response[key].label + " : une image de présentation a été trouvée");
           }
           break;
+        case "IFA3mod":
+          if (response[key].val === true) {
+            node = document.createElement("LI");
+            textNode = document.createTextNode(response[key].label);
+            node.classList.add(classWarning);
+          }
+          break;
         default:
           node = document.createElement("LI");
           //Info is missing
           if (response[key].val === false) {       
-            textNode = document.createTextNode(response[key].label + " : Non renseigné");
+            textNode = document.createTextNode(response[key].label + " : non renseigné");
             node.classList.add(classIfFalse);
           //Info is present
           } else {

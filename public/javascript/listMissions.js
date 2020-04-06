@@ -6,7 +6,7 @@
 /* Custom formatters */
 
 customFalseFmt = function(cell){
-    var cellValue = cell.getValue();
+    const cellValue = cell.getValue();
     if (cellValue === "false" || cellValue === "") {
         return "<span style='font-style: italic'>Non renseigné</span>";
     }
@@ -88,21 +88,24 @@ const table = new Tabulator("#missionsList", {
     responsiveLayout:"collapse",
     movableColumns: true,
 
-    
+    /*
     persistence:{
         sort:true,
         filter:true,
         columns:true,
     },
+    */
     
     columns:[
 
         {title:"Type de jeu", field:"gameType.val", width: 90, headerFilter:true, formatter: customUpcaseFmt},
+        {title:"IFA3", field:"IFA3mod.val", width: 40, headerFilter:true, formatter:"tickCross"},
         {title:"Jouable", field:"missionIsPlayable.val", width: 95, formatter:"tickCross", cellClick: updateCol},
         {title:"Titre", field:"missionTitle.val", width: 250, responsive:0},
         {title:"Briefing", field:"briefingSqfFound.isOK", width: 90, responsive:0, formatter: customBrfFmt, cellClick: callShowMission},
         //{title:"Pbo de mission", field:"missionPbo"},
         {title:"Date de publication", field:"pboFileDateM.val", align:"right", width: 140, responsive:3, formatter:"datetime", formatterParams:{outputFormat:"DD/MM/YYYY"}},
+        //{title:"Date de publication", field:"pboFileDateM.val", align:"right", width: 140, responsive:3},
         //{title:"Taille du pbo", field:"pboFileSize", formatter:"money", formatterParams:{precision:0, thousand:" "}},
         {title:"Version", field:"missionVersion.val", width: 90, align:"right"},
         {title:"Carte", field:"missionMap.val", width: 110, headerFilter:true},
@@ -110,7 +113,7 @@ const table = new Tabulator("#missionsList", {
         {title:"Minimum de joueurs", field:"minPlayers.val", width: 40, align:"right", responsive:3, formatter:customFalseFmt},
         {title:"Maximum de joueurs", field:"maxPlayers.val", width: 40, align:"right", responsive:3, formatter:customFalseFmt},
         //{title:"texte Mission", field:"onLoadName"},
-        {title:"Texte lobby", field:"overviewText.val", width: 810, tooltip:true, responsive:3, formatter:customFalseFmt},
+        {title:"Texte lobby", field:"overviewText.val", width: 770, tooltip:true, responsive:3, formatter:customFalseFmt},
 
     ]
 });

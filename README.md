@@ -19,7 +19,7 @@ Checks mission .pbo file integrity and conformity to certain rules. Each rule ca
 * mission.sqm : a mission.sqm should exist in the pbo file (default: true)
 * description.ext : a description.ext should exist in the pbo file (default: false)
 * Headless Client : a headless client named HC_Slot (case sensitive) should exist in mission.sqm, it should me declared as isPlayable=1 and should be type="HeadlessClient_F" (default: true) -> should match regex as ```.*name="HC_Slot";\s*isPlayable=1;[^type="HeadlessClient_F";]```
-* mission.sqm is not binarized : (default: false). Be careful, if the mission.sqm is binarized, HC control will fail
+* mission.sqm is not binarized : (default: false). Be careful, if the mission.sqm is binarized, HC control and author detection will fail
 
 ### Informations gathering about mission
 

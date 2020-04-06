@@ -1,11 +1,13 @@
 
 const fs = require("fs");
-const {spawnSync} = require("child_process");
 const mongoose = require('mongoose');
 const dotenv = require("dotenv");
 const checkM = require("../common/checkMission");
 const grabM = require("../common/grabMissionInfos");
 const addM = require("../common/addMission");
+
+//Directory from which to import missions
+const INPUT_DIR = "D:/Dev/Projets/GdC-Missions/missions_1/";
 
 //Read environment variables
 dotenv.config();
@@ -25,7 +27,6 @@ mongoose.connect(process.env.DB_CONNECT,
 
 //DBG variable
 const DBG_PREF = "DBG/bulkImport.js->";
-const INPUT_DIR = "D:/Dev/Projets/GdC-Missions/missions_1/";
 
 //Browse all files in a directory and start the analysis of each pbo
 
@@ -97,7 +98,7 @@ function doBulk() {
 * ${missions.length} mission(s) dans le répertoire d'import
 * ${nbValidMissions} mission(s) valide(s)
 * ${nbRejectedMissions} mission(s) rejetée(s)
-* ${nbAlreadyPublishedMissions} mission(s) déjà publiée(s) (non republiées)
+* ${nbAlreadyPublishedMissions} mission(s) déjà publiée(s) (-> non republiée(s))
 * ${nbFilesMissionsDirIn} mission(s) dans le répertoire de publication avant import
 * ${nbFilesMissionsDirOut} mission(s) dans le répertoire de publication après import
 * soit ${nbPublishedMissions} mission(s) ajoutée(s) durant cet import

@@ -82,7 +82,7 @@ const MissionSchema = new Schema({
         label: {type: String}
     },
     pboFileDateM: {
-        val: {type: String},
+        val: {type: Date},
         label: {type: String}
     },
     owner: {
@@ -98,6 +98,10 @@ const MissionSchema = new Schema({
         val: {type: String},
         label: {type: String}
     },
+    IFA3mod: {
+        val: {type: Boolean},
+        label: {type: String}
+    }
 });
 
 module.exports = mongoose.model("Mission", MissionSchema);
