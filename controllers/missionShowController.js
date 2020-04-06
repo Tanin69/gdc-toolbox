@@ -1,6 +1,6 @@
 /**
  *
- * Controller that render a mission briefing
+ * Controller that renders a mission briefing
  * @TODO: catch error on image not found in template rendering to make it a 404, not this hugly message
  */
 
@@ -14,12 +14,16 @@ const Mission = require("../models/mission");
 dotenv.config();
 
 //DBG variable
-const DBG_PREF = "DBG/missionShowController.js-> ";
+const DBG_PREF = "DBG/missionShowController.js->";
 
 //Requests the DB and renders a page with the results
 exports.showMission = function(req, res) {
 
-    Mission.findOne({missionPbo: req.params.missionPbo})
+    const brfMissionPbo = req.params.missionPbo;
+
+    console.log(`\n${DBG_PREF} ${brfMissionPbo} : affichage du briefing`);
+    
+    Mission.findOne({"missionPbo.val": brfMissionPbo})
         .exec(function (err, dataMission) {
             if (err) { return next(err); }
             // Successful, so render.
@@ -30,17 +34,17 @@ exports.showMission = function(req, res) {
                 const imgPath = process.env.OUTPUT_DIR.replace(/.*\/public(\/.*)/i,"$1");
                 //console.log(DBG_PREF + " imgPath: " + imgPath);
                 res.render("showMission", {               
-                    titreMission: dataMission.missionTitle,
-                    onLoadMission: dataMission.onLoadMission,
-                    missionVersion: dataMission.missionVersion,
-                    missionMap: dataMission.missionMap,
-                    gameType: dataMission.gameType,
-                    author: dataMission.author,
-                    overviewText: dataMission.overviewText,
-                    minPlayers: dataMission.minPlayers,
-                    maxPlayers: dataMission.maxPlayers,
+                    titreMission: dataMission.missionTitle.val,
+                    onLoadMission: dataMission.onLoadMission.val,
+                    missionVersion: dataMission.missionVersion.val,
+                    missionMap: dataMission.missionMap.val,
+                    gameType: dataMission.gameType.val,
+                    author: dataMission.author.val,
+                    overviewText: dataMission.overviewText.val,
+                    minPlayers: dataMission.minPlayers.val,
+                    maxPlayers: dataMission.maxPlayers.val,
                     missionBriefing: dataMission.missionBriefing,
-                    loadScreenSrc: imgPath + dataMission.loadScreen,    
+                    loadScreenSrc: imgPath + dataMission.loadScreen.val,    
                 });
             } catch (e) {
                 console.log (DBG_PREF + e);

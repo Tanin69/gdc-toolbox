@@ -4,3 +4,4 @@ upload
 .env
 public/img/brf/
 .markdownlint.json
+.vscode

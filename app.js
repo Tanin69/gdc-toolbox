@@ -23,8 +23,11 @@ app.use(express.json());
 /* Database connection */
 
 mongoose.connect(process.env.DB_CONNECT,
-  { useNewUrlParser: true,
-    useUnifiedTopology: true })
+  { 
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+  })
   .then(() => console.log("MongoDB connection success"))
   .catch(() => console.log("MongoDB connection failed !"));
 

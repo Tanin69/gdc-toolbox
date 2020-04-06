@@ -12,16 +12,18 @@ Arma 3 is a military simulation video game created and edited by Bohemia Interac
 
 Checks mission .pbo file integrity and conformity to certain rules. Each rule can be configured as blocking if not satisfied :
   
-* File extension : should be ```pbo``` (default: true)
+* File extension : should be ```pbo``` (default blocking status: true)
 * pbo integrity : the file should be a real pbo and could be dpbo without any error (default: true)
 * file naming convention : the file name should follow a defined regexp (default: true)
 * briefing.sqf : a briefing.sqf should exist in the pbo file (default: true)
 * mission.sqm : a mission.sqm should exist in the pbo file (default: true)
-* description.ext : a descrption.ext should exist in the pbo file (default: false)
+* description.ext : a description.ext should exist in the pbo file (default: false)
+* Headless Client : a headless client named HC_Slot (case sensitive) should exist in mission.sqm, it should me declared as isPlayable=1 and should be type="HeadlessClient_F" (default: true) -> should match regex as ```.*name="HC_Slot";\s*isPlayable=1;[^type="HeadlessClient_F";]```
+* mission.sqm is not binarized : (default: false). Be careful, if the mission.sqm is binarized, HC control will fail
 
 ### Informations gathering about mission
 
-By reading different files contained in the pbo, by the pbo file name and other means, grab a maximum of informations about the mission.
+By reading different files contained in the pbo, by the pbo file name and other means, grabs a maximum of informations about the mission.
 
 * missionPbo: pbo file name
 * pboFileSize: pbo file size
@@ -31,15 +33,15 @@ By reading different files contained in the pbo, by the pbo file name and other 
 * missionIsPlayable: mission playabilty status (editable)
 * missionVersion: mission version number. Extracted from mission file name
 * missionMap: Arma map used by mission. Extracted from mission file name
-* author: mission author. Extracted from description.ext, or from mission.sqm if not found in deccription.ext
+* author: mission author. Extracted from description.ext, or from mission.sqm if not found in description.ext
 * onLoadName: text that appears above the image during mission loading screen. Extracted from description.ext, or from mission.sqm if not found in deccription.ext
-* onLoadMission": text that appears under the image during mission loading screen. Extracted from description.ext, or from mission.sqm if not found in deccription.ext
-* overviewText": text that appears on the mission choice screen or in the lobby screen. Extracted from description.ext, or from mission.sqm if not found in deccription.ext
-* gameType": the type of game (Coop, TVT, etc.). Extracted from description.ext, or from mission.sqm if not found in deccription.ext
-* minPlayers": Minimum number of players as determined by the mission maker. Extracted from description.ext, or from mission.sqm if not found in deccription.ext
-* maxPlayers": Maximum number of players as determined by the mission maker. Extracted from description.ext, or from mission.sqm if not found in deccription.ext
-* missionBriefing": briefing content, extracted from a briefing.sqf file if this file exists in the mission pbo
-* loadScreen": image file, if this file exists in the mission pbo. Extracted from description.ext, or from mission.sqm if not found in deccription.ext
+* onLoadMission: text that appears under the image during mission loading screen. Extracted from description.ext, or from mission.sqm if not found in deccription.ext
+* overviewText: text that appears on the mission choice screen or in the lobby screen. Extracted from description.ext, or from mission.sqm if not found in deccription.ext
+* gameType: the type of game (Coop, TVT, etc.). Extracted from description.ext, or from mission.sqm if not found in description.ext
+* minPlayers: Minimum number of players as determined by the mission maker. Extracted from description.ext, or from mission.sqm if not found in description.ext
+* maxPlayers: Maximum number of players as determined by the mission maker. Extracted from description.ext, or from mission.sqm if not found in description.ext
+* missionBriefing: briefing content, extracted from a briefing.sqf file if this file exists in the mission pbo
+* loadScreen: image file, if this file exists in the mission pbo file. Extracted from description.ext, or from mission.sqm if not found in deccription.ext. If declared but not found, the field is declared with "image referenced in loadScreen, but image file not found in the pbo !".
 
 ### Briefing extraction and rendering
 
@@ -68,14 +70,14 @@ Allows mission makers to publish their mission pbo to a directory located on the
 
 Allows players to access the list of missions. The list :
 
-* allows to render mission briefing if the briefing had successfully been extracted from mission pbo (see above)
+* allows to render mission briefing as an html page allows to edit, if the briefing had successfully been extracted from the mission pbo file (see above)
 * allows to edit ```missionIsPlayable``` field (true or false)
 * is sortable
 * can be filtered
 
 Moreover :
 
-* user can change list order and width
+* user can change list order and column width
 * the configuration of the list is locally saved (column order, height, sort, etc)
 
 ## Installation
@@ -113,9 +115,9 @@ In the server directory, run ```npm install```
 
 ### General architecture
 
-This webserver is a **[node.js](https://nodejs.org/) + [Express JS](https://expressjs.com)** app. Express JS greatly simplifies node http server operations.
+This webserver is a **[node.js](https://nodejs.org/) + [Express JS](https://expressjs.com)** app.
 
-This app is structured as a Model-View-Controller (MVC) architecture, based on the tutorial found at <https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/Tutorial_local_library_website>, (although I didn't use this tutorial myself). Many many portions of the code snipets are directly taken from the github repo underlying this tutorial (<https://github.com/mdn/express-locallibrary-tutorial/tree/auth>).
+This app is structured as a Model-View-Controller (MVC) architecture, based on the tutorial found at <https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/Tutorial_local_library_website>, (although I didn't use this tutorial myself). Many many portions of the code snipets are directly taken from the github repo underlying this tutorial (<https://github.com/mdn/express-locallibrary-tutorial/tree/auth>). It has an underlying (sort of) REST API.
 
 Here is a visual representation of the app architecture (from the same source) :
 

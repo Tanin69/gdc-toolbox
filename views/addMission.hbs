@@ -45,72 +45,11 @@
         <h3>C'est en bonne voie !</h3>
         <span class="w3-button w3-xlarge w3-display-topright" onclick="document.getElementById('modalSuccess').style.display='none'">&times;</span>
       </header>
-      <table class="w3-table" id="msgSuccessContent">
-        <tr>
-          <td class="w3-text-grey" style="width: 25%">Titre</td>
-          <td id="missionTitle" class="w3-text-black w3-large" style="font-weight: bold"></td>
-        </tr>
-        <tr>
-          <td class="w3-text-grey">Version</td>
-          <td id="missionVersion" class="w3-text-black"></td>    
-        </tr>
-        <tr>
-          <td class="w3-text-grey">Carte</td>
-          <td id="missionMap" class="w3-text-black"></td>
-        </tr>
-        <tr>
-          <td class="w3-text-grey">Auteur</td>
-          <td id="author" class="w3-text-black"></td>
-        </tr>
-        <tr>
-          <td class="w3-text-grey">Type de jeu</td>
-          <td id="gameType" class="w3-text-black"></td>
-        </tr>
-        <tr>
-          <td class="w3-text-grey">Texte lobby</td>
-          <td id="overviewText" class="w3-text-black"></td>
-        </tr>
-        <tr>
-          <td class="w3-text-grey">Nombre de joueurs mini</td>
-          <td id="minPlayers" class="w3-text-black"></td>
-        </tr>
-        <tr>
-          <td class="w3-text-grey">Nombre de joueurs maxi</td>
-          <td id="maxPlayers" class="w3-text-black"></td>
-        </tr>
-      </table>
-      <br>
-      <button onclick="showHide('missionTechInfos')" class="w3-button w3-block w3-left-align w3-khaki">Informations techniques&nbsp;&hellip;</button>
-      <table id="missionTechInfos" class="w3-hide w3-table">
-        <tr>
-          <td class="w3-text-grey" style="width: 25%">Nom du PBO</td>
-          <td id="missionPbo" class="w3-text-black"></td>
-        </tr>
-        <tr>  
-          <td class="w3-text-grey">Date de l'upload</td>
-          <td id="pboFileDateM" class="w3-text-black"></td>
-        </tr> 
-        <tr>  
-          <td class="w3-text-grey">Taille (octets)</td>
-          <td id="pboFileSize" class="w3-text-black"></td>
-        </tr>
-        <tr>
-          <td class="w3-text-grey">Titre de chargement</td>
-          <td id="onLoadName" class="w3-text-black"></td>
-        </tr>
-        <tr>
-          <td class="w3-text-grey">Texte de chargement</td>
-          <td id="onLoadMission" class="w3-text-black"></td>
-        </tr>
-        <tr>
-          <td class="w3-text-grey">Image de chargement</td>
-          <td id="loadScreen" class="w3-text-black"></td>
-        </tr>
-      </table>
-      <br>
+      <ul id="msgSuccessContent" class="w3-ul">
+      </ul>
       <footer class="w3-container w3-padding w3-khaki">
-        <button class="w3-button w3-left w3-round w3-white w3-border" onclick="document.getElementById('modalSuccess').style.display='none';resetPage()">Annuler</button>
-        <button class="w3-button w3-right w3-round w3-white w3-border" onclick="publishMission()">Publier la mission&nbsp;<i class="fas fa-check"></i></button>
+        <button class="w3-button w3-left w3-round w3-white w3-border" onclick="document.getElementById('modalSuccess').style.display='none';resetPage('msgSuccessContent')">Annuler</button>
+        <button class="w3-button w3-right w3-round w3-white w3-border" onclick="publishMission();">Publier la mission&nbsp;<i class="fas fa-check"></i></button>
       </footer>
     </div>
 

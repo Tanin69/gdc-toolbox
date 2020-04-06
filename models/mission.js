@@ -3,28 +3,101 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const MissionSchema = new Schema({
-    pboDoesntExist: {type: Boolean},
-    fileExtensionIsOk: {type: Boolean},
-    fileNameConventionIsOk: {type: Boolean},
-    fileIsPbo: {type: Boolean},
-    missionPbo: {type: String},
-    pboFileSize: {type: Number},
-    pboFileDateM: {type: String},
-    owner:  {type: String},
-    missionIsPlayable: {type: Boolean},
-    missionTitle: {type: String, required: true},
-    missionVersion: {type: Number},
-    missionMap: {type: String},
-    author: {type: String},
-    onLoadName: {type: String},
-    onLoadMission: {type: String},
-    overviewText: {type: String}, 
-    gameType: {type: String},
-    minPlayers: {type: Number},
-    maxPlayers: {type: Number},
-    loadScreen: {type: String},
+    fileIsPbo: {
+        isOK: {type: Boolean},
+        label: {type: String}
+    },
+    filenameConvention: {
+        isOK: {type: Boolean},
+        label: {type: String}
+    },
+    descriptionExtFound: {
+        isOK: {type: Boolean},
+        label: {type: String}
+    },
+    missionSqmFound: {
+        isOK: {type: Boolean},
+        label: {type: String}
+    },
+    briefingSqfFound: {
+        isOK: {type: Boolean},
+        label: {type: String}
+    },
+    missionSqmNotBinarized: {
+        isOK: {type: Boolean},
+        label: {type: String}
+    },
+    HCSlotFound: {
+        isOK: {type: Boolean},
+         label: {type: String}
+    },
+    isMissionValid: {type: Boolean},
+    nbBlockingErr: {type: Number},
+    missionTitle: {
+        val: {type: String},
+        label: {type: String}
+    },
+    missionVersion: {
+        val: {type: Number},
+        label: {type: String}
+    },
+    missionMap: {
+        val: {type: String},
+        label: {type: String}
+    },
+    gameType: {
+        val: {type: String},
+        label: {type: String}
+    },
+    author: {
+        val: {type: String},
+        label: {type: String}
+    },
+    minPlayers: {
+        val: {type: Number},
+        label: {type: String}
+    },
+    maxPlayers: {
+        val: {type: Number},
+        label: {type: String}
+    },
+    onLoadName: {
+        val: {type: String},
+        label: {type: String}
+    },
+    onLoadMission: {
+        val: {type: String},
+        label: {type: String}
+    },
+    overviewText: {
+        val: {type: String},
+        label: {type: String}
+    },
+    missionPbo: {
+        val: {type: String},
+        label: {type: String}
+    },
+    pboFileSize: {
+        val: {type: String},
+        label: {type: String}
+    },
+    pboFileDateM: {
+        val: {type: String},
+        label: {type: String}
+    },
+    owner: {
+        val: {type: String},
+        label: {type: String}
+    },
+    missionIsPlayable: {
+        val: {type: Boolean},
+        label: {type: String}
+    },
     missionBriefing: {type: Array , "default" : []},
-
+    loadScreen: {
+        val: {type: String},
+        label: {type: String}
+    },
 });
 
 module.exports = mongoose.model("Mission", MissionSchema);

@@ -44,21 +44,53 @@ Dropzone.options.myDZ = {
 };
 
 function loadSuccess(response) {
-    //console.log(response);
-    printInfo(author, response.author, "non renseigné", "w3-text-orange");
-    printInfo(gameType, response.gameType, "non renseigné", "w3-text-orange");
-    printInfo(minPlayers, response.minPlayers, "non renseigné", "w3-text-orange");
-    printInfo(maxPlayers, response.maxPlayers, "non renseigné", "w3-text-orange");
-    printInfo(missionMap, response.missionMap, "non renseigné", "w3-text-orange");
-    printInfo(missionTitle, response.missionTitle, "non renseigné", "w3-text-orange");
-    printInfo(missionVersion, response.missionVersion, "non renseigné", "w3-text-orange");
-    printInfo(overviewText, response.overviewText, "non renseigné", "w3-text-orange");
-    missionPbo.innerText = response.missionPbo;
-    pboFileDateM.innerText = new Date(response.pboFileDateM).toLocaleDateString("fr-FR", {hour:"2-digit", minute:"2-digit"});
-    pboFileSize.innerText = new Intl.NumberFormat().format(response.pboFileSize);
-    printInfo(onLoadMission, response.onLoadMission, "non renseigné", "w3-text-orange");
-    printInfo(loadScreen, response.loadScreen, "absente", "w3-text-orange");
-    printInfo(onLoadName, response.onLoadName, "non renseigné", "w3-text-orange");
+    let textNode = "";
+    let node = "";
+    const list = document.getElementById("msgSuccessContent");
+    const classIfFalse = "w3-text-deep-orange";
+    for (const key in response) {
+      
+      switch (key) {
+        case "missionBriefing":
+          break;
+        case "missionIsPlayable":
+          break;
+        case "pboFileSize":
+          node = document.createElement("LI");
+          textNode = document.createTextNode(response[key].label + " : " + new Intl.NumberFormat().format(response[key].val));
+          break;
+        case "pboFileDateM":
+          node = document.createElement("LI");
+          fmtDtePublish = new Date(response[key].val).toLocaleDateString("fr-FR", {hour:"2-digit", minute:"2-digit"});
+          textNode = document.createTextNode(response[key].label + " : " + fmtDtePublish);
+          break;
+        case "loadScreen":
+          node = document.createElement("LI");
+          if (!response[key].val) {
+            textNode = document.createTextNode(response[key].label + " : la mission ne contient pas d'image");
+            node.classList.add(classIfFalse);
+          } else if (response[key].val === "Image not found") {
+            textNode = document.createTextNode(response[key].label + " : l'image référencée dans la mission n'a pas été trouvée");
+            node.classList.add(classIfFalse);
+          } else {
+            textNode = document.createTextNode(response[key].label + " : une image de présentation a été trouvée");
+          }
+          break;
+        default:
+          node = document.createElement("LI");
+          //Info is missing
+          if (response[key].val === false) {       
+            textNode = document.createTextNode(response[key].label + " : Non renseigné");
+            node.classList.add(classIfFalse);
+          //Info is present
+          } else {
+            textNode = document.createTextNode(response[key].label + " : " + response[key].val);
+          }
+      }
+      node.appendChild(textNode);
+      list.appendChild(node);
+    }
+        
     document.getElementById("modalSuccess").style.display="block";
 }
 
@@ -71,10 +103,10 @@ function loadFailure(response) {
   //Print response by traversing JSON response object
   for (const key in response) {
     switch (key) {
-      case ("nbBlockingErr"):
+      case "nbBlockingErr":
         document.getElementById("msgHead").innerText = "Mission non publiable : " + response.nbBlockingErr + " erreur(s) bloquante(s)";
         break;
-      case ("isMissionValid"):
+      case "isMissionValid":
         break;
       default:
         node = document.createElement("LI");
@@ -101,31 +133,8 @@ function loadFailure(response) {
         node.appendChild(textNode);
         list.appendChild(node);
     }
-  }
-    
+  }  
   document.getElementById("modalFailure").style.display="block";
-
-  //Print key and value in html
-  /*
-    printInfo(pboDoesntExist, response.pboDoesntExist, "un pbo avec le même nom de fichier a déjà été publié dans les missions", "w3-text-red");
-    printInfo(briefingSqfFound, response.briefingSqfFound, "absent", "w3-text-red");
-    printInfo(fileExtensionIsOk, response.fileExtensionIsOk, "l'extenion n'est pas \".pbo\"", "w3-text-red");
-    printInfo(fileIsPbo, response.fileIsPbo, "le fichier n'est pas un pbo ou est corrompu", "w3-text-red");
-    printInfo(fileNameConventionIsOk, response.fileNameConventionIsOk, "le nom de fichier ne respecte pas la convention de nommage", "w3-text-red");
-  */
-
-}
-
-function printInfo(info, responseInfo, txtNR, fmtErr) {
-    if (!responseInfo || responseInfo === null || responseInfo === NaN || responseInfo === "") {
-        info.classList.remove("w3-text-black");
-        info.classList.add(fmtErr);
-        info.innerText = txtNR;
-    } else {
-        info.classList.remove(fmtErr);
-        info.classList.add("w3-text-black");
-        info.innerText = responseInfo;
-    }
 }
 
 function resetPage(elID) {
@@ -168,17 +177,24 @@ function publishMission() {
         showHide("msgOK");
         setTimeout(function(){ showHide("msgOK");}, 5000);
         document.getElementById("modalSuccess").style.display="none";
-        resetPage();
+        resetPage("msgSuccessContent");
     }
     else {
       console.log("Huho... Somethin' went wrong. Server has responded :");
+      errMsg.innerText = response.status + ")";
       console.log(response.status);
+      showHide("msgError");
+      setTimeout(function(){ showHide("msgError");}, 10000);
+      document.getElementById("modalSuccess").style.display="none";
+      resetPage("msgSuccessContent");
     }
   })
   .catch(function(error) {
     document.getElementById("modalSuccess").style.display="none";
-    errMsg.innerText = error;
+    errMsg.innerText = error  + ")";
+    console.log(error);
     showHide("msgError");
     setTimeout(function(){ showHide("msgError");}, 10000);
+    resetPage("msgSuccessContent");
   });
 }

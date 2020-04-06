@@ -10,6 +10,8 @@
 const fs           = require("fs");
 const dotenv       = require("dotenv");
 const sanitizeHtml = require("sanitize-html");
+const klawSync     = require("klaw-sync");
+const path         = require("path");
 
 // Read environment variables
 dotenv.config();
@@ -19,38 +21,38 @@ const DBG_PREF = "DBG/grabMissionInfos.js->";
 
 exports.grabMissionInfos = function (fileName) {
 
-    console.log(`${DBG_PREF} Début de l'analyse de la mission: ${fileName}`);
+    const l_fileName = fileName; //clean this variable !
+    const baseName = path.basename(fileName);
+
+    console.log(`${DBG_PREF} ${baseName} : début de l'analyse de la mission`);
 
     //Json object initialization : all values default to false. A value is changed to true or anything else only if grabbing is successfull
     jsonRetour = {
-        "missionPbo": false,
-        "pboFileSize": false,
-        "pboFileDateM": false,
+        "missionTitle": {"val": false, "label": "Titre de la mission"},
+        "missionVersion": {"val": false, "label": "Version de la mission"},
+        "missionMap": {"val": false, "label": "Carte de la mission"},
+        "gameType": {"val": false, "label": "Type de jeu"},
+        "author": {"val": false, "label": "Auteur de la mission"},
+        "minPlayers": {"val": false, "label": "Nombre minimum de joueurs"},
+        "maxPlayers": {"val": false, "label": "Nombre maximum de joueurs"},
+        "onLoadName": {"val": false, "label": "Titre de l'écran de chargement"},
+        "onLoadMission": {"val": false, "label": "Texte de l'écran de chargement"},
+        "overviewText": {"val": false, "label": "Texte du lobby"},
+        "missionPbo": {"val": false, "label": "Nom du fichier pbo"},
+        "pboFileSize": {"val": false, "label": "Taille du fichier pbo"},
+        "pboFileDateM": {"val": false, "label": "Date de publication de la mission"},
         //TODO: mission owner handling
-        "owner": "admin",
-        "missionTitle": false,
-        "missionIsPlayable": false,
-        "missionVersion": false,
-        "missionMap": false,
-        "author": false,
-        "onLoadName": false,
-        "onLoadMission": false,
-        "overviewText": false,
-        "gameType": false,
-        "minPlayers": false,
-        "maxPlayers": false,
-        "missionBriefing": false,
-        "loadScreen": false,
+        "owner": {"val": "admin", "label": "Propriétaire de la mission"},
+        "missionIsPlayable": {"val": false, "label": "La mission est jouable"},
+        "missionBriefing": {"val": false, "label": "Briefing de mission"},
+        "loadScreen": {"val": false, "label": "Image de l'écran de chargement"},
     };
-
-    const l_fileName = process.env.UPLOAD_DIR + fileName;
-    const logLevel = 2;
 
     //-File size, modification date from .pbo file infos
     try {
-        const stats = fs.statSync(l_fileName);
-        jsonRetour.pboFileSize = stats.size;
-        jsonRetour.pboFileDateM = stats.mtime;      
+        const stats = fs.statSync(fileName);
+        jsonRetour.pboFileSize.val = stats.size;
+        jsonRetour.pboFileDateM.val = stats.mtime;      
         //console.log(`${DBG_PREF} Taille du fichier sur le disque:${stats.size}`);
     } 
     catch (err) {
@@ -59,35 +61,39 @@ exports.grabMissionInfos = function (fileName) {
     }
 
     //Splits mission name elements to grab infos
-    const missionDir = l_fileName.replace(/.*\/.*?(.+)(.pbo)/,"$1");
+    const missionDir = baseName.replace(/(.+)(.pbo)/,"$1");
     regex = new RegExp(/(CPC-.*]-.*)-V(\d*)\.(.*)\.pbo/i);
     const matchMissionNameParts = regex.exec(fileName);
     if (matchMissionNameParts !== null) {
-        jsonRetour.missionTitle = matchMissionNameParts[1];
-        jsonRetour.missionVersion = parseInt(matchMissionNameParts[2],10);
-        jsonRetour.missionMap = matchMissionNameParts[3];
-        jsonRetour.missionPbo = fileName;
+        jsonRetour.missionTitle.val = matchMissionNameParts[1];
+        jsonRetour.missionVersion.val = parseInt(matchMissionNameParts[2],10);
+        jsonRetour.missionMap.val = matchMissionNameParts[3];
+        jsonRetour.missionPbo.val = baseName;
     }
     //Array of files used to grab mission info
     const infoFiles = ["description.ext","mission.sqm","briefing.sqf"];
-    //Iterate over files to find information
+    //Iterate over these files to find information
     for (let infoFile of infoFiles) {
-      const infoFilePath = process.env.TMP_DIR + missionDir + "/" + infoFile;
+      //const infoFilePath = process.env.TMP_DIR + missionDir + "/" + infoFile;
+      const filterFn = item => path.basename(item.path).toLowerCase() === infoFile;
       try {
-          const dataStr = String(fs.readFileSync(infoFilePath));
-          switch (infoFile) {
+        const retPath = klawSync(process.env.TMP_DIR + missionDir, {traverseAll: true, filter: filterFn});
+        const infoFilePath = retPath[0].path;
+        //console.log(`${DBG_PREF} ****** infoFilePath: ${infoFilePath}`);
+        const dataStr = String(fs.readFileSync(infoFilePath));
+        switch (infoFile) {
             case "description.ext":
                 //console.log(`${DBG_PREF} Analyse de: ${infoFile}`);
                 //Finds all the information available in the description.ext
-                jsonRetour.author              = searchMissionInfo("author", dataStr, logLevel);
-                jsonRetour.onLoadName          = searchMissionInfo("onLoadName", dataStr, logLevel);
-                jsonRetour.onLoadMission       = searchMissionInfo("onLoadMission", dataStr, logLevel);
-                jsonRetour.overviewText        = searchMissionInfo("overviewText", dataStr, logLevel);
-                jsonRetour.gameType            = searchMissionInfo("gameType", dataStr, logLevel);
-                jsonRetour.minPlayers          = parseInt(searchMissionInfo("minPlayers", dataStr, logLevel),10);
-                jsonRetour.maxPlayers          = parseInt(searchMissionInfo("maxPlayers", dataStr, logLevel),10);
+                jsonRetour.author.val              = searchMissionInfo("author", dataStr);
+                jsonRetour.onLoadName.val          = searchMissionInfo("onLoadName", dataStr);
+                jsonRetour.onLoadMission.val       = searchMissionInfo("onLoadMission", dataStr);
+                jsonRetour.overviewText.val        = searchMissionInfo("overviewText", dataStr);
+                jsonRetour.gameType.val            = searchMissionInfo("gameType", dataStr);
+                jsonRetour.minPlayers.val          = parseInt(searchMissionInfo("minPlayers", dataStr),10);
+                jsonRetour.maxPlayers.val          = parseInt(searchMissionInfo("maxPlayers", dataStr),10);
                 //Copy image mission in output directory and rename the file based on mission name
-                missionImageFileName = searchMissionInfo("loadScreen", dataStr, logLevel);
+                missionImageFileName = searchMissionInfo("loadScreen", dataStr);
                 //console.log(`${DBG_PREF} Valeur de retour de missionImageFileName: ${missionImageFileName}`);
                 if (missionImageFileName) {
                     retCopyImg = copyMissionImage (missionImageFileName, missionDir);
@@ -95,23 +101,22 @@ exports.grabMissionInfos = function (fileName) {
                     if (retCopyImg) {
                         //Image file name returned as a string by copyMissionImage function
                         if (typeof retCopyImg === "string") {
-                            jsonRetour.loadScreen = retCopyImg;
+                            jsonRetour.loadScreen.val = retCopyImg;
                         //Image file not found in pbo (mission maker error)
                         } else if (retCopyImg === -4058) {
-                            jsonRetour.loadScreen = `${missionImageFileName}: image referenced in loadScreen, but image file not found in the pbo !`;
+                            jsonRetour.loadScreen.val = `${missionImageFileName}: Image not found`;
                         }
                     } 
                     
                 } else {
-                    jsonRetour.loadScreen = false;
+                    jsonRetour.loadScreen.val = false;
             }
             break;
             case "mission.sqm":
                 //console.log(`${DBG_PREF} Analyse de: ${infoFile}`);
-                jsonRetour.missionSqmFound = true;
                 //We complete the information not found in the description.ext file by searching in the mission.sqm file, by iterating on each false value in missionMap
                 for (const key in jsonRetour) {
-                    if (!jsonRetour[key]) {
+                    if (!jsonRetour[key].val) {
                         //console.log(`${DBG_PREF} Dans mission.sqm: recherche de ${key}`);
                         switch (key) {
                             //In missions.sqf file, there are many "author" strings : mods authors, etc.  
@@ -120,55 +125,55 @@ exports.grabMissionInfos = function (fileName) {
                                 const match = regex.exec(dataStr);
                                 if (match !== null) {
                                     match[1] = match[1].replace(/\"/g,"");
-                                    jsonRetour[key] = match[1];
+                                    jsonRetour[key].val = match[1];
                                 }
                                 break;
                             case "loadScreen":
-                                missionImageFileName = searchMissionInfo("loadScreen", dataStr, logLevel);
+                                missionImageFileName = searchMissionInfo("loadScreen", dataStr);
                                 if (missionImageFileName) {
                                     retCopyImg = copyMissionImage (missionImageFileName, missionDir);
                                     //console.log(`${DBG_PREF} Valeur de retour de copyMissionImage: ${retCopyImg}`);
                                     if (retCopyImg) {
                                         //Image file name returned as a string by copyMissionImage function
                                         if (typeof retCopyImg === "string") {
-                                            jsonRetour.loadScreen = retCopyImg;
+                                            jsonRetour.loadScreen.val = retCopyImg;
                                         //Image file not found in pbo (mission maker error)
                                         } else if (retCopyImg === -4058) {
-                                            jsonRetour.loadScreen = `${missionImageFileName}: image referenced in loadScreen, but image file not found in the pbo !`;
+                                            jsonRetour.loadScreen.val = `${missionImageFileName}: Image not found`;
                                         }
                                     
                                     }
                                 }
                                 break;
-                            case (("minPlayers" && !(jsonRetour[key])) || (key === "maxPlayers" && isNaN(jsonRetour[key]))):
-                                jsonRetour[key] = parseInt(searchMissionInfo(key, dataStr, logLevel),10);
+                            case (("minPlayers" && !(jsonRetour.minPlayers.val)) || "maxPlayers" && !(jsonRetour.maxPlayers.val)):
+                                jsonRetour[key].val = parseInt(searchMissionInfo(key, dataStr),10);
                                 break;
                             default:
-                                jsonRetour[key] = searchMissionInfo(key, dataStr, logLevel);    
+                                jsonRetour[key].val = searchMissionInfo(key, dataStr);    
                         }
                     }
                 }
                 break;
             case "briefing.sqf":
                 //console.log(`${DBG_PREF} Analyse de: ${infoFile}`);
-                jsonRetour.briefingSqfFound = true;
-                ret = buildBriefing(infoFilePath);
-                jsonRetour.missionBriefing = ret;
+                jsonRetour.missionBriefing = buildBriefing(infoFilePath);
                 break;
             }
         } catch (e) {
             // One of the files was not found
             if (e.errno === -4058) {
-                console.log(`${DBG_PREF} ${infoFile} not found`);
+                console.log(`${DBG_PREF} ${baseName} : ${infoFile} not found`);
             } else {
                 console.error(e);
             }
         }
     }
     //WARNING : fs.rmdirSync experimental in node -> removes mission directory
-    fs.rmdirSync(process.env.TMP_DIR+missionDir, {recursive: true});
+    fs.rmdirSync(process.env.TMP_DIR + missionDir, {recursive: true});
 
-    console.log(`${DBG_PREF} Fin d'analyse du fichier`);
+    console.log(`${DBG_PREF} ${baseName} : fin de l'analyse de la mission`);
+    //console.log(`${DBG_PREF} ${baseName} : détail du résultat...`);
+    //console.log(jsonRetour);
     return jsonRetour;
 
 };
@@ -200,11 +205,10 @@ function copyMissionImage (missionImageFileName,missionDir) {
  * Helper function to look for a mission info with a regex
  * @param {string} infoMission - which mission info to look for
  * @param {string} dataStr - file content as a string
- * @param {number} logLevel - log level, as passed to readMissionInfo function
  * @returns {(boolean|string)} - false if mission info is not found, mission info otherwise
  * @todo : if needed, pass regex as a param
  */
-function searchMissionInfo (infoMission, dataStr, logLevel) {
+function searchMissionInfo (infoMission, dataStr) {
   const regex = new RegExp("\\s*" + infoMission + "\\s*=\\s*(.*);","i");
   const match = regex.exec(dataStr);
   if (match === null) {
@@ -225,12 +229,13 @@ function buildBriefing(sqfPath) {
     //Array that stores the briefing elements. Returned to calling function.
     const brfElements = [];
     
-    console.log (`${DBG_PREF} Construction du briefing: ${sqfPath}`);
+    //console.log (`${DBG_PREF} Extraction du briefing: ${sqfPath}`);
                 
     //Look for createDiaryRecord entries
     const regex = /player.*creatediaryrecord\s*\[\s*"\s*diary\s*"\s*,\s*\[\s*"([^"]*)"\s*,\s*"([^"]*)/gmi;
     let str = fs.readFileSync(sqfPath, {encoding: "UTF-8"} );
-    //console.log(`${DBG_PREF} Contenu du fichier briefing.sqf: ${str}`);
+    //console.log(`${DBG_PREF} Contenu du fichier briefing.sqf...`);
+    //console.log(`${str}`);
     let m;
     while ((m = regex.exec(str)) !== null) {
         // This is necessary to avoid infinite loops with zero-width matches

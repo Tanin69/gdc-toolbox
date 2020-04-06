@@ -2,25 +2,17 @@
  *
  * Checks a pbofile to control its conformity and integrity
  * Used by : missionCheckController
- * @param {String} filename - the mission filename (a .pbo file) to be checked
+ * @param {String} filename - the mission path and filename (posix format, a .pbo file) to be checked
  * @param {Object} [config] - A JSON object that defines which controls should be blocking
  *      Each config value can be undefined or defined individually.
- *      Default values are :
- *      {
- *       "block_fileIsPbo": true,
- *       "block_fileExtension": true,
- *       "block_fileNameConvention": true,
- *       "block_descriptionExtFound": false,
- *       "block_missionSqmFound": true,
- *       "block_briefingSqfFound": true,
- *       "block_isMissionValid": true,
- *      }
  * @returns {Object} - A Json object with return values
  */
 
-const fs           = require("fs");
-const {spawnSync}  = require("child_process");
-const dotenv       = require("dotenv");
+const fs               = require("fs");
+const {spawnSync}      = require("child_process");
+const path             = require("path");
+const klawSync         = require("klaw-sync");
+const dotenv           = require("dotenv");
 
 //Read environment variables
 dotenv.config();
@@ -33,37 +25,39 @@ exports.checkMission = function (fileName, config) {
     //Default configuration values
     const checkConfig = {
         "block_fileIsPbo": true,
-        "block_fileExtension": true,
-        "block_fileNameConvention": true,
+        "block_filenameConvention": true,
         "block_descriptionExtFound": false,
         "block_missionSqmFound": true,
         "block_briefingSqfFound": true,
-        "block_isMissionValid": true,
+        "block_missionSqmNotBinarized": false,
+        "block_HCSlotFound": false,
     };
 
     //Reads configuration parameter
     if (config) {
         if (config.block_fileIsPbo !== undefined) checkConfig.block_fileIsPbo = config.block_fileIsPbo;
-        if (config.block_fileExtension !== undefined) checkConfig.block_fileExtension = config.block_fileExtension;
-        if (config.block_fileNameConvention !== undefined) checkConfig.block_fileNameConvention = config.block_fileNameConvention;
+        if (config.block_filenameConvention !== undefined) checkConfig.block_filenameConvention = config.block_filenameConvention;
         if (config.block_descriptionExtFound !== undefined) checkConfig.block_descriptionExtFound = config.block_descriptionExtFound;
         if (config.block_missionSqmFound !== undefined) checkConfig.block_missionSqmFound = config.block_missionSqmFound;
         if (config.block_briefingSqfFound !== undefined) checkConfig.block_briefingSqfFound = config.block_briefingSqfFound;
-        if (config.block_isMissionValid !== undefined) checkConfig.block_isMissionValid = config.block_isMissionValid;
+        if (config.block_missionSqmNotBinarized !== undefined) checkConfig.block_missionSqmNotBinarized = config.block_missionSqmNotBinarized;
+        if (config.block_HCSlotFound !== undefined) checkConfig.block_HCSlotFound = config.block_HCSlotFound;
     }
 
-    const logLevel = 2;
-    l_fileName = process.env.UPLOAD_DIR + fileName;
-    console.log(`${DBG_PREF} Début de check du pbo: ${l_fileName}`);
+//    fileNamePath = process.env.UPLOAD_DIR + fileName;
+    
+    fileNamePath = fileName;
+    baseName = path.basename(fileName);
+    console.log(`${DBG_PREF} ${baseName} : début de check du pbo`);
     
     jsonR = {
-        //"pboDoesntExist": true, -> not the responsability of this function ! 
         "fileIsPbo": {"isOK": false,"isBlocking": checkConfig.block_fileIsPbo, "label": "Le fichier est un pbo valide"},
-        "fileExtension": {"isOK": false,"isBlocking": checkConfig.block_fileExtension, "label": "L'extension du fichier est .pbo"},
-        "fileNameConvention": {"isOK": false,"isBlocking": checkConfig.block_fileNameConvention, "label": "La convention de nommage est respectée"},
+        "filenameConvention": {"isOK": false,"isBlocking": checkConfig.block_filenameConvention, "label": "La convention de nommage est respectée"},
         "descriptionExtFound": {"isOK": false,"isBlocking": checkConfig.block_descriptionExtFound, "label": "Le fichier description.ext a été trouvé"},
         "missionSqmFound": {"isOK": false,"isBlocking": checkConfig.block_missionSqmFound, "label": "Le fichier mission.sqm a été trouvé"},
         "briefingSqfFound": {"isOK": false,"isBlocking": checkConfig.block_briefingSqfFound, "label": "Le fichier briefing.sqf a été trouvé"},
+        "missionSqmNotBinarized": {"isOK": false,"isBlocking": checkConfig.block_missionSqmNotBinarized, "label": "Le mission.sqm n'est pas binarisé"},
+        "HCSlotFound":  {"isOK": false,"isBlocking": checkConfig.block_HCSlotFound, "label": "Le slot Headless Client (HC_Slot) est présent et conforme"},
         "isMissionValid": true,
         "nbBlockingErr": 0,
     };
@@ -71,7 +65,7 @@ exports.checkMission = function (fileName, config) {
     //-Wether file is really a pbo file
     try {
         //console.log(`${DBG_PREF} Variable ENV DPBO_PATH: ${process.env.DEPBO_EXE_PATH}`);
-        const retDpbo = spawnSync(process.env.DEPBO_EXE_PATH, ["-P", l_fileName, process.env.TMP_DIR]);
+        const retDpbo = spawnSync(process.env.DEPBO_EXE_PATH, ["-P", fileNamePath, process.env.TMP_DIR]);
         //console.log(`${DBG_PREF} Code retour ExtractPbo: ${retDpbo.status}`);
         switch (retDpbo.status) {
             //The file had been DPBO with success in the TMP_DIR
@@ -87,8 +81,7 @@ exports.checkMission = function (fileName, config) {
             case null:
                 if (checkConfig.block_fileIsPbo) {
                     console.log (`${DBG_PREF} Mikero's extractPBO failed`);
-                    jsonR.isMissionValid = false;
-                    jsonR.nbBlockingErr ++;
+                    invalidMission(jsonR);
                     return jsonR;    
                 }
         }
@@ -98,67 +91,72 @@ exports.checkMission = function (fileName, config) {
         jsonR.isMissionValid = false;
         return jsonR;
     }
-    //-Checks file extension : must be .pbo
-    let regex = /.+\.pbo/ig;
-    let match = regex.exec(l_fileName);
-    if (match) {
-        jsonR.fileExtension.isOK = true;
-    } else {
-        if (checkConfig.block_fileExtension) {
-            jsonR.isMissionValid = false;
-            jsonR.nbBlockingErr ++;
-        }
-    }    
+    
+    regex = new RegExp(/(CPC-.*]-.*)-V(\d*)\.(.*)(\.pbo)/i);
+    const match = regex.exec(baseName);
     //-Checks mission file naming convention
-    regex = new RegExp(/(CPC-.*]-.*)-V(\d*)\.(.*)\.pbo/i);
-    match = regex.exec(l_fileName);
     if (match) {
-        jsonR.fileNameConvention.isOK = true;
+        jsonR.filenameConvention.isOK = true;
     } else {
-        if (checkConfig.block_fileNameConvention) {
-            jsonR.isMissionValid = false;
-            jsonR.nbBlockingErr ++;
-        }
-    }
-    const missionDir = l_fileName.replace(/.*\/.*?(.+)(.pbo)/,"$1");
+        if (checkConfig.block_filenameConvention) invalidMission(jsonR);
+    } 
+    const missionDir = baseName.replace(/(.+).pbo/,"$1");
     //-Checks if the mission.sqm file exists
     //console.log(`${DBG_PREF} Recherche de: ${process.env.TMP_DIR + missionDir + "/mission.sqm"}`);
     if (fs.existsSync(process.env.TMP_DIR + missionDir + "/mission.sqm")){ // Vérifier la casse !
         jsonR.missionSqmFound.isOK = true;
     } else {
-        if (checkConfig.block_missionSqmFound) {
-            jsonR.isMissionValid = false;
-            jsonR.nbBlockingErr ++;
-        }
+        if (checkConfig.block_missionSqmFound) invalidMission(jsonR);
     }
     //-Checks if the description.ext file exists
-    if (fs.existsSync(process.env.TMP_DIR + missionDir + "/description.ext")){ // Vérifier la casse !
+    if (fs.existsSync(process.env.TMP_DIR + missionDir + "/description.ext")){
         jsonR.descriptionExtFound.isOK = true;
     } else {
-        if (checkConfig.block_descriptionExtFound) {
-            jsonR.isMissionValid = false;
-            jsonR.nbBlockingErr ++;
-        } 
-        
+        if (checkConfig.block_descriptionExtFound) invalidMission(jsonR);
     }
-    //-Checks if the briefing.sqf file exists
-    if (fs.existsSync(process.env.TMP_DIR + missionDir + "/briefing.sqf")){ // Vérifier la casse !
+    //-Checks if the briefing.sqf file exists (recursive search with klaw-sync module)
+    const filterFn = item => path.basename(item.path).toLowerCase() === "briefing.sqf";
+    const retKlaw = klawSync(process.env.TMP_DIR + missionDir, {traverseAll: true, filter: filterFn}); 
+    //console.log (`${DBG_PREF} ******* retKlaw: ${retKlaw[0]}`);
+    if (retKlaw[0]) {
         jsonR.briefingSqfFound.isOK = true;
     } else {
-        if (checkConfig.block_briefingSqfFound) {
-            jsonR.isMissionValid = false;
-            jsonR.nbBlockingErr ++;
+        if (checkConfig.block_briefingSqfFound) invalidMission(jsonR);
+    }
+    //-If a mission.sqm has benn found, checks if mission.sqm is binarized (weak checking !)
+    if (jsonR.missionSqmFound) {
+        const dataStr = String(fs.readFileSync(process.env.TMP_DIR + missionDir + "/mission.sqm"));
+        regex = new RegExp(/^version/);
+        const retBin = regex.exec(dataStr);
+        if (retBin) {
+            jsonR.missionSqmNotBinarized.isOK = true;
+        } else {
+            if (checkConfig.block_missionSqmNotBinarized) invalidMission(jsonR);
+        }
+    
+        //-Checks if a HC Slot (named HC_Slot) exists in the mission.sqm file, if it is declared isPlayable=1 and if type="HeadlessClient_F".
+        //-Warning : if mission.sqm is binarized, this control will always fail.
+        //Open mission.sqm
+        regex = new RegExp(/.*name="HC_Slot";\s*isPlayable=1;[^type="HeadlessClient_F";]/m);
+        const retHCSearch = regex.exec(dataStr);
+        //console.log(`${DBG_PREF} Résultat de la recherche du HC : ${retSearch}`);
+        if (retHCSearch) {
+            jsonR.HCSlotFound.isOK = true;
+        } else {
+            if (checkConfig.block_HCSlotFound) invalidMission(jsonR);
+        }
+        if (jsonR.isMissionValid) {
+            console.log(`${DBG_PREF} ${baseName} : résultat du check : le pbo est valide`);    
+        } else {
+            console.log(`${DBG_PREF} ${baseName} : mission non valide (${jsonR.nbBlockingErr} erreur(s) bloquante(s))`);
         }
     }
-
-    console.log(`${DBG_PREF} Résultat du checkMission:`);
-    console.log(jsonR);
+    //console.log(`${DBG_PREF} ${baseName} : détail du résultat...`);
+    //console.table(jsonR);
     return jsonR;
-
-    //-Checks if pbo file already exists in destination missions directory
-    /* Not this function responsability !
-    if (fs.existsSync(process.env.MISSIONS_DIR + fileName)){
-        jsonR.pboDoesntExist=false;
-    }
-    */
 };
+
+function invalidMission (json) {
+    json.isMissionValid = false;
+    json.nbBlockingErr ++;
+}
