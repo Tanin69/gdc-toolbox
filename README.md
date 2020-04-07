@@ -1,4 +1,4 @@
-# gdc-server, an arma 3 community toolbox
+# gdc-toolbox, an arma 3 community toolbox
 
 ## Target users
 
