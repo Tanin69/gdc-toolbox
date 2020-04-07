@@ -20,12 +20,12 @@ const missionUpdateController = require("../controllers/missionUpdateController"
 
 //Home page
 router.get ("/", function (req, res) {
-  res.render("home");
+  res.render("home", {pageTitle: "GDC Toolbox (dev)"});
 });
 
 //Renders the page that contains the list of missions. The list handling (display, sort, filter, etc.) is delagated to tabulator client component (cf. /mission/list route), 
 router.get ("/mission", function (req, res, next) {
-  res.render("listMissions", {subtitle: "Missions"});
+  res.render("listMissions", {pageTitle: "Missions publiées"});
 });
 
 //Renders list of missions in listMission view. Called by Ajax request from tabulator client component (delegated to controller)
@@ -33,7 +33,7 @@ router.get ("/mission/list", missionListController.listMissions);
 
 //Renders mission publication page
 router.get ("/mission/add", function (req, res) {
-  res.render("addMission");
+  res.render("addMission", {pageTitle: "Publier une mission"});
 });
 
 //Renders mission infos and briefing (delegated to controller)

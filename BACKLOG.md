@@ -2,11 +2,6 @@
 
 ## Planned
 
-### 0.3.1
-
-* Clean and standardize all web pages
-* Make a decent home page
-
 ### 0.4.0
 
 * Make a decent error handling

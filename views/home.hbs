@@ -10,8 +10,34 @@
     </style>
 
     {{> header}}
-        <div class="w3-card-4 w3-padding w3-opacity w3-sand w3-display-middle">
-        <div style="text-align: center;"><h1>Boîte à outils Grèce de canards (dev)</h1></div>
+
+    {{> pageTitle}}
+    
+    <div class="w3-row-padding w3-padding-16 w3-display-middle">
+        <div class="w3-half w3-center">
+            <a href="/mission" style="text-decoration: none">
+                <div class="w3-card-4 gdc-color-tonic w3-padding w3-hover-sepia w3-padding-64" style="width: 70%; opacity: 0.9" href="/missions">
+                    <div class="w3-container">
+                        <img src="/img/list_missions.png" alt="List missions" style="width:50%">
+                        <br>
+                        <br>
+                        <h3>Liste des missions</h3>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="w3-half w3-center">
+            <a href="/mission/add" style="text-decoration: none">
+                <div class="w3-card-4 gdc-color-tonic w3-padding w3-hover-sepia w3-padding-64" style="width: 70%; opacity: 0.9">
+                    <div class="w3-container">
+                        <img src="/img/publish_mission.png" alt="Publish mission" style="width:50%">
+                        <br>
+                        <br>
+                        <h3>Publier une mission</h3>
+                    </div>
+                </div>
+            </a>
+        </div>
     </div>
     {{> footer}}   
 </body>

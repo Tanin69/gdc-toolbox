@@ -34,6 +34,7 @@ exports.showMission = function(req, res) {
                 const imgPath = process.env.OUTPUT_DIR.replace(/.*\/public(\/.*)/i,"$1");
                 //console.log(DBG_PREF + " imgPath: " + imgPath);
                 res.render("showMission", {               
+                    pageTitle: "Briefing de mission",
                     titreMission: dataMission.missionTitle.val,
                     onLoadMission: dataMission.onLoadMission.val,
                     missionVersion: dataMission.missionVersion.val,
