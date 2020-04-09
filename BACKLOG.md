@@ -11,6 +11,8 @@
 
 ## Not planned
 
+* Replace gameType value with community-specific value
+* Extract max nb of players from mission file name (depends on file naming convention)
 * Add a DELETE API
 * Check mission version number during publication process. A mission with an inferior version number than a published one should not be published
 * Enhance briefing.sqf analyze

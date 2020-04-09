@@ -1,8 +1,8 @@
-# gdc-server, an arma 3 community toolbox
+# gdc-toolbox, an arma 3 community toolbox
 
-## Target users
+## Intented audience
 
-This software is intended for players, mission creators and administrators of Arma 3 community servers.
+This software is intended for players, mission creators and administrators of Arma 3 communities.
 
 Arma 3 is a military simulation video game created and edited by Bohemia Interactive Studios.
 
@@ -10,11 +10,10 @@ Arma 3 is a military simulation video game created and edited by Bohemia Interac
 
 ### Mission checking
 
-Checks mission .pbo file integrity and conformity to certain rules. Each rule can be configured as blocking if not satisfied :
+Checks the integrity of the mission .pbo file and compliance with certain rules. Each rule can be configured as blocking if it is not satisfied :
   
-* File extension : should be ```pbo``` (default blocking status: true)
-* pbo integrity : the file should be a real pbo and could be dpbo without any error (default: true)
 * file naming convention : the file name should follow a defined regexp (default: true)
+* pbo integrity : the file should be a real pbo and could be dpbo without any error (default: true)
 * briefing.sqf : a briefing.sqf should exist in the pbo file (default: true)
 * mission.sqm : a mission.sqm should exist in the pbo file (default: true)
 * description.ext : a description.ext should exist in the pbo file (default: false)
@@ -23,7 +22,7 @@ Checks mission .pbo file integrity and conformity to certain rules. Each rule ca
 
 ### Informations gathering about mission
 
-By reading different files contained in the pbo, by the pbo file name and other means, grabs a maximum of informations about the mission.
+By reading the different files contained in the pbo, by the name of the pbo file and other means, retrieves a maximum of information on the mission.
 
 * missionPbo: pbo file name
 * pboFileSize: pbo file size
@@ -45,22 +44,22 @@ By reading different files contained in the pbo, by the pbo file name and other 
 
 ### Briefing extraction and rendering
 
-If a briefing.sqf file is present in the mission pbo, its content is extracted to allow further web rendering.
+If a briefing.sqf file is present in the mission pbo, its content is extracted to allow its web rendering
 
 #### Technical details
 
 The briefing is rendered as an html page, using the ```showBriefing.hbs``` view.
 
-Briefing is automatically generated from a ```briefing.sqf``` file, by reading his content and computing it with some regex :
+Briefing is automatically generated from the ```briefing.sqf``` file, by reading its content and computing it with some regex :
 
 ```player createDiaryRecord ["Diary", ["Mission", "Notre commando a réussi à s'infiltrer près de l'aérodrome..."]];```
 
 * Where the string ```"Mission"``` is considered as a title
-* and ```"Notre commando..."``` as a content. This content is rendered as pure html.
+* and ```"Notre commando..."``` as a content. This content is rendered as pure (sanitized) html.
 
 All other strings are ignored.
 
-If an ```onLoadImage``` is found in the mission .pbo, it is used as an illustrative image for the briefing.
+If a ```loadScreen``` field is found in the mission .pbo and if the referenced image is found, it is used as an illustrative image for the briefing.
 
 ### Mission publication
 
@@ -70,7 +69,7 @@ Allows mission makers to publish their mission pbo to a directory located on the
 
 Allows players to access the list of missions. The list :
 
-* allows to render mission briefing as an html page allows to edit, if the briefing had successfully been extracted from the mission pbo file (see above)
+* allows to render mission briefing as an html page, if the briefing had successfully been extracted from the mission pbo file (see above)
 * allows to edit ```missionIsPlayable``` field (true or false)
 * is sortable
 * can be filtered
@@ -126,10 +125,11 @@ Here is a visual representation of the app architecture (from the same source) :
 ### Directory structure
 
 ```code
-/gdc-server (app root)
+/gdc-toolbox (app root)
     app.js
     README.md
     CHANGELOG.md
+    BACKLOG.md
     ...
     /controllers
     /models
@@ -139,6 +139,7 @@ Here is a visual representation of the app architecture (from the same source) :
         /css
         /img
         /javascript
+    /private
     /routes
         index.js
     /views
@@ -146,6 +147,14 @@ Here is a visual representation of the app architecture (from the same source) :
         /partials
         ...
 ```
+
+#### Client side
+
+All client logix should be under /public and /views directories
+
+#### /private directory
+
+/private directory contains scripts that can be executed on server side via node on CLI.
 
 ### Models and database
 
