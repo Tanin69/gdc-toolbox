@@ -65,7 +65,7 @@ If a ```loadScreen``` field is found in the mission .pbo and if the referenced i
 
 Allows mission makers to publish their mission pbo to a directory located on the server, as defined by admin. Before publication, mission pbo is checked. If check is sucessfull, informations about the mission are grabbed and added to a database.
 
-### Missions listing
+### List of missions
 
 Allows players to access the list of missions. The list :
 
@@ -76,7 +76,7 @@ Allows players to access the list of missions. The list :
 
 Moreover :
 
-* user can change list order and column width
+* user can change column width and/or order
 * the configuration of the list is locally saved (column order, height, sort, etc)
 
 ### Embed API
@@ -113,6 +113,23 @@ In the server directory, run ```npm install```
 
 * Copy ```.sample-env``` to ```.env```
 * Edit path with your configuration
+
+## Frequently Asked Questions
+
+### Publishing a mission
+
+#### Why does my image not appear in the briefing ?
+
+gdc-toolbox look for a "loadScreen" string in description.ext *and* mission.sqm files. It might fail mostly because of :
+  * missing semi-column at the end of loadScreen field in description.ext file AND no loadScreen value missing in mission.sqm. In description.ext file, this line must be as ```loadSreen = "<yourimage.jpg>";``` <- note the ending semi column
+  * wrong path or file name in description.ext or mission.sqm (Eden generated)
+  * Image file format .paa
+  * missing image file in pbo
+If your image file does not appear and your are not in one of the cases mentioned, please report a bug
+
+### I entered "blabla" in the Eden loadName/loadScreen/etc mission attribute, but this is not what appears in gdc-toolbox
+gdc-toolbox takes at first informations grabbed from description.ext file. In Arma, these informations take precedence over mission.sqm informations. So does gdc-toolbox. Check your mission folder and look for a description.ext file.
+
 
 ## Tech notes
 

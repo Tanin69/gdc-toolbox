@@ -2,7 +2,6 @@ node_modules
 package-lock.json
 upload
 .env
-public/img/brf/
+public/img/brf
 .markdownlint.json
 .vscode
-gdc-toolbox.code-workspace

@@ -31,8 +31,9 @@ exports.checkMission = function (req,res) {
     //TODO: use file.posix.path in place of the regex
     .on("fileBegin", (name, file) => {
         console.log(`${DBG_PREF} ${file.name} : début de réception du fichier`);
-        const filePath = process.env.UPLOAD_DIR.replace(/.*(\/.*\/)/i,"."+"$1");
-        file.path = filePath + file.name;
+        //const filePath = process.env.UPLOAD_DIR.replace(/.*(\/.*\/)/i,"."+"$1");
+        //file.path = filePath + file.name;
+        file.path = process.env.UPLOAD_DIR + file.name;
     })
     
     // Here is the magic

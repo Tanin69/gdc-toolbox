@@ -32,14 +32,25 @@ exports.showMission = function(req, res) {
                 res.status(200);   
                 //We construct the destination directory for images from .env variable
                 const imgPath = process.env.OUTPUT_DIR.replace(/.*\/public(\/.*)/i,"$1");
-                //console.log(DBG_PREF + " imgPath: " + imgPath);
+                //If no image found, replace with a default one
+                if (dataMission.loadScreen.val !== "false" && dataMission.loadScreen.val && !(/.*\.paa/.test(dataMission.loadScreen.val))) {
+                    loadScr = imgPath + dataMission.loadScreen.val;
+                } else {
+                    loadScr = "/img/cpc_badge.png";
+                }
+                //Idem for onLoadMission text (used as a citation under loadScreen) 
+                if (dataMission.onLoadMission.val !== "false" && dataMission.onLoadMission.val) {
+                    onloadM = dataMission.onLoadMission.val;
+                } else {
+                    onloadM = "";
+                }
                 res.render("showMission", {               
                     pageTitle: "Briefing de mission",
                     embed_missionTitle: dataMission.missionTitle.val,
-                    embed_onLoadMission: dataMission.onLoadMission.val,
-                    embed_image: imgPath + dataMission.loadScreen.val,
+                    embed_onLoadMission: onloadM,
+                    embed_image: loadScr,
                     titreMission: dataMission.missionTitle.val,
-                    onLoadMission: dataMission.onLoadMission.val,
+                    onLoadMission: onloadM,
                     missionVersion: dataMission.missionVersion.val,
                     missionMap: dataMission.missionMap.val,
                     gameType: dataMission.gameType.val,
@@ -48,7 +59,7 @@ exports.showMission = function(req, res) {
                     minPlayers: dataMission.minPlayers.val,
                     maxPlayers: dataMission.maxPlayers.val,
                     missionBriefing: dataMission.missionBriefing,
-                    loadScreenSrc: imgPath + dataMission.loadScreen.val,    
+                    loadScreenSrc: loadScr,    
                 });
             } catch (e) {
                 console.log (DBG_PREF + e);
