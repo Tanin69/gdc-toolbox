@@ -1,5 +1,13 @@
 # gdc-toolbox, an arma 3 community toolbox
 
+## Table of contents
+
+* [Intented audience](#intented-audience)
+* [Features](#features)
+* [Installation](#installation)
+* [Frenquently asked questions](#frequently-asked-questions)
+* [Tech notes](#tech-notes)
+
 ## Intented audience
 
 This software is intended for players, mission creators and administrators of Arma 3 communities.
@@ -118,22 +126,39 @@ In the server directory, run ```npm install```
 
 ### Publishing a mission
 
-#### Why does my image not appear in the briefing ?
+#### I can not validate my mission. gdc-toolbox keeps telling me "blabla"
+
+Your mission must have been tested with success in arma 3 ! gdc-toolbox IS NOT a mission validator.
+
+#### Why does my image not appear in the briefing
 
 gdc-toolbox look for a "loadScreen" string in description.ext *and* mission.sqm files. It might fail mostly because of :
-  * missing semi-column at the end of loadScreen field in description.ext file AND no loadScreen value missing in mission.sqm. In description.ext file, this line must be as ```loadSreen = "<yourimage.jpg>";``` <- note the ending semi column
-  * wrong path or file name in description.ext or mission.sqm (Eden generated)
-  * Image file format .paa
-  * missing image file in pbo
+
+* missing semi-column at the end of loadScreen field in description.ext file AND no loadScreen value missing in mission.sqm. In description.ext file, this line must be as ```loadSreen = "<yourimage.jpg>";``` <- note the ending semi column
+* wrong path or file name in description.ext or mission.sqm (Eden generated)
+* Image file format .paa
+* missing image file in pbo
 If your image file does not appear and your are not in one of the cases mentioned, please report a bug
 
-### I entered "blabla" in the Eden loadName/loadScreen/etc mission attribute, but this is not what appears in gdc-toolbox
-gdc-toolbox takes at first informations grabbed from description.ext file. In Arma, these informations take precedence over mission.sqm informations. So does gdc-toolbox. Check your mission folder and look for a description.ext file.
+#### Author name and/or HC_Slot not found although declared/created in Eden editor
 
+Your mission.sqm is probably binarized. gdc-toolbox can not find these two informations if the mission.sqm file is binarized. Solution : don't binarize your mission.sqm file or create a description.ext with the correct informations.
+
+### I entered "blabla" in the Eden loadName/loadScreen/etc mission attribute, but this is not what appears in gdc-toolbox
+
+gdc-toolbox takes at first informations grabbed from description.ext file. In Arma, these informations take precedence over mission.sqm informations. So does gdc-toolbox. Check your mission folder and look for a description.ext file.
 
 ## Tech notes
 
 ### General architecture
+
+#### Changelog
+
+See CHANGELOG.md
+
+#### Future work
+
+See BACKLOG.md
 
 This webserver is a **[node.js](https://nodejs.org/) + [Express JS](https://expressjs.com)** app.
 
@@ -171,7 +196,7 @@ Here is a visual representation of the app architecture (from the same source) :
 
 #### Client side
 
-All client logix should be under /public and /views directories
+All client logic should be under /public and /views directories
 
 #### /private directory
 

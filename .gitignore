@@ -5,3 +5,4 @@ upload
 public/img/brf
 .markdownlint.json
 .vscode
+gdc-toolbox.code-workspace
