@@ -144,21 +144,21 @@ If your image file does not appear and your are not in one of the cases mentione
 
 Your mission.sqm is probably binarized. gdc-toolbox can not find these two informations if the mission.sqm file is binarized. Solution : don't binarize your mission.sqm file or create a description.ext with the correct informations.
 
-### I entered "blabla" in the Eden loadName/loadScreen/etc mission attribute, but this is not what appears in gdc-toolbox
+#### I entered "blabla" in the Eden loadName/loadScreen/etc mission attribute, but this is not what appears in gdc-toolbox
 
 gdc-toolbox takes at first informations grabbed from description.ext file. In Arma, these informations take precedence over mission.sqm informations. So does gdc-toolbox. Check your mission folder and look for a description.ext file.
 
 ## Tech notes
 
-### General architecture
-
-#### Changelog
+### Changelog
 
 See CHANGELOG.md
 
-#### Future work
+### Future work
 
 See BACKLOG.md
+
+### General architecture
 
 This webserver is a **[node.js](https://nodejs.org/) + [Express JS](https://expressjs.com)** app.
 
