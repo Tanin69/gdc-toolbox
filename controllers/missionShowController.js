@@ -35,6 +35,9 @@ exports.showMission = function(req, res) {
                 //console.log(DBG_PREF + " imgPath: " + imgPath);
                 res.render("showMission", {               
                     pageTitle: "Briefing de mission",
+                    embed_missionTitle: dataMission.missionTitle.val,
+                    embed_onLoadMission: dataMission.onLoadMission.val,
+                    embed_image: imgPath + dataMission.loadScreen.val,
                     titreMission: dataMission.missionTitle.val,
                     onLoadMission: dataMission.onLoadMission.val,
                     missionVersion: dataMission.missionVersion.val,

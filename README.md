@@ -79,6 +79,10 @@ Moreover :
 * user can change list order and column width
 * the configuration of the list is locally saved (column order, height, sort, etc)
 
+### Embed API
+
+Embed API is used, notably for discord embed
+
 ## Installation
 
 ### First installation

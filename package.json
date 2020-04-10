@@ -1,6 +1,6 @@
 {
   "name": "gdc-toolbox",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "An arma 3 community toolbox",
   "main": "app.js",
   "dependencies": {
