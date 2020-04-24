@@ -111,7 +111,7 @@ At least :
 
 #### Clone git repository
 
-git clone <https://github.com/Tanin69/gdc-server>
+git clone <https://github.com/Tanin69/gdc-toolbox>
 
 #### Install modules
 
@@ -152,92 +152,19 @@ gdc-toolbox takes at first informations grabbed from description.ext file. In Ar
 
 ### Changelog
 
-See CHANGELOG.md
+See /api/CHANGELOG.md and /front/CHANGELOG.md
 
 ### Future work
 
-See BACKLOG.md
+See /api/BACKLOG.md and /front/CHANGELOG.md
 
 ### General architecture
 
-This webserver is a **[node.js](https://nodejs.org/) + [Express JS](https://expressjs.com)** app.
+This software is a **[node.js](https://nodejs.org/) app.
 
-This app is structured as a Model-View-Controller (MVC) architecture, based on the tutorial found at <https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/Tutorial_local_library_website>, (although I didn't use this tutorial myself). Many many portions of the code snipets are directly taken from the github repo underlying this tutorial (<https://github.com/mdn/express-locallibrary-tutorial/tree/auth>). It has an underlying (sort of) REST API.
+Until v0.3.3, the app was structured as a Model-View-Controller (MVC) architecture and had an underlying (sort of) REST API.
 
-Here is a visual representation of the app architecture (from the same source) :
-
-![general application architecture](https://media.prod.mdn.mozit.cloud/attachments/2016/12/06/14456/6a97461a03a5329243b994347c47f12b/MVC%20Express.png "Express MVC architecture")
-
-### Directory structure
-
-```code
-/gdc-toolbox (app root)
-    app.js
-    README.md
-    CHANGELOG.md
-    BACKLOG.md
-    ...
-    /controllers
-    /models
-    /node_modules
-        [many modules]
-    /public
-        /css
-        /img
-        /javascript
-    /private
-    /routes
-        index.js
-    /views
-        /layouts
-        /partials
-        ...
-```
-
-#### Client side
-
-All client logic should be under /public and /views directories
-
-#### /private directory
-
-/private directory contains scripts that can be executed on server side via node on CLI.
-
-### Models and database
-
-Models and database use [mongoDB](https://www.mongodb.com/) through [Mongoose](https://mongoosejs.com/) node module.
-
-Models are a representation of database objects, called ```Schema``` in the mongoose universe. For example, the mission model looks like :
-
-```javascript
-const mongoose = require('mongoose');
-
-const Schema = mongoose.Schema;
-
-const MissionSchema = new Schema({
-    missionTitle: {type: String, required: true},
-    missionVersion: {type: String},
-    missionMap: {type: String},
-    missionPbo: {type: String},
-    pboFileSize: {type: Number},
-    pboFileDateM: {type: String},
-    author: {type: String},
-    onLoadName: {type: String},
-    onLoadMission: {type: String},
-    gameType: {type: String},
-    minPlayers: {type: Number},
-    maxPlayers: {type: Number}
-});
-
-module.exports = mongoose.model("Mission", MissionSchema);
-```
-
-### Views
-
-Views are generated with [handlebars](https://handlebarsjs.com/) template engine (express flavor).
-
-### Controllers
-
-Coontrollers are portions of code that manage business logic.
+From v0.4.0, a REST API and a frontend client architecture is adopted.
 
 ### Client side components
 

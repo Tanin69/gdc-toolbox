@@ -1,8 +1,11 @@
-node_modules
-package-lock.json
+/api/node_modules
+/api/package-lock.json
+/api/.env
+/front/node_modules
+/front/public/img/brf
+/front/package-lock.json
+/front/.env
 upload
-.env
-public/img/brf
 .markdownlint.json
 .vscode
 gdc-toolbox.code-workspace

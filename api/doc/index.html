@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>gdc-toolbox Index</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.readable.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top ">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">gdc-toolbox</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html">/api/mission/add</a></li><li><a href="global.html">/api/mission/check</a></li><li><a href="global.html">/api/mission/list</a></li><li><a href="global.html">/api/mission/show</a></li><li><a href="global.html">/api/mission/update</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+        
+            <div class="col-sm-3 col-md-3">
+                <form class="navbar-form" role="search">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-8">
+	
+		<div id="main">
+			
+
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+
+
+
+
+
+    <section class="readme-section">
+        <article><h1>gdc-toolbox, an arma 3 community toolbox</h1>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#intented-audience">Intented audience</a></li>
+<li><a href="#features">Features</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#frequently-asked-questions">Frenquently asked questions</a></li>
+<li><a href="#tech-notes">Tech notes</a></li>
+</ul>
+<h2>Intented audience</h2>
+<p>This software is intended for players, mission creators and administrators of Arma 3 communities.</p>
+<p>Arma 3 is a military simulation video game created and edited by Bohemia Interactive Studios.</p>
+<h2>Features</h2>
+<h3>Mission checking</h3>
+<p>Checks the integrity of the mission .pbo file and compliance with certain rules. Each rule can be configured as blocking if it is not satisfied :</p>
+<ul>
+<li>file naming convention : the file name should follow a defined regexp (default: true)</li>
+<li>pbo integrity : the file should be a real pbo and could be dpbo without any error (default: true)</li>
+<li>briefing.sqf : a briefing.sqf should exist in the pbo file (default: true)</li>
+<li>mission.sqm : a mission.sqm should exist in the pbo file (default: true)</li>
+<li>description.ext : a description.ext should exist in the pbo file (default: false)</li>
+<li>Headless Client : a headless client named HC_Slot (case sensitive) should exist in mission.sqm, it should me declared as isPlayable=1 and should be type=&quot;HeadlessClient_F&quot; (default: true) -&gt; should match regex as <code>.*name=&quot;HC_Slot&quot;;\s*isPlayable=1;[^type=&quot;HeadlessClient_F&quot;;]</code></li>
+<li>mission.sqm is not binarized : (default: false). Be careful, if the mission.sqm is binarized, HC control and author detection will fail</li>
+</ul>
+<h3>Informations gathering about mission</h3>
+<p>By reading the different files contained in the pbo, by the name of the pbo file and other means, retrieves a maximum of information on the mission.</p>
+<ul>
+<li>missionPbo: pbo file name</li>
+<li>pboFileSize: pbo file size</li>
+<li>pboFileDateM: pbo publication date</li>
+<li>owner: mission owner (not implemented yet : &quot;admin&quot; for every mission)</li>
+<li>missionTitle: mission title. Extracted from mission file name</li>
+<li>missionIsPlayable: mission playabilty status (editable)</li>
+<li>missionVersion: mission version number. Extracted from mission file name</li>
+<li>missionMap: Arma map used by mission. Extracted from mission file name</li>
+<li>author: mission author. Extracted from description.ext, or from mission.sqm if not found in description.ext</li>
+<li>onLoadName: text that appears above the image during mission loading screen. Extracted from description.ext, or from mission.sqm if not found in deccription.ext</li>
+<li>onLoadMission: text that appears under the image during mission loading screen. Extracted from description.ext, or from mission.sqm if not found in deccription.ext</li>
+<li>overviewText: text that appears on the mission choice screen or in the lobby screen. Extracted from description.ext, or from mission.sqm if not found in deccription.ext</li>
+<li>gameType: the type of game (Coop, TVT, etc.). Extracted from description.ext, or from mission.sqm if not found in description.ext</li>
+<li>minPlayers: Minimum number of players as determined by the mission maker. Extracted from description.ext, or from mission.sqm if not found in description.ext</li>
+<li>maxPlayers: Maximum number of players as determined by the mission maker. Extracted from description.ext, or from mission.sqm if not found in description.ext</li>
+<li>missionBriefing: briefing content, extracted from a briefing.sqf file if this file exists in the mission pbo</li>
+<li>loadScreen: image file, if this file exists in the mission pbo file. Extracted from description.ext, or from mission.sqm if not found in deccription.ext. If declared but not found, the field is declared with &quot;image referenced in loadScreen, but image file not found in the pbo !&quot;.</li>
+</ul>
+<h3>Briefing extraction and rendering</h3>
+<p>If a briefing.sqf file is present in the mission pbo, its content is extracted to allow its web rendering</p>
+<h4>Technical details</h4>
+<p>The briefing is rendered as an html page, using the <code>showBriefing.hbs</code> view.</p>
+<p>Briefing is automatically generated from the <code>briefing.sqf</code> file, by reading its content and computing it with some regex :</p>
+<p><code>player createDiaryRecord [&quot;Diary&quot;, [&quot;Mission&quot;, &quot;Notre commando a réussi à s'infiltrer près de l'aérodrome...&quot;]];</code></p>
+<ul>
+<li>Where the string <code>&quot;Mission&quot;</code> is considered as a title</li>
+<li>and <code>&quot;Notre commando...&quot;</code> as a content. This content is rendered as pure (sanitized) html.</li>
+</ul>
+<p>All other strings are ignored.</p>
+<p>If a <code>loadScreen</code> field is found in the mission .pbo and if the referenced image is found, it is used as an illustrative image for the briefing.</p>
+<h3>Mission publication</h3>
+<p>Allows mission makers to publish their mission pbo to a directory located on the server, as defined by admin. Before publication, mission pbo is checked. If check is sucessfull, informations about the mission are grabbed and added to a database.</p>
+<h3>List of missions</h3>
+<p>Allows players to access the list of missions. The list :</p>
+<ul>
+<li>allows to render mission briefing as an html page, if the briefing had successfully been extracted from the mission pbo file (see above)</li>
+<li>allows to edit <code>missionIsPlayable</code> field (true or false)</li>
+<li>is sortable</li>
+<li>can be filtered</li>
+</ul>
+<p>Moreover :</p>
+<ul>
+<li>user can change column width and/or order</li>
+<li>the configuration of the list is locally saved (column order, height, sort, etc)</li>
+</ul>
+<h3>Embed API</h3>
+<p>Embed API is used, notably for discord embed</p>
+<h2>Installation</h2>
+<h3>First installation</h3>
+<h4>Download and install Mikero tools on your server</h4>
+<p><a href="https://mikero.bytex.digital/Downloads">Mikero tools</a>.</p>
+<p>At least :</p>
+<ul>
+<li>ExtractPbo</li>
+<li>DeOgg</li>
+<li>(maybe) DePbo</li>
+</ul>
+<h4>Download and install node</h4>
+<p><a href="https://nodejs.org/">node</a></p>
+<h4>Clone git repository</h4>
+<p>git clone <a href="https:%5C/%5C/github.com/Tanin69/gdc-toolbox">https://github.com/Tanin69/gdc-toolbox</a></p>
+<h4>Install modules</h4>
+<p>In the server directory, run <code>npm install</code></p>
+<h4>Define environment variables</h4>
+<ul>
+<li>Copy <code>.sample-env</code> to <code>.env</code></li>
+<li>Edit path with your configuration</li>
+</ul>
+<h2>Frequently Asked Questions</h2>
+<h3>Publishing a mission</h3>
+<h4>I can not validate my mission. gdc-toolbox keeps telling me &quot;blabla&quot;</h4>
+<p>Your mission must have been tested with success in arma 3 ! gdc-toolbox IS NOT a mission validator.</p>
+<h4>Why does my image not appear in the briefing</h4>
+<p>gdc-toolbox look for a &quot;loadScreen&quot; string in description.ext <em>and</em> mission.sqm files. It might fail mostly because of :</p>
+<ul>
+<li>missing semi-column at the end of loadScreen field in description.ext file AND no loadScreen value missing in mission.sqm. In description.ext file, this line must be as <code>loadSreen = &quot;&lt;yourimage.jpg&gt;&quot;;</code> &lt;- note the ending semi column</li>
+<li>wrong path or file name in description.ext or mission.sqm (Eden generated)</li>
+<li>Image file format .paa</li>
+<li>missing image file in pbo
+If your image file does not appear and your are not in one of the cases mentioned, please report a bug</li>
+</ul>
+<h4>Author name and/or HC_Slot not found although declared/created in Eden editor</h4>
+<p>Your mission.sqm is probably binarized. gdc-toolbox can not find these two informations if the mission.sqm file is binarized. Solution : don't binarize your mission.sqm file or create a description.ext with the correct informations.</p>
+<h4>I entered &quot;blabla&quot; in the Eden loadName/loadScreen/etc mission attribute, but this is not what appears in gdc-toolbox</h4>
+<p>gdc-toolbox takes at first informations grabbed from description.ext file. In Arma, these informations take precedence over mission.sqm informations. So does gdc-toolbox. Check your mission folder and look for a description.ext file.</p>
+<h2>Tech notes</h2>
+<h3>Changelog</h3>
+<p>See /api/CHANGELOG.md and /front/CHANGELOG.md</p>
+<h3>Future work</h3>
+<p>See /api/BACKLOG.md and /front/CHANGELOG.md</p>
+<h3>General architecture</h3>
+<p>This software is a <strong><a href="https://nodejs.org/">node.js</a></strong> app.</p>
+<p>Until v0.3.3, the app was structured as a Model-View-Controller (MVC) architecture and had an underlying (sort of) REST API.</p>
+<p>From v0.4.0, a REST API and a frontend client architecture is adopted.</p>
+<h3>Client side components</h3>
+<p>Much of the logic is delegated to  javascript client components</p>
+<ul>
+<li>List management : <a href="http://tabulator.info/">tabulator</a>. Tabulator is an open source (MIT licence) javascript library. It is very well maintained, documented and very very powerfull. You should definitly take a look at tabulator !</li>
+<li>File uploads : <a href="https://www.dropzonejs.com/">dropzoneJS</a></li>
+</ul></article>
+    </section>
+
+
+
+
+
+
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+		<div class="col-md-3">
+			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
+		</div>
+	
+
+</div>
+</div>
+
+
+    <div class="modal fade" id="searchResults">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Search results</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
+
+
+<footer>
+
+	https://github.com/Tanin69/gdc-toolbox
+
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a>
+	
+		on 2020-04-24T17:14:51+02:00
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+
+    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			return $( heading ).attr( "id" ) || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SearcherDisplay.init();
+        });
+    </script>
+
+
+</body>
+</html>
