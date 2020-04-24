@@ -160,7 +160,7 @@ See /api/BACKLOG.md and /front/CHANGELOG.md
 
 ### General architecture
 
-This software is a **[node.js](https://nodejs.org/) app.
+This software is a **[node.js](https://nodejs.org/)** app.
 
 Until v0.3.3, the app was structured as a Model-View-Controller (MVC) architecture and had an underlying (sort of) REST API.
 

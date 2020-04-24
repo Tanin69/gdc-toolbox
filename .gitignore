@@ -1,10 +1,12 @@
 /api/node_modules
 /api/package-lock.json
 /api/.env
-/front/node_modules
-/front/public/img/brf
-/front/package-lock.json
-/front/.env
+/api/.jsdoc.conf
+.env
+/api/public/img/brf
+/web-client/node_modules
+/web-client/package-lock.json
+/web-client/.env
 upload
 .markdownlint.json
 .vscode

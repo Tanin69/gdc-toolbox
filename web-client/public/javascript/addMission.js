@@ -1,21 +1,26 @@
 /**
  *
  * Requests the server to publish a mission
- * @TODO: this script is a piece of shit -> to refactor ASAP
  */
 
 var servResponse = "";
+var checkedFile = "";
 
+/**
+ *
+ * Dropzone component init and events
+ * 
+ */
 Dropzone.options.myDZ = {
   //Client side controls
   maxFiles: 1,
   acceptedFiles: ".pbo",
-  maxFilesize: 20, // MB
+  maxFilesize: 10, // MB
   dictDefaultMessage: "Pbo dropzone here ! (or click to choose a file)",
 
   init: function() {
   
-    //The file was correctly submitted. The client recieves a 202 htpp code if there were errors during mission check, 200 if no error. We open a modal that displays server response.
+    //The file was correctly submitted. The client recieves a 202 http code if there were errors during mission check, 201 if no error. We open a modal that displays server response.
     this.on("success", function(file, response) {
       /*Important trick : these two lines of code print function arguments in the console !
       var args = Array.prototype.slice.call(arguments);
@@ -23,12 +28,13 @@ Dropzone.options.myDZ = {
       */
       //console.log(file.xhr.status);
       //console.log(response);
+      checkedFile = file;
       servResponse = response;
       if (file.xhr.status === 202) {
         //Server response : we get a 202 if some controls failed
         loadFailure(response);
       } else if (file.xhr.status === 200) {
-        //Server response : we get a 200 if everything is OK
+        //Server response : we get a 200 if check returned no blocking error
         loadSuccess(response);
       }
     });
@@ -43,6 +49,11 @@ Dropzone.options.myDZ = {
   },
 };
 
+/**
+ *
+ * Opens a modal if check returned no blocking error (/api/mission/check endpoint)
+ * 
+ */
 function loadSuccess(response) {
     let textNode = "";
     let node = "";
@@ -52,7 +63,29 @@ function loadSuccess(response) {
     for (const key in response) {
       
       switch (key) {
+        case "fileIsPbo":
+          break;
+        case "filenameConvention":
+          break;
+        case "descriptionExtFound":
+          break;
+        case "missionSqmFound":
+          break;
+        case "briefingSqfFound":
+          break;
+        case "missionSqmNotBinarized":
+          break;  
+        case "HCSlotFound":
+          break;
+        case "fileIsPbo":
+          break;
+        case "missionIsArchived":
+          break;
         case "missionBriefing":
+          break;
+        case "isMissionValid":
+          break;
+        case "nbBlockingErr":
           break;
         case "missionIsPlayable":
           break;
@@ -95,13 +128,20 @@ function loadSuccess(response) {
             textNode = document.createTextNode(response[key].label + " : " + response[key].val);
           }
       }
-      node.appendChild(textNode);
-      list.appendChild(node);
+      if (node) {
+        node.appendChild(textNode);
+        list.appendChild(node);
+      }
     }
         
     document.getElementById("modalSuccess").style.display="block";
 }
 
+/**
+ *
+ * Opens a modal if check returned one or more blocking errors (/api/mission/check endpoint)
+ * 
+ */
 function loadFailure(response) {
   
   let textNode = "";
@@ -145,64 +185,62 @@ function loadFailure(response) {
   document.getElementById("modalFailure").style.display="block";
 }
 
-function resetPage(elID) {
-      //Clears dropzone and cancel uploads
-      let myDropzone = Dropzone.forElement("#myDZ");
-      myDropzone.removeAllFiles(true);
-      if (elID) {
-        const elToRemove = document.getElementById(elID);
-        while (elToRemove.hasChildNodes()) {  
-          elToRemove.removeChild(elToRemove.firstChild);
-        }
+/**
+ *
+ * Publishes the mission to the server (/api/mission/add endpoint)
+ * 
+ */
+function publishMission() {
+  //submit file on /api/mission/add endpoint
+  const formData = new FormData();
+  const request = new XMLHttpRequest();
+  formData.set("file", checkedFile);
+  request.open("POST", "http://localhost:3000/api/mission/add");
+  
+  request.onload = function (e) {
+    if (request.readyState === 4) {
+      if (request.status === 201) {
+        showHide("msgOK");
+        setTimeout(function(){showHide("msgOK");}, 5000);
+        document.getElementById("modalSuccess").style.display="none";
+        resetPage("msgSuccessContent");
+      } else {
+        console.log("Huho... Somethin' went wrong. Server responded :");
+        errMsg.innerText = `${request.status}: ${request.statusText})`;
+        console.log(request.status);
+        showHide("msgError");
+        setTimeout(function(){ showHide("msgError");}, 10000);
+        document.getElementById("modalSuccess").style.display="none";
+        resetPage("msgSuccessContent");
       }
-      
-      /*
-      //@TODO: Removes file from server
-      var name = file.name;        
-      $.ajax({
-          type: 'POST',
-          url: 'delete.php',
-          data: "id="+name,
-          dataType: 'html'
-      });
-      */
+    }
+  };
+  request.onerror = function (e) {
+    console.log("Huho... Somethin' went wrong.");
+    errMsg.innerText = "Server could not be reached)";
+    console.log(request.status);
+    showHide("msgError");
+    setTimeout(function(){ showHide("msgError");}, 10000);
+    document.getElementById("modalSuccess").style.display="none";
+    resetPage("msgSuccessContent");
+  };
+  request.send(formData);
 }
 
 /**
  *
- * Publishes the mission to the server and saves the mission information in the database
+ * Resets page content
  * 
  */
-function publishMission() {
-  //console.log(JSON.stringify(servResponse));
-  fetch("/mission/add/confirm", {
-    method: "POST",
-    headers: { "content-type": "application/json"},
-    body: JSON.stringify(servResponse),
-  })
-  .then (function (response) {
-    if (response.ok) {
-        showHide("msgOK");
-        setTimeout(function(){ showHide("msgOK");}, 5000);
-        document.getElementById("modalSuccess").style.display="none";
-        resetPage("msgSuccessContent");
+function resetPage(elID) {
+  //Clears dropzone and cancel uploads
+  let myDropzone = Dropzone.forElement("#myDZ");
+  myDropzone.removeAllFiles(true);
+  if (elID) {
+    const elToRemove = document.getElementById(elID);
+    while (elToRemove.hasChildNodes()) {  
+      elToRemove.removeChild(elToRemove.firstChild);
     }
-    else {
-      console.log("Huho... Somethin' went wrong. Server has responded :");
-      errMsg.innerText = response.status + ")";
-      console.log(response.status);
-      showHide("msgError");
-      setTimeout(function(){ showHide("msgError");}, 10000);
-      document.getElementById("modalSuccess").style.display="none";
-      resetPage("msgSuccessContent");
-    }
-  })
-  .catch(function(error) {
-    document.getElementById("modalSuccess").style.display="none";
-    errMsg.innerText = error  + ")";
-    console.log(error);
-    showHide("msgError");
-    setTimeout(function(){ showHide("msgError");}, 10000);
-    resetPage("msgSuccessContent");
-  });
+  }
 }
+

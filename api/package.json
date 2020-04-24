@@ -26,7 +26,7 @@
   "script": {
     "start": "node app",
     "devstart": "nodemon ${workspaceFolder}\\api\\app.js",
-    "gendoc": "jsdoc -t ./node_modules/ink-docstrap/template/ -d ./doc -R ../README.md -c ./jsdoc.conf",
+    "gendoc": "jsdoc -t ./api/node_modules/ink-docstrap/template/ -d ./docs -R ./README.md -c ./api/.jsdoc.conf",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "tanin69@gmail.com",

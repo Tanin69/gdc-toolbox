@@ -1,23 +1,25 @@
 /**
  *
  * This is the main route index.
- * Each endpoint delegates his code to a controller (with a few exceptions for very simple endpoints).
- * render delegated to a controller code must be called like that :
- * router.get|post|etc ("view", controllerName.controllerFunction). 
- * 
+ *  
  */
 
-// External modules imports
+ // External modules imports
 const express = require("express");
 const router = express.Router();
+const dotenv = require("dotenv");
 const fetch = require("node-fetch");
+
+//Reads environment variables
+dotenv.config();
 
 //Home page
 router.get ("/", function (req, res) {
     res.render("home", {pageTitle: "GDC Toolbox (dev)"});
 });
 
-//List of missions
+//Renders list of missions
+//Be aware : API endpoint called from browser (tabulator component)
 router.get ("/mission", function (req, res) {
     res.render("listMissions", {pageTitle: "Missions Grèce de canard"});
 });
@@ -25,8 +27,7 @@ router.get ("/mission", function (req, res) {
 //Renders a briefing
 router.get ("/mission/show/:missionPbo", function (req, res) {
     //Requests gdc-toolbox-api endpoint
-    //TODO: .env for API endpoint
-    fetch(`http://localhost:3000/api/mission/show/${req.params.missionPbo}`)
+    fetch(`${process.env.API_MISSION_ENDPOINT}/show/${req.params.missionPbo}`)
         .then(res => res.json())
         .then(json => {
             //We construct the destination directory for images from .env variable
@@ -63,12 +64,14 @@ router.get ("/mission/show/:missionPbo", function (req, res) {
         }   
     );
 });
-/*
-//Checks a mission
-router.post("/api/mission/check/", missionCheckController.checkMission);
 
-//Publishes a mission
-router.post ("/api/mission/add/", missionAddController.addMission);
+//Renders publication UI
+//Be aware : API endpoint called from browser
+router.get("/mission/publish", function (req, res) {
+    res.render("publishMission", {pageTitle: "Publier une mission"});
+});
+
+/*
 
 //Updates a mission
 router.put ("/api/mission/update/:missionPbo", missionUpdateController.updateMission);
