@@ -87,6 +87,8 @@
 
     <section class="readme-section">
         <article><h1>gdc-toolbox, an arma 3 community toolbox</h1>
+<h2>Overview</h2>
+<p>gdc-toolbox is a set of tools for arma gamers, mission makers and community managers. From a technical point of view, it is composed of a REST API (gdc-toolbox-api) and a client (gdc-toolbox-client). These two parts are totally independant.</p>
 <h2>Table of contents</h2>
 <ul>
 <li><a href="#intented-audience">Intented audience</a></li>
@@ -99,6 +101,7 @@
 <p>This software is intended for players, mission creators and administrators of Arma 3 communities.</p>
 <p>Arma 3 is a military simulation video game created and edited by Bohemia Interactive Studios.</p>
 <h2>Features</h2>
+<p>Unless explicitly indicated, those features are provided by gdc-toolbox-api.</p>
 <h3>Mission checking</h3>
 <p>Checks the integrity of the mission .pbo file and compliance with certain rules. Each rule can be configured as blocking if it is not satisfied :</p>
 <ul>
@@ -131,10 +134,9 @@
 <li>missionBriefing: briefing content, extracted from a briefing.sqf file if this file exists in the mission pbo</li>
 <li>loadScreen: image file, if this file exists in the mission pbo file. Extracted from description.ext, or from mission.sqm if not found in deccription.ext. If declared but not found, the field is declared with &quot;image referenced in loadScreen, but image file not found in the pbo !&quot;.</li>
 </ul>
-<h3>Briefing extraction and rendering</h3>
+<h3>Briefing extraction (gdc-toolbox-api) and rendering (gdc-toolbox-client)</h3>
 <p>If a briefing.sqf file is present in the mission pbo, its content is extracted to allow its web rendering</p>
 <h4>Technical details</h4>
-<p>The briefing is rendered as an html page, using the <code>showBriefing.hbs</code> view.</p>
 <p>Briefing is automatically generated from the <code>briefing.sqf</code> file, by reading its content and computing it with some regex :</p>
 <p><code>player createDiaryRecord [&quot;Diary&quot;, [&quot;Mission&quot;, &quot;Notre commando a réussi à s'infiltrer près de l'aérodrome...&quot;]];</code></p>
 <ul>
@@ -143,6 +145,7 @@
 </ul>
 <p>All other strings are ignored.</p>
 <p>If a <code>loadScreen</code> field is found in the mission .pbo and if the referenced image is found, it is used as an illustrative image for the briefing.</p>
+<p>For the rendering (gdc-toolbox-client), the briefing is rendered as an html page, using the <code>showBriefing.hbs</code> view.)</p>
 <h3>Mission publication</h3>
 <p>Allows mission makers to publish their mission pbo to a directory located on the server, as defined by admin. Before publication, mission pbo is checked. If check is sucessfull, informations about the mission are grabbed and added to a database.</p>
 <h3>List of missions</h3>
@@ -158,7 +161,7 @@
 <li>user can change column width and/or order</li>
 <li>the configuration of the list is locally saved (column order, height, sort, etc)</li>
 </ul>
-<h3>Embed API</h3>
+<h3>Embed API (gdc-toolbox-client)</h3>
 <p>Embed API is used, notably for discord embed</p>
 <h2>Installation</h2>
 <h3>First installation</h3>
@@ -199,16 +202,18 @@ If your image file does not appear and your are not in one of the cases mentione
 <h4>I entered &quot;blabla&quot; in the Eden loadName/loadScreen/etc mission attribute, but this is not what appears in gdc-toolbox</h4>
 <p>gdc-toolbox takes at first informations grabbed from description.ext file. In Arma, these informations take precedence over mission.sqm informations. So does gdc-toolbox. Check your mission folder and look for a description.ext file.</p>
 <h2>Tech notes</h2>
+<h3>Github repo</h3>
+<p><a href="https:%5C/%5C/github.com/Tanin69/gdc-toolbox">https://github.com/Tanin69/gdc-toolbox</a></p>
 <h3>Changelog</h3>
-<p>See /api/CHANGELOG.md and /front/CHANGELOG.md</p>
+<p>See /api/CHANGELOG.md and /web-client/CHANGELOG.md</p>
 <h3>Future work</h3>
-<p>See /api/BACKLOG.md and /front/CHANGELOG.md</p>
+<p>See /api/BACKLOG.md and /web-client/CHANGELOG.md</p>
 <h3>General architecture</h3>
 <p>This software is a <strong><a href="https://nodejs.org/">node.js</a></strong> app.</p>
 <p>Until v0.3.3, the app was structured as a Model-View-Controller (MVC) architecture and had an underlying (sort of) REST API.</p>
 <p>From v0.4.0, a REST API and a frontend client architecture is adopted.</p>
 <h3>Client side components</h3>
-<p>Much of the logic is delegated to  javascript client components</p>
+<p>Much of the logic is delegated to javascript client components</p>
 <ul>
 <li>List management : <a href="http://tabulator.info/">tabulator</a>. Tabulator is an open source (MIT licence) javascript library. It is very well maintained, documented and very very powerfull. You should definitly take a look at tabulator !</li>
 <li>File uploads : <a href="https://www.dropzonejs.com/">dropzoneJS</a></li>
@@ -260,7 +265,7 @@ If your image file does not appear and your are not in one of the cases mentione
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a>
 	
-		on 2020-04-24T17:28:31+02:00
+		on 2020-04-25T13:01:23+02:00
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

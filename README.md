@@ -1,5 +1,9 @@
 # gdc-toolbox, an arma 3 community toolbox
 
+## Overview
+
+gdc-toolbox is a set of tools for arma gamers, mission makers and community managers. From a technical point of view, it is composed of a REST API (gdc-toolbox-api) and a client (gdc-toolbox-client). These two parts are totally independant.
+
 ## Table of contents
 
 * [Intented audience](#intented-audience)
@@ -15,6 +19,8 @@ This software is intended for players, mission creators and administrators of Ar
 Arma 3 is a military simulation video game created and edited by Bohemia Interactive Studios.
 
 ## Features
+
+Unless explicitly indicated, those features are provided by gdc-toolbox-api.
 
 ### Mission checking
 
@@ -50,13 +56,11 @@ By reading the different files contained in the pbo, by the name of the pbo file
 * missionBriefing: briefing content, extracted from a briefing.sqf file if this file exists in the mission pbo
 * loadScreen: image file, if this file exists in the mission pbo file. Extracted from description.ext, or from mission.sqm if not found in deccription.ext. If declared but not found, the field is declared with "image referenced in loadScreen, but image file not found in the pbo !".
 
-### Briefing extraction and rendering
+### Briefing extraction (gdc-toolbox-api) and rendering (gdc-toolbox-client)
 
 If a briefing.sqf file is present in the mission pbo, its content is extracted to allow its web rendering
 
 #### Technical details
-
-The briefing is rendered as an html page, using the ```showBriefing.hbs``` view.
 
 Briefing is automatically generated from the ```briefing.sqf``` file, by reading its content and computing it with some regex :
 
@@ -68,6 +72,8 @@ Briefing is automatically generated from the ```briefing.sqf``` file, by reading
 All other strings are ignored.
 
 If a ```loadScreen``` field is found in the mission .pbo and if the referenced image is found, it is used as an illustrative image for the briefing.
+
+For the rendering (gdc-toolbox-client), the briefing is rendered as an html page, using the ```showBriefing.hbs``` view.)
 
 ### Mission publication
 
@@ -87,7 +93,7 @@ Moreover :
 * user can change column width and/or order
 * the configuration of the list is locally saved (column order, height, sort, etc)
 
-### Embed API
+### Embed API (gdc-toolbox-client)
 
 Embed API is used, notably for discord embed
 
@@ -150,13 +156,17 @@ gdc-toolbox takes at first informations grabbed from description.ext file. In Ar
 
 ## Tech notes
 
+### Github repo
+
+<https://github.com/Tanin69/gdc-toolbox>
+
 ### Changelog
 
-See /api/CHANGELOG.md and /front/CHANGELOG.md
+See /api/CHANGELOG.md and /web-client/CHANGELOG.md
 
 ### Future work
 
-See /api/BACKLOG.md and /front/CHANGELOG.md
+See /api/BACKLOG.md and /web-client/CHANGELOG.md
 
 ### General architecture
 
@@ -168,7 +178,7 @@ From v0.4.0, a REST API and a frontend client architecture is adopted.
 
 ### Client side components
 
-Much of the logic is delegated to  javascript client components
+Much of the logic is delegated to javascript client components
 
 * List management : [tabulator](http://tabulator.info/). Tabulator is an open source (MIT licence) javascript library. It is very well maintained, documented and very very powerfull. You should definitly take a look at tabulator !
 * File uploads : [dropzoneJS](https://www.dropzonejs.com/)

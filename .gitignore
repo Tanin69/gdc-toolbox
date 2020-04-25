@@ -1,7 +1,7 @@
 /api/node_modules
 /api/package-lock.json
 /api/.env
-/api/.jsdoc.conf
+.jsdoc.conf
 .env
 /api/public/img/brf
 /web-client/node_modules
