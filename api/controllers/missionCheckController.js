@@ -34,31 +34,31 @@ const LOG_PREF = `${moduleName}->`;
 //Reads environment variables
 dotenv.config();
 
-exports.checkMission = function(req, res) {
+exports.checkMission = function (req, res) {
 
-    const form = new IncomingForm({maxFileSize: 10 * 1024 * 1024});
-    
+    const form = new IncomingForm({ maxFileSize: 10 * 1024 * 1024 });
+
     form.parse(req);
 
     form.on("fileBegin", (name, file) => {
         console.info(`${LOG_PREF} ${file.name} : début de réception du fichier`);
         file.path = process.env.UPLOAD_DIR + file.name;
     });
-    
+
     form.on("file", (name, file) => {
 
         const pboFileName = process.env.UPLOAD_DIR + file.name;
         console.log(`${LOG_PREF} ${file.name} : taille du fichier reçu: ${file.size}`);
-        
+
         //Checks if the mission pbo was previously published. If yes, we launch a 202 http code and return a well formed JSON.
-        if (fs.existsSync(process.env.MISSIONS_DIR + file.name)){
+        if (fs.existsSync(process.env.MISSIONS_DIR + file.name)) {
             console.warn(`${LOG_PREF} ${file.name} : mission déjà publiée`);
             res.status(202).json({
-                "missionNotPublished": {"isOK": false, "isBlocking": true, "label": "Cette mission n'a pas encore été publiée"},
+                "missionNotPublished": { "isOK": false, "isBlocking": true, "label": "Cette mission n'a pas encore été publiée" },
                 "isMissionValid": false,
                 "nbBlockingErr": 1,
             });
-        
+
         } else {
             //Build Json object with all attributes from checkMission and grabMissionInfos
             const jsRetCheck = checkM.checkMission(pboFileName);
@@ -73,7 +73,7 @@ exports.checkMission = function(req, res) {
                 res.status(200).json(jsResult);
             }
         }
-        
+
     });
 
     //Fired when connection is aborted by client
@@ -85,10 +85,10 @@ exports.checkMission = function(req, res) {
     //Something went wrong (c'est parti en couille, faut le dire)
     form.on("error", (err) => {
         console.error(`${LOG_PREF} ${err}`);
-        res.status(400).json({"Upload error":`${err}`});
+        res.status(400).json({ "Upload error": `${err}` });
     });
-       
-    form.on('end', function() {
+
+    form.on('end', function () {
         res.end();
     });
 

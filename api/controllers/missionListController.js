@@ -20,11 +20,11 @@
  * @code {400} Error: bad request
  */
 
- const Mission = require("../models/mission");
+const Mission = require("../models/mission");
 
 //Request the DB and return all missions in JSON format.
-exports.listMissions = function(req, res) {
-    
+exports.listMissions = function (req, res) {
+
     Mission.find()
         .sort([["author", "ascending"]])
         .exec(function (err, missionsList) {

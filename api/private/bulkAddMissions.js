@@ -15,10 +15,10 @@ dotenv.config();
 /* Database connection */
 console.log("Connecting to database. Please wait...");
 mongoose.connect(process.env.DB_CONNECT,
-    { 
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      useFindAndModify: false,
+    {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useFindAndModify: false,
     })
     .then(() => console.log("MongoDB connection success"))
     .then(() => doBulk())
@@ -39,7 +39,7 @@ function doBulk() {
     const nbFilesMissionsDirIn = filesMissionsDir.length;
 
     try {
-        const missions = fs.readdirSync(INPUT_DIR); 
+        const missions = fs.readdirSync(INPUT_DIR);
         if (!missions) {
             console.error(err);
             return err;
@@ -48,9 +48,9 @@ function doBulk() {
             for (const pboFileName of missions) {
                 pboFilenamePath = INPUT_DIR + pboFileName;
                 //We check if the mission was already published
-                if (fs.existsSync(process.env.MISSIONS_DIR + pboFileName)){
+                if (fs.existsSync(process.env.MISSIONS_DIR + pboFileName)) {
                     console.log(`${DBG_PREF} ${pboFileName} mission déjà publiée : pbo non traité`);
-                    nbAlreadyPublishedMissions ++;
+                    nbAlreadyPublishedMissions++;
                 } else {
                     checkResult = checkM.checkMission(pboFilenamePath, {
                         "block_fileIsPbo": true,
@@ -63,7 +63,7 @@ function doBulk() {
                     });
                     //If mission is not valid, stop
                     if (checkResult.isMissionValid) {
-                        nbValidMissions ++;
+                        nbValidMissions++;
                         //Grabs informations about the mission
                         missionInfos = grabM.grabMissionInfos(pboFilenamePath);
                         //Merges check and grab JSON to feed database saving
@@ -105,7 +105,7 @@ function doBulk() {
     * soit ${nbPublishedMissions} mission(s) ajoutée(s) durant cet import
     ****
     \u001B[0m
-    `); 
+    `);
             //(End)Print end message
         }
     } catch (err) {

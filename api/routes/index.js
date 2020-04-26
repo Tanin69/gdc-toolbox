@@ -12,7 +12,6 @@ const express = require("express");
 
 const router = express.Router();
 
-
 //Controllers imports
 const missionListController = require("../controllers/missionListController");
 const missionAddController = require("../controllers/missionAddController");
@@ -20,25 +19,19 @@ const missionCheckController = require("../controllers/missionCheckController");
 const missionShowController = require("../controllers/missionShowController");
 const missionUpdateController = require("../controllers/missionUpdateController");
 
-//Home page
-router.get ("/", function (req, res) {
-  res.render("home", {pageTitle: "GDC Toolbox (dev)"});
-});
-
-
 //Returns list of missions in listMission view.
-router.get ("/api/mission/list", missionListController.listMissions);
+router.get("/api/mission/list", missionListController.listMissions);
 
 //Returns complete mission json
-router.get ("/api/mission/show/:missionPbo", missionShowController.showMission);
+router.get("/api/mission/show/:missionPbo", missionShowController.showMission);
 
 //Checks a mission
 router.post("/api/mission/check/", missionCheckController.checkMission);
 
 //Publishes a mission
-router.post ("/api/mission/add/", missionAddController.addMission);
+router.post("/api/mission/add/", missionAddController.addMission);
 
 //Updates a mission
-router.put ("/api/mission/update/:missionPbo", missionUpdateController.updateMission);
+router.put("/api/mission/update/:missionPbo", missionUpdateController.updateMission);
 
 module.exports = router;

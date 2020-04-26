@@ -5,7 +5,7 @@
  * 
  * @example <caption>Typical PUT request to obtain information about a published mission</caption>
  * 
-  * //header\\
+ * //header\\
  * PUT /api/mission/update/exact-name-of-puvblished-pbo-file/?field-to-be-updated=new-value HTTP/1.1
  * content-type: text/html
  * 
@@ -37,7 +37,7 @@ exports.updateMission = function (req, res) {
     const updMissionPbo = req.params.missionPbo;
     if (Object.keys(req.query).length === 0 || Object.keys(req.query).length > 1) {
         console.warn(`${LOG_PREF} ${updMissionPbo} : Pas de paramètre ou mauvais nombre de paramètres dans la requête PUT`);
-        res.status(400).json({Error: `${updMissionPbo} : no parameter or wrong number of parameters in PUT query`});
+        res.status(400).json({ Error: `${updMissionPbo} : no parameter or wrong number of parameters in PUT query` });
         return;
     }
     for (const key in req.query) {
@@ -50,7 +50,7 @@ exports.updateMission = function (req, res) {
                     updateMission(updMissionPbo, updateVal, res, updateKey);
                 } else {
                     console.warn(`${LOG_PREF} ${updMissionPbo} : valeur update illégale dans la requête PUT`);
-                    res.status(202).json({Error: `${updMissionPbo} : illegal value in PUT request for ${updateKey} key`});
+                    res.status(202).json({ Error: `${updMissionPbo} : illegal value in PUT request for ${updateKey} key` });
                 }
                 break;
             case "isMissionArchived":
@@ -58,42 +58,42 @@ exports.updateMission = function (req, res) {
                     updateMission(updMissionPbo, updateVal, res, updateKey);
                 } else {
                     console.warn(`${LOG_PREF} ${updMissionPbo} : valeur update illégale dans la requête PUT`);
-                    res.status(202).json({Error: `${updMissionPbo} : missing or illegal value in PUT request for ${updateKey} key`});
+                    res.status(202).json({ Error: `${updMissionPbo} : missing or illegal value in PUT request for ${updateKey} key` });
                 }
                 break;
             default:
-                res.status(202).json({Error: `${updMissionPbo} : key update not allowed`});
+                res.status(202).json({ Error: `${updMissionPbo} : key update not allowed` });
         }
     }
 };
 
 function updateMission(updMissionPbo, updateVal, res, updateKey) {
-    
-    Mission.findOne({"missionPbo.val": updMissionPbo})
-    .exec (function (err, mission) {
-        if (err) {
-            console.error(`${LOG_PREF} ${updMissionPbo} : ${err}`);
-            res.status(202).json({ Error: `${updMissionPbo} : update failed in database` });
-            return;
-        }
-        if (mission) {
-            mission[updateKey].val = updateVal;
-            mission.save(function (err, mission) {      
-                if (err) {
-                    console.error(`${LOG_PREF} ${updMissionPbo} : ${err}`);
-                    res.status(202).json({ Error: `${updMissionPbo} : update failed in database` });
-                    return;
-                } else {
-                    console.info(`${LOG_PREF} ${updMissionPbo} : nouvelle valeur de ${updateKey}: ${updateVal}`);
-                    res.status(200).json({ Success: `${updMissionPbo} : new value for ${updateKey} key is ${updateVal}` });
-                }
-            });
-        } else {
-            console.info(`${LOG_PREF} ${updMissionPbo} : le pbo n'existe pas dans la base`);
-            res.status(404).json({ Fail: `${updMissionPbo} : pbo not found in databse` });
-        }
-    });
-    
+
+    Mission.findOne({ "missionPbo.val": updMissionPbo })
+        .exec(function (err, mission) {
+            if (err) {
+                console.error(`${LOG_PREF} ${updMissionPbo} : ${err}`);
+                res.status(202).json({ Error: `${updMissionPbo} : update failed in database` });
+                return;
+            }
+            if (mission) {
+                mission[updateKey].val = updateVal;
+                mission.save(function (err, mission) {
+                    if (err) {
+                        console.error(`${LOG_PREF} ${updMissionPbo} : ${err}`);
+                        res.status(202).json({ Error: `${updMissionPbo} : update failed in database` });
+                        return;
+                    } else {
+                        console.info(`${LOG_PREF} ${updMissionPbo} : nouvelle valeur de ${updateKey}: ${updateVal}`);
+                        res.status(200).json({ Success: `${updMissionPbo} : new value for ${updateKey} key is ${updateVal}` });
+                    }
+                });
+            } else {
+                console.info(`${LOG_PREF} ${updMissionPbo} : le pbo n'existe pas dans la base`);
+                res.status(404).json({ Fail: `${updMissionPbo} : pbo not found in databse` });
+            }
+        });
+
     /* Why this one doesn't work ?!!!
     Mission.findOneAndUpdate({ "missionPbo.val": updMissionPbo }, { updateKey: {"val": updateVal }}, { new: true }, function (err, mission) {
         if (err) {
