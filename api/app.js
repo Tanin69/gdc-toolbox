@@ -1,23 +1,20 @@
-// External modules imports
+//External modules imports
 const express = require('express');
 const exphbs = require('express-handlebars');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const pjson = require('./package.json');
 const cors = require("cors");
-
-// Read environment variables
-dotenv.config();
-
-// App specific imports
+//App specific imports
 const routes = require("./routes");
 
-/* Express app instanciation */
+//Read environment variables
+dotenv.config();
 
+/* Express app instanciation */
 const app = express();
 
 /* Express middlewares */
-
 app.use(express.json());
 
 /* CORS config */
@@ -26,7 +23,6 @@ app.use(cors({
 }));
 
 /* Database connection */
-
 mongoose.connect(process.env.DB_CONNECT,
   {
     useNewUrlParser: true,
@@ -37,37 +33,32 @@ mongoose.connect(process.env.DB_CONNECT,
   .catch(() => console.log("MongoDB connection failed !"));
 
 /* View engine instanciation and configuration */
-
-// express-handlerbars instanciation
+//express-handlerbars instanciation
 const hbs = exphbs.create({
   extname: ".hbs",
   partialsDir: __dirname + "/views/partials/",
 });
-
-// Inform express about template engine to use
+//Inform express about template engine to use
 app.engine(".hbs", hbs.engine);
 app.set('view engine', '.hbs');
 
-// Connect all routes to application
+//Connect all routes to application
 app.use("/", routes);
 
-
 /* Global error handling */
-
-// Catch 404 and forward to error handler
+//Catch 404 and forward to error handler
 app.use(function (req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
-
-// Error handler
+//Error handler
 app.use(function (err, req, res, next) {
   //Send error message
   res.status(err.status || 500).json({ "Error": err.message });
 });
 
-// Launch the server app
+/* Launch the server app */
 try {
   app.listen(process.env.PORT);
   console.log(`${pjson.name}-${pjson.version} listening on port ${process.env.PORT}`);

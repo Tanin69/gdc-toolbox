@@ -8,9 +8,43 @@
 @files = ./files
 
 ###
+# Login
+# After authentification, return an access_token in the url
+#
+GET https://gdc-toolbox-api.eu.auth0.com/authorize
+    ?response_type=token
+    &client_id=4PQWGF6GSh99iHnZxjmLIxUhldBqnuFm
+    &redirect_uri=http://localhost:3000/api/mission/list
+    &scope=openid%20profile%20email
+    &audience=https://grecedecanards.fr/api-dev
+    &state=xyzABC123
+    &connection=google-oauth2
+
+###
+# Requests token
+# unusefuul if response-type=token, as above
+#
+POST https://gdc-toolbox-api.eu.auth0.com/oauth/token
+content-type: application/x-www-form-urlencoded
+
+grant_type=authorization_code
+&client_id=4PQWGF6GSh99iHnZxjmLIxUhldBqnuFm
+&client_secret=dBcvFNJuylPj7QsPiA30V8fzUaHfnYToODbHaaen7OJ68e1t-LMzhYXhdcfvxR8Z
+&code=-YxaOCbO7fI8V4dvP
+&state=xyzABC123
+&redirect_uri=http://localhost:3000/api/mission/add
+
+###
+# Gets user info
+GET https://gdc-toolbox-api.eu.auth0.com/userinfo
+Authorization: Bearer ""
+
+
+###
 # normal case
 POST {{baseUrl}}{{endPoint}} HTTP/1.1
 Accept: application/json
+authorization: Bearer ACCESS_TOKEN
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryWmunjnPoLceaU7KM
 
 ------WebKitFormBoundaryWmunjnPoLceaU7KM

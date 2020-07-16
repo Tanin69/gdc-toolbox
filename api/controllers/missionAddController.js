@@ -49,6 +49,7 @@ dotenv.config();
 
 exports.addMission = function (req, res) {
 
+    const userId = req.user["https://grecedecanards.fr/email"];
     const form = new IncomingForm({ maxFileSize: 10 * 1024 * 1024 });
 
     form.parse(req);
