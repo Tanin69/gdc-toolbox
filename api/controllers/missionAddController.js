@@ -82,23 +82,31 @@ exports.addMission = function (req, res) {
                 console.log(jsRetCheck);
                 return;
             } else {
-                const jsRetGrab = grabM.grabMissionInfos(pboFileName);
+                
+                // Check if version is already on missions directory
+                if (fs.existsSync(process.env.MISSIONS_DIR + file.name)){
+                    res.status(202).json({
+                        "missionNotPublished": { "isOK": false, "isBlocking": true, "label": "Cette version de la mission a déjà été publiée, merci de changer le nom de version avant de retenter." },
+                        "isMissionValid": false,
+                        "nbBlockingErr": 1,
+                    });
+                    console.log(`${DBG_PREF} ${file.name} Version de la mission déjà existante`);
+                }
+
+                // Finalize by moving the pbo to missions directory
+                try {
+                    fs.renameSync(pboFileName, process.env.MISSIONS_DIR + file.name)
+                    console.log(`${DBG_PREF} ${file.name} déplacé dans ${process.env.MISSIONS_DIR}`);
+                } catch (ex) {
+                    console.log(`${DBG_PREF} ${file.name} : erreur lors du déplacement d'un pbo : ${ex}`);
+                    return;
+                }
+                
                 //Merge JSON results from check and grab to feed addMission with every needed information for database saving
+                const jsRetGrab = grabM.grabMissionInfos(pboFileName);
                 const jsResult = Object.assign({}, jsRetCheck, jsRetGrab);
                 addM.addMission(jsResult);
                 res.status(201).json(jsResult);
-
-                //In case the script has been called by addMission.js from the client, we move the uploaded pbo it to the missions directory
-                //fs.renameSync(process.env.UPLOAD_DIR + req.body.missionPbo, process.env.MISSIONS_DIR + req.body.missionPbo);
-                fs.rename(pboFileName, process.env.MISSIONS_DIR + file.name, function (err) {
-                    if (err) {
-                        console.error(`${LOG_PREF} ${file.name} - Error: aucun pbo à déplacer !`);
-                        return err;
-                    } else {
-                        console.info(`${LOG_PREF} ${file.name} déplacé dans ${process.env.MISSIONS_DIR}`);
-                        return true;
-                    }
-                });
             }
         }
 
