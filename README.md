@@ -140,7 +140,7 @@ Your mission must have been tested with success in arma 3 ! gdc-toolbox IS NOT a
 
 gdc-toolbox look for a "loadScreen" string in description.ext *and* mission.sqm files. It might fail mostly because of :
 
-* missing semi-column at the end of loadScreen field in description.ext file AND no loadScreen value missing in mission.sqm. In description.ext file, this line must be as ```loadSreen = "<yourimage.jpg>";``` <- note the ending semi column
+* missing semi-column at the end of loadScreen field in description.ext file AND loadScreen value missing in mission.sqm. In description.ext file, this line must be as ```loadSreen = "<yourimage.jpg>";``` <- note the ending semi column
 * wrong path or file name in description.ext or mission.sqm (Eden generated)
 * Image file format .paa
 * missing image file in pbo
