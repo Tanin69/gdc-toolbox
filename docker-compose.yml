@@ -1,0 +1,20 @@
+version: "3"
+services:
+  gdc_db:
+    container_name: gdc_db
+    image: mongo
+    volumes:
+      - ./docker/db:/data/db
+      # - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+  gdc_api:
+    container_name: gdc_api
+    image: 'node:12'
+    env_file: ./api/.env
+    working_dir: /usr/src/app
+    volumes:
+      - ./api/:/usr/src/app
+    ports:
+      - '8080:3000'
+    command: npm run devstart
+    depends_on:
+      - gdc_db
