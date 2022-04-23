@@ -25,3 +25,32 @@ body {
 	background-attachment: fixed;
 	background-position: center center;
 }
+
+/* Utilitaires */
+
+.w3-padding-16 {
+	padding: 16px !important;
+}
+
+.gdc-display-flex {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.gdc-flex {
+	flex: 1;
+	margin-right: 16px;
+	margin-bottom: 16px;
+}
+
+.gdc-flexDirection-col {
+	flex-direction: column;
+}
+
+.gdc-alignItems-center {
+	align-items: center;
+}
+
+.gdc-height-full {
+	height: 100%;
+}

@@ -1,7 +1,7 @@
 <template>
 	<NuxtLayout
 		name="default"
-		:header="route.meta.title || route.meta.subtitle || 'Home'"
+		:header="route.meta.title || route.meta.subtitle || 'GDC Toolbox'"
 	>
 		<NuxtPage />
 	</NuxtLayout>
