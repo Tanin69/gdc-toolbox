@@ -1,18 +1,10 @@
-import { readdirSync } from "fs";
 import { defineNuxtConfig } from "nuxt";
-import { join } from "path";
-
-const BG_PATH = "/assets/img/backgrounds/";
 
 // https://v3.nuxtjs.org/api/configuration/nuxt.config
 export default defineNuxtConfig({
-	css: ["@/assets/css/w3.css", "@/assets/css/style.css"],
+	ssr: false, // Fixing Auth0... At what cost... ?
 
-	head: {
-		viewport: "width=device-width, initial-scale=1, maximum-scale=1",
-		charset: "utf-8",
-		meta: [{ name: "description", content: "My amazing site." }],
-	},
+	css: ["@/assets/css/w3.css", "@/assets/css/style.css"],
 
 	typescript: {
 		shim: false,
@@ -21,7 +13,9 @@ export default defineNuxtConfig({
 	runtimeConfig: {
 		public: {
 			BASE_TITLE: "GDC Toolbox",
-			BASE_URL: process.env.BASE_URL || "https://nuxtjs.org",
+			API_MISSION_ENDPOINT: process.env.API_MISSION_ENDPOINT,
+			AUTH0_DOMAIN: process.env.AUTH0_DOMAIN,
+			AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
 		},
 	},
 });

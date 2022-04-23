@@ -18,7 +18,7 @@
 			</NuxtLink>
 		</div>
 
-		<div class="gdc-flex">
+		<div class="gdc-flex" v-if="isAuthenticated">
 			<NuxtLink to="/mission/publish" style="text-decoration: none">
 				<div
 					class="gdc-height-full gdc-display-flex gdc-flexDirection-col gdc-alignItems-center w3-round-large w3-padding-16 gdc-color-tonic w3-hover-sepia"
@@ -39,6 +39,9 @@
 
 <script lang="ts" setup>
 import background from "@/assets/img/backgrounds/home.jpg";
+import { useAuth0 } from "@auth0/auth0-vue";
+
+const { isAuthenticated } = useAuth0();
 
 definePageMeta({
 	title: "",

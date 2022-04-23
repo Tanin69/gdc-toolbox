@@ -4,6 +4,7 @@
 import background from "@/assets/img/backgrounds/addMission.jpg";
 
 definePageMeta({
+	middleware: ["auth"],
 	title: "Publier une mission",
 	background,
 });

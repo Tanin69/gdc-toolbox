@@ -1,5 +1,5 @@
 <template>
-	<div class="w3-bar gdc-color-tonic">
+	<div class="w3-bar gdc-color-tonic gdc-display-flex">
 		<!-- Mobile Button -->
 		<a
 			class="w3-bar-item w3-button w3-left w3-hide-large w3-hide-medium"
@@ -9,6 +9,7 @@
 		</a>
 		<NuxtLink class="w3-bar-item w3-button" to="/"> GDC Toolbox </NuxtLink>
 		<div class="w3-dropdown-hover gdc-color-tonic">
+			<!-- Desktop Menu -->
 			<button class="w3-button w3-hide-small">Missions</button>
 			<div class="w3-dropdown-content w3-bar-block w3-card gdc-color-tonic">
 				<NuxtLink
@@ -21,12 +22,13 @@
 				</NuxtLink>
 			</div>
 		</div>
+		<AuthBar />
 	</div>
-	<!-- Mobile Menu -->
 	<div
 		v-if="showMenu"
 		class="w3-bar-block w3-hide-large w3-hide-medium gdc-color-tonic"
 	>
+		<!-- Mobile Menu -->
 		<NuxtLink
 			v-for="(link, i) of links"
 			:key="i"
@@ -35,12 +37,11 @@
 		>
 			{{ link.label }}
 		</NuxtLink>
+		<AuthBar />
 	</div>
 </template>
 
 <script setup>
-import { ref } from "vue";
-
 const links = [
 	{ label: "Liste des missions", to: "/mission/" },
 	{ label: "Publier une mission", to: "/mission/publish/" },
