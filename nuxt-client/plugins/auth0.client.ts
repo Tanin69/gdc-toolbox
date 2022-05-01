@@ -1,4 +1,4 @@
-import { createAuth0 } from "@auth0/auth0-vue";
+import { createAuth0 } from '@auth0/auth0-vue'
 
 /**
  * As auth0's nuxt module doesn't support nuxt3 yet
@@ -8,15 +8,14 @@ import { createAuth0 } from "@auth0/auth0-vue";
  */
 
 export default defineNuxtPlugin((nuxtApp) => {
-	const runtimeConfig = useRuntimeConfig();
-	const { AUTH0_CLIENT_ID: client_id, AUTH0_DOMAIN: domain } =
-		runtimeConfig.public;
+  const { public: runtimeConfig } = useRuntimeConfig()
+  const { AUTH0_CLIENT_ID: client_id, AUTH0_DOMAIN: domain } = runtimeConfig
 
-	nuxtApp.vueApp.use(
-		createAuth0({
-			domain,
-			client_id,
-			redirect_uri: window.location.origin,
-		})
-	);
-});
+  nuxtApp.vueApp.use(
+    createAuth0({
+      domain,
+      client_id,
+      redirect_uri: window.location.origin,
+    })
+  )
+})

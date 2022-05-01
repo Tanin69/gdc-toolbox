@@ -7,9 +7,12 @@
     "preview": "nuxt preview"
   },
   "devDependencies": {
+    "@types/tabulator-tables": "^5.1.1",
     "nuxt": "3.0.0-rc.1"
   },
   "dependencies": {
-    "@auth0/auth0-vue": "^1.0.0"
+    "@auth0/auth0-vue": "^1.0.0",
+    "@fortawesome/fontawesome-free": "^6.1.1",
+    "tabulator-tables": "^5.2.2"
   }
 }
