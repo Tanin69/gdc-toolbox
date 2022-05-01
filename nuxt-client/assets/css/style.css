@@ -39,6 +39,10 @@ body {
   padding: 16px !important;
 }
 
+.gdc-text-strike {
+  text-decoration: line-through;
+}
+
 .gdc-display-flex {
   display: flex;
   flex-wrap: wrap;
