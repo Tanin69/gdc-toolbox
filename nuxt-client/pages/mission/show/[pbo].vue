@@ -120,8 +120,7 @@ const { pending, data: mission } = useLazyFetch<Mission | null>(
   `${runtimeConfig.API_MISSION_ENDPOINT}/show/${route.params.pbo}`
 )
 const imageURL = computed(() => {
-  // if (mission.value && mission.value.loadScreen.val) {
-  if (false) {
+  if (mission.value && mission.value.loadScreen.val) {
     return `${runtimeConfig.API_MISSION_IMAGE}/${mission.value.loadScreen.val}`
   }
   return placeholder
