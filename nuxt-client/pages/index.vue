@@ -18,7 +18,7 @@
     </div>
 
     <div class="gdc-flex" v-if="isAuthenticated">
-      <NuxtLink to="/mission/publish" style="text-decoration: none">
+      <NuxtLink to="/mission/add" style="text-decoration: none">
         <div
           class="gdc-height-full gdc-display-flex gdc-flexDirection-col gdc-alignItems-center w3-round-large w3-padding-16 gdc-color-tonic w3-hover-sepia"
           style="opacity: 0.9"
