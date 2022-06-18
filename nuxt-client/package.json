@@ -13,6 +13,7 @@
   "dependencies": {
     "@auth0/auth0-vue": "^1.0.0",
     "@fortawesome/fontawesome-free": "^6.1.1",
-    "tabulator-tables": "^5.2.2"
+    "tabulator-tables": "^5.2.2",
+    "vue3-dropzone": "^0.0.7"
   }
 }

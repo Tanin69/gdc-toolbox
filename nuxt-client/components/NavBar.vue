@@ -55,7 +55,7 @@ import { useAuth0 } from '@auth0/auth0-vue'
 
 const links = [
   { label: 'Liste des missions', to: '/mission/' },
-  { label: 'Publier une mission', to: '/mission/publish/', auth: true },
+  { label: 'Publier une mission', to: '/mission/add/', auth: true },
 ]
 
 const showMenu = ref(false)
