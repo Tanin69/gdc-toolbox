@@ -8,37 +8,6 @@ declare module '*.png' {
 }
 
 type Mission = {
-  fileIsPbo: {
-    isOK: boolean
-    label: string
-  }
-  filenameConvention: {
-    isOK: boolean
-    label: string
-  }
-  descriptionExtFound: {
-    isOK: boolean
-    label: string
-  }
-  missionSqmFound: {
-    isOK: boolean
-    label: string
-  }
-  briefingSqfFound: {
-    isOK: boolean
-    label: string
-  }
-  missionSqmNotBinarized: {
-    isOK: boolean
-    label: string
-  }
-  HCSlotFound: {
-    isOK: boolean
-    label: string
-  }
-  isMissionValid: boolean
-  isMissionArchived: boolean
-  nbBlockingErr: number
   missionTitle: {
     val: string
     label: string
@@ -108,4 +77,45 @@ type Mission = {
     val: boolean
     label: string
   }
+}
+
+type MissionError = {
+  fileIsPbo: {
+    isOK: boolean
+    isBlocking?: boolean
+    label: string
+  }
+  filenameConvention: {
+    isOK: boolean
+    isBlocking?: boolean
+    label: string
+  }
+  descriptionExtFound: {
+    isOK: boolean
+    isBlocking?: boolean
+    label: string
+  }
+  missionSqmFound: {
+    isOK: boolean
+    isBlocking?: boolean
+    label: string
+  }
+  briefingSqfFound: {
+    isOK: boolean
+    isBlocking?: boolean
+    label: string
+  }
+  missionSqmNotBinarized: {
+    isOK: boolean
+    isBlocking?: boolean
+    label: string
+  }
+  HCSlotFound: {
+    isOK: boolean
+    isBlocking?: boolean
+    label: string
+  }
+  isMissionValid: boolean
+  isMissionArchived: boolean
+  nbBlockingErr: number
 }

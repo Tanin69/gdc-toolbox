@@ -16,9 +16,11 @@
         </div>
         <div class="dropzone-files">
           <div
-            v-for="({ file, errors }, i) in files"
+            v-for="({ file, errors, checked }, i) in files"
             :class="{
               'mission-file': true,
+              'mission-file-pending': checked === false,
+              'mission-file-success': checked === true,
               'mission-file-error': errors?.length > 0,
             }"
             :title="file.name"
@@ -62,13 +64,75 @@ const {
 } = useDropzone({
   accept: '.pbo',
   maxSize: 1000000,
-  onDrop: async (acceptations, rejections) => {
+  onDrop: (acceptations, rejections) => {
+    // Add files to UI
     files.value = [
       ...files.value,
       ...acceptations.map((file) => ({ file })),
       ...rejections,
     ]
-    console.log([...files.value])
+
+    // alowwing parallel processes
+    const promises = []
+
+    for (const file of acceptations) {
+      // find file in UI. It will used to update the status
+      const index = files.value.findIndex(({ file: fi }) => fi == file)
+
+      const formData = new FormData()
+      formData.append('file', file as File)
+
+      promises.push(
+        $fetch<Mission | MissionError>(
+          // 'http://localhost:8080/check',
+          `${runtimeConfig.API_MISSION_ENDPOINT}/check`,
+          {
+            method: 'POST',
+            body: formData,
+          }
+        )
+          .then((data) => {
+            // Handling errors
+            if ('nbBlockingErr' in data && data.nbBlockingErr > 0) {
+              const warns = []
+              const errors = []
+              // For every entry in response...
+              for (const key in data) {
+                const errorType = data[key as keyof MissionError]
+                // ... that is an object and is actually an error
+                if (typeof errorType === 'object' && !errorType.isOK) {
+                  // Check blocing state of error
+                  if ('isBlocking' in errorType && !errorType.isBlocking) {
+                    warns.push(errorType.label)
+                  } else {
+                    errors.push(errorType.label)
+                  }
+                }
+              }
+              // Throw error
+              // TODO: Match dropzone error type
+              throw {
+                type: errors.length ? 'error' : 'warn',
+                errors: errors.length ? errors : warns,
+                message: `Une ou plusieurs erreurs ont étées détéctées dans votre fichier`,
+              }
+            } else {
+              // PBO is good to go !
+              const f = files.value[index]
+              f.checked = false
+            }
+          })
+          .catch((error) => {
+            // PBO is a no go
+            const f = files.value[index]
+            if (index >= 0) {
+              f.errors = [{ error }]
+            }
+            console.error(error)
+          })
+      )
+    }
+    return Promise.allSettled(promises)
   },
 })
 
