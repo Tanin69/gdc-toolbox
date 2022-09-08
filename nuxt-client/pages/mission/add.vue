@@ -140,8 +140,8 @@ const {
 
       promises.push(
         $fetch<Mission | MissionError>(
-          'http://localhost:8082/check',
-          // `${runtimeConfig.API_MISSION_ENDPOINT}/check`,
+          // 'http://localhost:8082/check',
+          `${runtimeConfig.API_MISSION_ENDPOINT}/check`,
           {
             method: 'POST',
             body: formData,
