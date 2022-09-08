@@ -18,3 +18,12 @@ services:
     command: npm run devstart
     depends_on:
       - gdc_db
+  gdc_admin:
+    container_name: gdc_admin
+    image: mongo-express
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=gdc_db
+    ports:
+      - "8081:8081"
+    depends_on:
+      - gdc_db
