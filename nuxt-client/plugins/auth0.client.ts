@@ -16,6 +16,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       domain,
       client_id,
       redirect_uri: window.location.origin,
+      audience: `https://${domain}/api/v2/`,
     })
   )
 })

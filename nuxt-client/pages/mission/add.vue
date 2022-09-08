@@ -1,9 +1,8 @@
 <template>
   <div class="w3-display-middle">
-    <form @submit="handleSubmit" method="POST" class="dropzone">
+    <form class="dropzone">
       <div v-bind="getRootProps()">
         <input v-bind="(getInputProps() as any)" />
-        <!-- action: http://localhost:3000/api/mission/check -->
         <div class="dropzone-message" v-if="!files.length">
           <i class="fas fa-file-upload" style="font-size: 100px"></i>
           <br />
@@ -16,11 +15,11 @@
         </div>
         <div class="dropzone-files">
           <div
-            v-for="({ file, errors, checked }, i) in files"
+            v-for="({ file, errors, uploaded }, i) in files"
             :class="{
               'mission-file': true,
-              'mission-file-pending': checked === false,
-              'mission-file-success': checked === true,
+              'mission-file-pending': uploaded === false,
+              'mission-file-success': uploaded === true,
               'mission-file-error': errors?.length > 0,
             }"
             :title="file.name"
@@ -34,14 +33,24 @@
             </span>
           </div>
         </div>
+        <div class="dropzone-actions">
+          <button
+            class="w3-btn w3-round w3-block gdc-color-tonic"
+            @click="clearDropzone"
+            :disabled="!files.length"
+          >
+            Tout supprimer
+          </button>
+
+          <button
+            class="w3-btn w3-round w3-block gdc-color-tonic"
+            :disabled="filesToUp.length <= 0"
+            @click="handleSubmit"
+          >
+            Tout envoyer
+          </button>
+        </div>
       </div>
-      <button
-        class="dropzone-reset w3-btn w3-round w3-block gdc-color-tonic"
-        @click="clearDropzone"
-        :disabled="!files.length"
-      >
-        Clear Dropzone
-      </button>
     </form>
   </div>
 </template>
@@ -49,10 +58,43 @@
 <script lang="ts" setup>
 import background from '@/assets/img/backgrounds/addMission.jpg'
 import { useDropzone } from 'vue3-dropzone'
+import type { FileWithPath } from 'file-selector'
+import { useAuth0 } from '@auth0/auth0-vue'
+
+type CustomInputFile = FileWithPath & {
+  size?: number
+}
+
+type CustomFileErrorCode =
+  | 'file-invalid-type'
+  | 'file-too-large'
+  | 'file-too-small'
+  | 'too-many-files'
+  | string
+
+type FileError = {
+  code?: CustomFileErrorCode
+  type?: string
+  errors?: string[]
+  message: string
+}
+
+type CustomFile = {
+  uploaded?: boolean
+  file: CustomInputFile
+  errors?: FileError[]
+}
 
 const { public: runtimeConfig } = useRuntimeConfig()
+const { replace } = useRouter()
+const { getAccessTokenSilently, getAccessTokenWithPopup } = useAuth0()
 
-const files = ref<any[]>([])
+const files = ref<CustomFile[]>([])
+const filesToUp = computed(() =>
+  files.value.filter(
+    ({ uploaded, errors }) => uploaded === false && (errors?.length ?? 0) <= 0
+  )
+)
 
 const {
   getRootProps,
@@ -65,15 +107,29 @@ const {
   accept: '.pbo',
   maxSize: 1000000,
   onDrop: (acceptations, rejections) => {
+    const tmpFiles: CustomFile[] = [...files.value]
+    // Add accepted files
+    for (const file of acceptations) {
+      if ('name' in file) {
+        tmpFiles.push({ file })
+      }
+    }
+    // Add rejected files
+    for (const reason of rejections) {
+      if (reason.file && 'name' in reason.file) {
+        const obj: CustomFile = { file: reason.file, errors: [] }
+        for (const error of reason.errors) {
+          if (typeof error === 'object') {
+            obj.errors.push(error)
+          }
+        }
+      }
+    }
     // Add files to UI
-    files.value = [
-      ...files.value,
-      ...acceptations.map((file) => ({ file })),
-      ...rejections,
-    ]
+    files.value = tmpFiles
 
-    // alowwing parallel processes
-    const promises = []
+    // allowing parallel processes
+    const promises: Promise<any>[] = []
 
     for (const file of acceptations) {
       // find file in UI. It will used to update the status
@@ -84,8 +140,8 @@ const {
 
       promises.push(
         $fetch<Mission | MissionError>(
-          // 'http://localhost:8080/check',
-          `${runtimeConfig.API_MISSION_ENDPOINT}/check`,
+          'http://localhost:8082/check',
+          // `${runtimeConfig.API_MISSION_ENDPOINT}/check`,
           {
             method: 'POST',
             body: formData,
@@ -94,8 +150,8 @@ const {
           .then((data) => {
             // Handling errors
             if ('nbBlockingErr' in data && data.nbBlockingErr > 0) {
-              const warns = []
-              const errors = []
+              const warns: string[] = []
+              const errors: string[] = []
               // For every entry in response...
               for (const key in data) {
                 const errorType = data[key as keyof MissionError]
@@ -119,36 +175,83 @@ const {
             } else {
               // PBO is good to go !
               const f = files.value[index]
-              f.checked = false
+              f.uploaded = false
             }
           })
           .catch((error) => {
+            const err = error as Error | FileError
             // PBO is a no go
             const f = files.value[index]
             if (index >= 0) {
-              f.errors = [{ error }]
+              f.errors = [err]
             }
             console.error(error)
           })
       )
     }
+    // Run all promises in parallel, whatever it returns
     return Promise.allSettled(promises)
   },
 })
 
 const clearDropzone = (e: Event) => {
+  e.stopPropagation()
   e.preventDefault()
   files.value = []
 }
 
-const handleSubmit = () => {}
+const uploadMission = async ({ file }: CustomFile) => {
+  let accessToken = ''
+  try {
+    accessToken = await getAccessTokenSilently()
+  } catch (error) {
+    accessToken = await getAccessTokenWithPopup()
+  }
+  if (!accessToken) {
+    replace('/')
+    return
+  }
+  console.log(accessToken)
 
-const fileSizeToMB = (fileSize: number) => {
-  return (fileSize / (1024 * 1024)).toLocaleString('fr', {
+  const formData = new FormData()
+  formData.set('file', file)
+  try {
+    await $fetch(`${runtimeConfig.API_MISSION_ENDPOINT}/add`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+
+    // TODO: Show OK
+  } catch (error) {
+    // TODO: Show error
+  }
+}
+
+const handleSubmit = (e: Event) => {
+  e.stopPropagation()
+  e.preventDefault()
+  // allowing parallel processes
+  const promises: Promise<any>[] = []
+
+  for (const file of filesToUp.value) {
+    promises.push(uploadMission(file))
+  }
+
+  // Run all promises in parallel, whatever it returns
+  return Promise.allSettled(promises)
+}
+
+const fileSizeToMB = (fileSize: number) =>
+  (fileSize / (1024 * 1024)).toLocaleString('fr', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })
-}
+
+// TODO: Show modal on click
+
 
 definePageMeta({
   middleware: ['auth'],
@@ -191,8 +294,13 @@ definePageMeta({
   gap: 8px;
 }
 
-.dropzone-reset {
+.dropzone-actions {
   margin-top: 1rem;
+  display: flex;
+}
+
+.dropzone-actions > button {
+  margin: 0 0.5rem;
 }
 
 .mission-file {
@@ -201,7 +309,7 @@ definePageMeta({
   text-align: center;
   overflow: hidden;
 
-  background-color: #d2dbe2;
+  background-color: #d2dbe265;
   padding: 0.5rem;
   border-radius: 1rem;
 }
@@ -216,7 +324,13 @@ definePageMeta({
   text-overflow: ellipsis;
 }
 
+.mission-file-pending {
+  background-color: #d2dbe2;
+}
 .mission-file-error {
   background-color: #e09090;
+}
+.mission-file-success {
+  background-color: #90e0ab;
 }
 </style>
