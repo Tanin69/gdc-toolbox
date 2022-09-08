@@ -4,7 +4,7 @@ PORT=3000
 #
 # Be careful : node fs module used. Even on Microsoft Windows Server, you MUST use unix like name path, without any escape characters
 # Don't forget to include the last slash
-# ex. 
+# ex.
 # TMP_DIR="c:/server/tmp/"
 #
 
@@ -23,7 +23,7 @@ UPLOAD_DIR=""
 OUTPUT_DIR=""
 # Database connection string
 DB_CONNECT=""
-# Urls allowed to use API. Should include port number
+# Urls allowed to use API. Should include protocol & port number. Comma separated
 ALLOWED_CORS=""
 # Auth0 configuration
 AUTH0_AUDIENCE=
