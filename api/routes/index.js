@@ -9,9 +9,7 @@
 
 // External modules imports
 const express = require("express");
-const jwt = require("express-jwt");
-const jwksRsa = require("jwks-rsa");
-const jwtAuthz = require("express-jwt-authz");
+const { auth, requiredScopes } = require("express-oauth2-jwt-bearer");
 //Controllers imports
 const missionListController = require("../controllers/missionListController");
 const missionAddController = require("../controllers/missionAddController");
@@ -21,18 +19,9 @@ const missionUpdateController = require("../controllers/missionUpdateController"
 
 /* Authentication */
 //Create middleware for checking the JWT
-const checkJwt = jwt({
-	// Dynamically provide a signing key based on the kid in the header and the signing keys provided by the JWKS endpoint
-	secret: jwksRsa.expressJwtSecret({
-		cache: true,
-		rateLimit: true,
-		jwksRequestsPerMinute: 5,
-		jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`,
-	}),
-	//Validate the audience and the issuer
+const checkJwt = auth({
 	audience: process.env.AUTH0_AUDIENCE,
-	issuer: process.env.AUTH0_DOMAIN,
-	algorithms: ["RS256"],
+	issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}/`,
 });
 
 const router = express.Router();
@@ -50,7 +39,7 @@ router.post("/api/mission/check/", missionCheckController.checkMission);
 router.post(
 	"/api/mission/add/",
 	checkJwt,
-	jwtAuthz(["add:mission"]),
+	requiredScopes("add:mission"),
 	missionAddController.addMission
 );
 
@@ -58,7 +47,7 @@ router.post(
 router.put(
 	"/api/mission/update/:missionPbo",
 	checkJwt,
-	jwtAuthz(["update:mission"]),
+	requiredScopes("update:mission"),
 	missionUpdateController.updateMission
 );
 
