@@ -12,6 +12,8 @@ upload
 .vscode
 gdc-toolbox.code-workspace
 
-/GdcToolboxApi/*/bin
-/GdcToolboxApi/*/obj
+/GdcToolboxApi/**/bin
+/GdcToolboxApi/**/obj
 */.vs
+
+docker/db/

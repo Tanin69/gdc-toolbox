@@ -1,0 +1,33 @@
+## COMMON   ==================
+
+# Auth0 configuration
+AUTH0_DOMAIN=
+
+## FRONTEND ==================
+
+# Shouldn't include trailing /
+API_BASE=
+# Auth0 configuration
+AUTH0_CLIENT_ID=
+
+## BACKEND ==================
+
+# Path to the mikero tool
+# Should be "C:/Program Files (x86)/Mikero/DePboTools/bin/Extractpbo.exe"
+DEPBO_EXE_PATH="C:/Program Files (x86)/Mikero/DePboTools/bin/Extractpbo.exe"
+# A directory where pbo are dpo
+TMP_DIR=""
+# The directory where missions are published
+MISSIONS_DIR=""
+# Directory where users upload their pbo. MUST be directly under server root
+# Example  : "c:/server/upload/"
+UPLOAD_DIR=""
+# Directory where briefing images are saved. MUST be in the ./public directory
+# Example  : "c:/server/public/img/brf/"
+OUTPUT_DIR=""
+# Database connection string
+DB_CONNECT=""
+# Urls allowed to use API. Should include protocol & port number. Comma separated
+ALLOWED_CORS=""
+# Auth0 configuration
+AUTH0_AUDIENCE=

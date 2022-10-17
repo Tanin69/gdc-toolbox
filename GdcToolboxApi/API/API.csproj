@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <DockerComposeProjectPath>../docker-compose.dcproj</DockerComposeProjectPath>
+    <UserSecretsId>7a3d570d-1420-4ce5-9889-5ed5ffd2700b</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,4 +29,5 @@
 	</PropertyGroup>
 
 
+	<PropertyGroup Condition=" '$(RunConfiguration)' == 'GdcToolboxApi' " />
 </Project>

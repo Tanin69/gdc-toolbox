@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Helpers", "Helpers\Helpers.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API", "API\API.csproj", "{AE4AFC97-2DE9-49D1-9FBD-030DCA9D4453}"
 EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{EEFA0396-262F-49E3-930E-2967DF4E79DB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{AE4AFC97-2DE9-49D1-9FBD-030DCA9D4453}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE4AFC97-2DE9-49D1-9FBD-030DCA9D4453}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE4AFC97-2DE9-49D1-9FBD-030DCA9D4453}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEFA0396-262F-49E3-930E-2967DF4E79DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEFA0396-262F-49E3-930E-2967DF4E79DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEFA0396-262F-49E3-930E-2967DF4E79DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEFA0396-262F-49E3-930E-2967DF4E79DB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

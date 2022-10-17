@@ -1,0 +1,49 @@
+version: '3.5'
+
+services:
+  db:
+    container_name: gdc_db
+    image: mongo
+    volumes:
+      - ./docker/db:/data/db
+      - ./docker/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+  db_admin:
+    container_name: gdc_db_admin
+    image: mongo-express
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=db
+    ports:
+      - 8081:8081
+    depends_on:
+      - db
+
+  api:
+    container_name: gdc_api
+    extends:
+      file: GdcToolboxApi/docker-compose.yml
+      service: api
+    ports:
+      - 8080:80
+    depends_on:
+      - db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DEPBO_EXE_PATH=${DEPBO_EXE_PATH}
+      - TMP_DIR=${TMP_DIR}
+      - MISSIONS_DIR=${MISSIONS_DIR}
+      - UPLOAD_DIR=${UPLOAD_DIR}
+      - OUTPUT_DIR=${OUTPUT_DIR}
+      - DB_CONNECT="mongodb://db:27017"
+      - ALLOWED_CORS="http:/localhost:3000"
+      - AUTH0_AUDIENCE=${AUTH0_AUDIENCE}
+  # app:
+  #   container_name: gdc_app
+  #   build: nuxt-client/Dockerfile
+  #   ports:
+  #     - 80:3000
+  #   depends_on:
+  #     - api
+  #   environment:
+  #     - API_BASE="http://api"
+  #     - AUTH0_DOMAIN=${AUTH0_DOMAIN}
+  #     - AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID}
