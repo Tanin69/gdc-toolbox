@@ -114,7 +114,7 @@
             >
               {{ item[0] }}
             </h4>
-            <!-- XSS ?! -->
+            <!-- WARN: XSS ?! -->
             <p class="gdc-color-dark" v-html="item[1]"></p>
           </div>
         </div>
@@ -145,7 +145,6 @@ const imageURL = computed(() => {
 const showInfos = ref(true)
 definePageMeta({
   title: 'Briefing de mission',
-  subtitle: 'Briefing de mission',
 })
 </script>
 
