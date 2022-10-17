@@ -1,21 +1,21 @@
 <template>
-  <div style="margin-left: auto">
-    <div v-if="isAuthenticated" class="gdc-display-flex">
-      <div class="gdc-display-flex gdc-alignItems-center">
-        {{ user.name }}
-      </div>
-      <button class="w3-bar-item w3-button" @click="logout">
-        Se déconnecter
-      </button>
-    </div>
-    <button v-else class="w3-bar-item w3-button" @click="login">
-      Se connecter
-    </button>
+  <div>
+    <SplitButton
+      v-if="isAuthenticated"
+      icon="pi pi-user"
+      :label="user.name"
+      :model="[
+        { label: 'Se déconnecter', icon: 'pi pi-sign-out', command: logout },
+      ]"
+    ></SplitButton>
+    <Button label="Se connecter" icon="pi pi-sign-in" v-else @click="login" />
   </div>
 </template>
 
 <script setup>
 import { useAuth0 } from '@auth0/auth0-vue'
+import Button from 'primevue/button'
+import SplitButton from 'primevue/splitbutton'
 
 const {
   loginWithRedirect,
@@ -25,9 +25,11 @@ const {
 } = useAuth0()
 
 const login = () => {
+  localStorage.setItem('ROUTE_BEFORE_REDIRECT', window.location.pathname)
   loginWithRedirect()
 }
 const logout = () => {
-  logoutWithRedirect({ returnTo: window.location.origin })
+  localStorage.setItem('ROUTE_BEFORE_REDIRECT', window.location.pathname)
+  logoutWithRedirect({ returnTo: window.location.origin + '/auth' })
 }
 </script>
