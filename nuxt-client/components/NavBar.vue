@@ -1,64 +1,45 @@
 <template>
-  <div class="w3-bar gdc-color-tonic gdc-display-flex">
-    <!-- Mobile Button -->
-    <a
-      class="w3-bar-item w3-button w3-left w3-hide-large w3-hide-medium"
-      @click.prevent="showMenu = !showMenu"
-    >
-      &#9776;
-    </a>
-    <NuxtLink class="w3-bar-item w3-button" to="/"> GDC Toolbox </NuxtLink>
-    <div class="w3-dropdown-hover gdc-color-tonic">
-      <!-- Desktop Menu -->
-      <button class="w3-button w3-hide-small">Missions</button>
-      <div class="w3-dropdown-content w3-bar-block w3-card gdc-color-tonic">
-        <NuxtLink
-          v-for="(link, i) of links"
-          :key="i"
-          :class="[
-            'w3-bar-item',
-            'w3-button',
-            link.auth && isAuthenticated !== link.auth && 'w3-hide',
-          ]"
-          :to="link.to"
-        >
-          {{ link.label }}
-        </NuxtLink>
-      </div>
-    </div>
-    <AuthBar />
-  </div>
-  <div
-    v-if="showMenu"
-    class="w3-bar-block w3-hide-large w3-hide-medium gdc-color-tonic"
-  >
-    <!-- Mobile Menu -->
-    <NuxtLink
-      v-for="(link, i) of links"
-      :key="i"
-      :class="[
-        'w3-bar-item',
-        'w3-button',
-        link.auth && isAuthenticated !== link.auth && 'w3-hide',
-        NuxtLink,
-      ]"
-      :to="link.to"
-    >
-      {{ link.label }}
-    </NuxtLink>
-    <AuthBar />
-  </div>
+  <Toolbar>
+    <template #start>
+      <Button
+        icon="pi pi-home"
+        class="p-button-text"
+        title="Retour à l'acceuil"
+        @click="navigateTo('/')"
+      />
+      <SplitButton
+        label="Missions"
+        :model="links"
+        @click="navigateTo('/mission')"
+        class="p-button-text"
+      ></SplitButton>
+      <Button
+        class="p-button-text"
+        label="A propos"
+        @click="navigateTo('/about')"
+      />
+    </template>
+    <template #end>
+      <AuthBar />
+    </template>
+  </Toolbar>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { useAuth0 } from '@auth0/auth0-vue'
-
-const links = [
-  { label: 'Liste des missions', to: '/mission/' },
-  { label: 'Publier une mission', to: '/mission/add/', auth: true },
-]
-
-const showMenu = ref(false)
+import Toolbar from 'primevue/toolbar'
+import Button from 'primevue/button'
+import SplitButton from 'primevue/splitbutton'
+import type { MenuItem } from 'primevue/menuitem'
 
 const { isAuthenticated } = useAuth0()
+
+const links: MenuItem[] = [
+  { label: 'Liste des missions', to: '/mission/' },
+  {
+    label: 'Publier une mission',
+    to: '/mission/add/',
+    visible: () => isAuthenticated.value,
+  },
+]
 </script>
