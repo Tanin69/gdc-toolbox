@@ -1,160 +1,210 @@
 <template>
-  <div id="modalSuccess" class="w3-modal" style="display: block; z-index: 1500">
-    <div class="w3-modal-content w3-card-4 w3-animate-zoom w3-khaki">
-      <header :class="['w3-container', hasError ? 'w3-red' : 'w3-green']">
-        <h3>
-          {{ hasError ? 'Mission non conforme' : 'Mission prête' }}
-        </h3>
-        <span
-          class="w3-button w3-xlarge w3-display-topright"
-          @click="emit('close')"
-          >&times;</span
-        >
-      </header>
-      <ul id="msgSuccessContent" class="w3-ul">
-        <li
-          v-for="([key, data], i) in detailEntries"
-          :key="i"
+  <div>
+    <ul class="detail-list">
+      <li
+        v-for="([key, data], i) in detailEntries"
+        :key="i"
+        :class="{
+          missing: data.val === false && !data.isBlocking,
+          blocking: data.val === false && data.isBlocking,
+        }"
+      >
+        <i
           :class="{
-            missing: !hasError && data.val === false,
-            blocking: hasError && data.val === false && data.isBlocking,
-            error: hasError && data.val === false,
+            'status pi': true,
+            'pi-question-circle': data.val === false && !data.isBlocking,
+            'pi-exclamation-circle': data.val === false && data.isBlocking,
+            'pi-check-circle': data.val !== false,
           }"
-          :title="key"
-          v-html="data.label ?? key + ' : ' + formatValue(data.val)"
-        ></li>
-      </ul>
-      <footer class="w3-container w3-padding w3-khaki">
-        <button
-          class="w3-button w3-left w3-round w3-white w3-border"
-          @click="emit('close')"
-        >
-          Annuler
-        </button>
-        <button
-          v-if="!hasError"
-          class="w3-button w3-right w3-round w3-white w3-border"
-          @click="emit('publish')"
-        >
-          Publier la mission&nbsp;<i class="fas fa-check"></i>
-        </button>
-      </footer>
-    </div>
+        />
+        <span class="label" v-tooltip.top="key"
+          >{{ data.label ?? key }} :
+        </span>
+        <component :is="formatValue(data.val, key)" />
+      </li>
+    </ul>
   </div>
-
-  <!-- <div
-      id="modalFailure"
-      class="w3-modal"
-      style="display: block; z-index: 1500"
-    >
-      <div class="w3-modal-content w3-card-4 w3-animate-zoom">
-        <header class="w3-container w3-red">
-          <h3 id="msgHead">Oh non, c'est un échec</h3>
-          <span
-            onclick="document.getElementById('modalFailure').style.display='none'"
-            class="w3-button w3-xlarge w3-display-topright"
-            >&times;</span
-          >
-        </header>
-        <ul id="msgFailContent" class="w3-ul"></ul>
-        <footer class="w3-container w3-light-grey w3-padding">
-          <button
-            class="w3-button w3-block w3-round w3-white w3-border"
-            onclick="document.getElementById('modalFailure').style.display='none';resetPage('msgFailContent')"
-          >
-            Annuler
-          </button>
-        </footer>
-      </div>
-    </div> -->
 </template>
 
-<script setup lang="ts">
-const { detail } = defineProps<{
-  detail: Mission | MissionError
-}>()
+<script setup lang="tsx">
+import type { Ref } from 'vue'
+import type { DynamicDialogCloseOptions } from 'primevue/dynamicdialogoptions'
+import bytes from 'bytes'
+import dayjs from '~/ts/dayjs'
 
-const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'publish'): void
-}>()
+const dialogRef = inject<
+  Ref<{
+    data: { detail: Mission | MissionError }
+    close: (params?: DynamicDialogCloseOptions['data']) => void
+  }>
+>('dialogRef')
+const { detail } = dialogRef.value.data
 
 type Entries<T extends Object> = [keyof T, T[keyof T]][]
+type DetailField = {
+  label: string
+  val: string | number | boolean | Date
+  isBlocking: boolean
+}
+
+const { API_MISSION_IMAGE } = useRuntimeConfig()
 
 const hasError = computed(() => 'nbBlockingErr' in detail)
 const detailEntries = computed(() => {
-  const data = {} as Record<
-    keyof Mission | keyof MissionError,
-    {
-      label: string
-      val: string | number | boolean | Date
-      isBlocking: boolean
-    }
-  >
+  const data = {} as Record<keyof Mission | keyof MissionError, DetailField>
   if (detail) {
-  }
-  for (const [key, field] of Object.entries(detail) as
-    | Entries<Mission>
-    | Entries<MissionError>) {
-    if (
-      // If key is not skipped
-      !['missionIsPlayable', 'IFA3mod'].includes(key) &&
-      // And value is an object
-      typeof field === 'object' &&
-      // And value is not an array (ty JS...)
-      !Array.isArray(field)
-    ) {
-      const obj = {
-        label: field.label,
-        isBlocking: false,
-      }
-      if ('isOK' in field) {
-        data[key] = {
-          ...obj,
-          val: field.isOK,
-          isBlocking: field.isBlocking,
+    for (const [key, field] of Object.entries(detail) as
+      | Entries<Mission>
+      | Entries<MissionError>) {
+      if (
+        // If key is not skipped
+        !['missionIsPlayable', 'IFA3mod'].includes(key) &&
+        // And value is an object
+        typeof field === 'object' &&
+        // And value is not an array (ty JS...)
+        !Array.isArray(field)
+      ) {
+        let obj = {
+          label: field.label,
+          isBlocking: false,
         }
-      } else if ('val' in field) {
-        data[key] = { ...obj, val: field.val }
+        if ('isOK' in field) {
+          data[key] = {
+            ...obj,
+            val: field.isOK,
+            isBlocking: field.isBlocking,
+          }
+        } else if ('val' in field) {
+          data[key] = {
+            ...obj,
+            val: field.val,
+          }
+        }
       }
     }
   }
 
-  return Object.entries(data)
+  return Object.entries(data) as Entries<typeof data>
 })
 
-const formatValue = (val: string | number | boolean | Date) => {
+const formatValue = (
+  val: string | number | boolean | Date,
+  key: keyof Mission | keyof MissionError
+): JSX.Element => {
+  let result: string | JSX.Element = ''
   switch (typeof val) {
     case 'object':
-      // val is a Date
-      return val.toLocaleDateString()
-    case 'string':
-      return val
-    case 'boolean':
-      if (hasError) {
-        return val
-          ? '<i class="fa-solid fa-check"></i>'
-          : '<i class="fa-solid fa-triangle-exclamation"></i>'
+      const dateObject = dayjs(val)
+      if (dateObject.isValid()) {
+        result = dateObject.format('DD/MM/YYYY HH:mm')
       }
-      return val ? '<i class="fa-solid fa-check"></i>' : 'Non renseigné'
+      break
+    case 'string':
+      // Trying to parse Date
+      const dateString = dayjs(val, 'YYYY-MM-DDTHH:mm:ss.SSZ')
+      if (dateString.isValid()) {
+        result = dateString.format('DD/MM/YYYY HH:mm')
+      }
+
+      // Trying to parse image
+      if (key === 'loadScreen') {
+        result = (
+          <a href={imageURL.value} target="_blank">
+            {val}
+          </a>
+        )
+      }
+
+      if (!result) {
+        result = val.toLocaleString()
+      }
+      break
+    case 'boolean':
+      if (val) {
+        result = <i class="pi pi-check"></i>
+      } else {
+        // if expected a boolean
+        if (hasError.value || ['IFA3mod', 'missionIsPlayable'].includes(key)) {
+          result = <i class="pi pi-times"></i>
+        } else {
+          result = <span class="missing-value">Non renseigné</span>
+        }
+      }
+      break
     case 'number':
-      return val.toLocaleString()
+      if (key === 'pboFileSize') {
+        result = bytes(val)
+      } else {
+        result = val.toLocaleString()
+      }
+      break
     default:
       // Fallback on default behaviour
-      return 'Non renseigné'
+      result = <span class="missing-value">Non renseigné</span>
+      break
   }
+  return <span class="value">{result}</span>
 }
+
+const imageURL = computed(() => {
+  if (!('nbBlockingErr' in detail) && detail.loadScreen.val) {
+    return `${API_MISSION_IMAGE}/${detail.loadScreen.val}`
+  }
+  return null
+})
 </script>
 
 <style scoped>
-.missing {
-  color: orangered;
+.pi-check {
+  color: var(--green-500);
 }
-.error {
-  color: red;
+.pi-times {
+  color: var(--red-500);
 }
+
+.label {
+  font-weight: bold;
+}
+
+.detail-list {
+  list-style: none;
+}
+
+.detail-list li {
+  position: relative;
+  padding-left: 0.75rem;
+  margin: 0.25rem 0;
+}
+
+.status {
+  position: absolute;
+  display: block;
+  left: -1em;
+  padding: 0.25em;
+  height: 100%;
+  border-radius: 0.5rem 0 0 0.5rem;
+  color: var(--green-500);
+}
+
 .blocking {
-  background-color: red;
+  background-color: var(--red-500);
   color: white;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.blocking .status,
+.blocking .value,
+.blocking .value .pi {
+  color: inherit;
+}
+
+.blocking .status {
+  background-color: var(--red-500);
+}
+
+.missing-value,
+.missing .value .pi,
+.missing .status {
+  color: var(--orange-500);
 }
 </style>

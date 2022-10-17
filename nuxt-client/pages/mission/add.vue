@@ -1,222 +1,313 @@
 <template>
-  <div class="w3-display-middle">
-    <form class="dropzone">
-      <div v-bind="getRootProps()">
-        <input v-bind="(getInputProps() as any)" />
-        <div class="dropzone-message" v-if="!files.length">
-          <i class="fas fa-file-upload" style="font-size: 100px"></i>
-          <br />
-          <div v-if="isDragActive" class="w3-large">
-            Déposez les <code>.pbo</code> ici
-          </div>
-          <span v-else class="w3-large">
-            Cliquez ou déposez les <code>.pbo</code> ici
-          </span>
-        </div>
-        <div class="dropzone-files">
-          <div
-            v-for="({ file, errors, uploaded }, i) in files"
-            :class="{
-              'mission-file': true,
-              'mission-file-pending': uploaded === false,
-              'mission-file-success': uploaded === true,
-              'mission-file-error': errors?.length > 0,
-            }"
-            :title="file.name"
-          >
-            <span class="mission-file-size">
-              <strong>{{ fileSizeToMB(file.size) }}</strong> MB
-            </span>
+  <div>
+    <Card class="main-card">
+      <template #content>
+        <FileUpload
+          name="files[]"
+          customUpload
+          @uploader="checkFiles"
+          multiple
+          auto
+          accept=".pbo"
+          :showCancelButton="false"
+          :showUploadButton="false"
+          :maxFileSize="1000000"
+          chooseLabel="Ajouter un .pbo"
+          invalidFileSizeMessage="{0}: est trop lourd, le poids maximal est de : {1}."
+        >
+          <template #empty>
+            <p>Déposez les <code>.pbo</code> ici</p>
+          </template>
+        </FileUpload>
 
-            <span class="mission-file-name">
-              {{ file.name }}
-            </span>
-          </div>
-        </div>
-        <div class="dropzone-actions">
-          <button
-            class="w3-btn w3-round w3-block gdc-color-tonic"
-            @click="clearDropzone"
-            :disabled="!files.length"
-          >
-            Tout supprimer
-          </button>
-
-          <button
-            class="w3-btn w3-round w3-block gdc-color-tonic"
+        <div class="files-actions">
+          <Button
+            icon="pi pi-cloud-upload"
             :disabled="filesToUp.length <= 0"
-            @click="handleSubmit"
-          >
-            Tout envoyer
-          </button>
+            @click="uploadAll"
+            style="flex: 1; margin: 0 1rem"
+            label="Tout publier"
+          />
+          <Button
+            icon="pi pi-trash"
+            :disabled="files.length <= 0"
+            @click="abortAll"
+            style="flex: 1; margin: 0 1rem"
+            label="Tout supprimer"
+            class="p-button-danger"
+          />
         </div>
-      </div>
-    </form>
+      </template>
+    </Card>
+    <div class="files">
+      <Card v-for="(item, i) in filesToShow" :key="i">
+        <template #header>
+          <div
+            class="image-container"
+            v-tooltip.top="item.mission?.loadScreen.val"
+          >
+            <Skeleton v-if="item.loading" style="height: 100%" />
+            <Image
+              v-else
+              :src="getImageURL(item)"
+              alt="Mission image"
+              preview
+            ></Image>
+          </div>
+        </template>
+        <template #title>
+          <Skeleton v-if="!item.mission && item.loading" />
+          <span
+            v-else-if="item.mission"
+            :class="[!item.mission.missionTitle?.val && 'data-undefined']"
+          >
+            {{ item.mission.missionTitle?.val ?? 'Non rensigné' }}
+          </span>
+          <span v-else> Quelque chose ne va pas avec le fichier </span>
+        </template>
+        <template #subtitle>
+          {{ item.file.name }}
+        </template>
+        <template #content>
+          <div>
+            <Skeleton v-if="!item.mission && item.loading" />
+            <div
+              v-else-if="item.mission"
+              :class="[
+                !item.mission.overviewText?.val && 'data-undefined',
+                'lobby-text',
+              ]"
+            >
+              <b>Texte lobby :</b><br />
+              {{ item.mission.overviewText?.val ?? 'Non rensigné' }}
+            </div>
+            <div v-else-if="item.error">
+              Consultez le détail pour plus d'informations.
+            </div>
+          </div>
+        </template>
+        <template #footer>
+          <Button
+            :loading="item.loading"
+            :disabled="item.uploaded || item.error !== undefined"
+            @click="uploadMission(item)"
+            icon="pi pi-cloud-upload"
+            label="Publier"
+          />
+          <Button
+            :loading="item.loading"
+            @click="openDetail(item)"
+            icon="pi pi-info-circle"
+            label="Détail"
+            class="p-button-info"
+            style="margin-left: 0.5em"
+          />
+          <Button
+            :loading="item.loading"
+            @click="abortFile(item, $event)"
+            icon="pi pi-trash"
+            label="Annuler"
+            class="p-button-danger"
+            style="margin-left: 0.5em"
+          />
+        </template>
+      </Card>
+    </div>
   </div>
 </template>
 
-<script lang="ts" setup>
+<script lang="tsx" setup>
 import background from '@/assets/img/backgrounds/addMission.jpg'
-import { useDropzone } from 'vue3-dropzone'
-import type { FileWithPath } from 'file-selector'
+import placeholder from '@/assets/img/cpc_badge.png'
+import errorImg from '@/assets/img/backgrounds/error.jpg'
+import Card from 'primevue/card'
+import Button from 'primevue/button'
+import FileUpload from 'primevue/fileupload'
+import Skeleton from 'primevue/skeleton'
+import Image from 'primevue/image'
 import { useAuth0 } from '@auth0/auth0-vue'
-
-type CustomInputFile = FileWithPath & {
-  size?: number
-}
-
-type CustomFileErrorCode =
-  | 'file-invalid-type'
-  | 'file-too-large'
-  | 'file-too-small'
-  | 'too-many-files'
-  | string
-
-type FileError = {
-  code?: CustomFileErrorCode
-  type?: string
-  errors?: string[]
-  message: string
-}
+import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
+import { useDialog } from 'primevue/usedialog'
+import type { ConfirmationOptions } from 'primevue/confirmationoptions'
+import UploadResult from '~~/components/UploadResult.vue'
 
 type CustomFile = {
   uploaded?: boolean
-  file: CustomInputFile
-  errors?: FileError[]
+  file: File
+  mission?: Mission
+  error?: MissionError
+  loading: boolean
 }
-
-const { public: runtimeConfig } = useRuntimeConfig()
-const { replace } = useRouter()
-const { getAccessTokenSilently, getAccessTokenWithPopup } = useAuth0()
-
-const files = ref<CustomFile[]>([])
-const filesToUp = computed(() =>
-  files.value.filter(
-    ({ uploaded, errors }) => uploaded === false && (errors?.length ?? 0) <= 0
-  )
-)
 
 const {
-  getRootProps,
-  getInputProps,
-  isDragActive,
-  acceptedFiles,
-  fileRejections,
-  ...rest
-} = useDropzone({
-  accept: '.pbo',
-  maxSize: 1000000,
-  onDrop: (acceptations, rejections) => {
-    const tmpFiles: CustomFile[] = [...files.value]
-    // Add accepted files
-    for (const file of acceptations) {
-      if ('name' in file) {
-        tmpFiles.push({ file })
-      }
-    }
-    // Add rejected files
-    for (const reason of rejections) {
-      if (reason.file && 'name' in reason.file) {
-        const obj: CustomFile = { file: reason.file, errors: [] }
-        for (const error of reason.errors) {
-          if (typeof error === 'object') {
-            obj.errors.push(error)
-          }
-        }
-      }
-    }
+  public: { API_BASE, API_MISSION_ENDPOINT, API_MISSION_IMAGE },
+} = useRuntimeConfig()
+const { replace } = useRouter()
+const { getAccessTokenSilently, getAccessTokenWithPopup } = useAuth0()
+const toast = useToast()
+const confirm = useConfirm()
+const dialog = useDialog()
+
+const files = ref<CustomFile[]>([])
+
+const filesToShow = computed(() => [...files.value].reverse())
+const filesToUp = computed(() =>
+  files.value.filter(({ uploaded, error }) => uploaded === false && !error)
+)
+
+/**
+ * Wrapper of PrimeVUE's Confirm to make it async
+ *
+ * @param options Options to pass to PrimeVUE
+ */
+const asyncConfirm = (
+  options: Omit<ConfirmationOptions, 'accept' | 'reject'>
+) =>
+  new Promise<boolean>((resolve) => {
+    confirm.require({
+      ...options,
+      accept: () => resolve(true),
+      reject: () => resolve(false),
+    })
+  })
+
+const checkFiles = async ({ files: droppedFiles }: { files: File[] }) => {
+  // allowing parallel processes
+  const promises: Promise<void>[] = []
+
+  for (const file of droppedFiles) {
     // Add files to UI
-    files.value = tmpFiles
+    const index = files.value.length
+    files.value.push({ file, loading: true })
 
-    // allowing parallel processes
-    const promises: Promise<any>[] = []
+    const formData = new FormData()
+    formData.append('file', file)
 
-    for (const file of acceptations) {
-      // find file in UI. It will used to update the status
-      const index = files.value.findIndex(({ file: fi }) => fi == file)
-
-      const formData = new FormData()
-      formData.append('file', file as File)
-
-      promises.push(
-        $fetch<Mission | MissionError>(
-          // 'http://localhost:8082/check',
-          `${runtimeConfig.API_MISSION_ENDPOINT}/check`,
-          {
-            method: 'POST',
-            body: formData,
-          }
-        )
-          .then((data) => {
-            // Handling errors
-            if ('nbBlockingErr' in data && data.nbBlockingErr > 0) {
-              const warns: string[] = []
-              const errors: string[] = []
-              // For every entry in response...
-              for (const key in data) {
-                const errorType = data[key as keyof MissionError]
-                // ... that is an object and is actually an error
-                if (typeof errorType === 'object' && !errorType.isOK) {
-                  // Check blocing state of error
-                  if ('isBlocking' in errorType && !errorType.isBlocking) {
-                    warns.push(errorType.label)
-                  } else {
-                    errors.push(errorType.label)
-                  }
-                }
-              }
-              // Throw error
-              // TODO: Match dropzone error type
-              throw {
-                type: errors.length ? 'error' : 'warn',
-                errors: errors.length ? errors : warns,
-                message: `Une ou plusieurs erreurs ont étées détéctées dans votre fichier`,
-              }
-            } else {
-              // PBO is good to go !
-              const f = files.value[index]
-              f.uploaded = false
-            }
-          })
-          .catch((error) => {
-            const err = error as Error | FileError
-            // PBO is a no go
-            const f = files.value[index]
-            if (index >= 0) {
-              f.errors = [err]
-            }
-            console.error(error)
-          })
+    promises.push(
+      $fetch<Mission | MissionError>(
+        'http://localhost:8082/check',
+        // `${API_MISSION_ENDPOINT}/check`,
+        {
+          method: 'POST',
+          body: formData,
+        }
       )
-    }
-    // Run all promises in parallel, whatever it returns
-    return Promise.allSettled(promises)
-  },
-})
-
-const clearDropzone = (e: Event) => {
-  e.stopPropagation()
-  e.preventDefault()
-  files.value = []
+        .then((data) => {
+          files.value[index] = {
+            file,
+            mission: 'nbBlockingErr' in data ? undefined : data,
+            error: 'nbBlockingErr' in data ? data : undefined,
+            uploaded: false,
+            loading: false,
+          }
+          if (droppedFiles.length === 1) {
+            openDetail(files.value[index])
+          }
+        })
+        .catch((err: Error) => {
+          toast.add({
+            severity: 'error',
+            summary: err.name ?? 'FileError',
+            detail:
+              'Une erreur est survenue lors de la vérification: ' + err.message,
+          })
+          console.error(err)
+        })
+    )
+  }
+  // Run all promises in parallel, whatever it returns
+  return Promise.allSettled(promises)
 }
 
-const uploadMission = async ({ file }: CustomFile) => {
-  let accessToken = ''
-  try {
-    accessToken = await getAccessTokenSilently()
-  } catch (error) {
-    accessToken = await getAccessTokenWithPopup()
+const abortFile = async (checkResult: CustomFile, event: Event) => {
+  const index = files.value.findIndex((m) => m === checkResult)
+  if (index >= 0) {
+    const otherFiles = [...files.value]
+    const [file] = otherFiles.splice(index, 1)
+
+    if (file.mission && !file.uploaded) {
+      // Awaiting user confirmation if dangerous
+      const userConfirm = await asyncConfirm({
+        message: `Le fichier "${file.file.name}" n'a pas encore été publié. Voulez-vous vraiment l'annuler ?`,
+        icon: 'pi pi-exclamation-triangle',
+        target: event.currentTarget as HTMLElement | null,
+      })
+      if (!userConfirm) return
+    }
+
+    files.value = otherFiles
+
+    if (file.mission && !file.uploaded) {
+      toast.add({
+        severity: 'success',
+        summary: 'AbortOK',
+        detail: `L'envoi du fichier "${file.file.name}" a été annulé.`,
+        life: 3000,
+      })
+    }
   }
+}
+
+const abortAll = async () => {
+  // Awaiting user confirmation
+  const userConfirm = await asyncConfirm({
+    message: `Voulez-vous vraiment annuler tout les fichiers ?`,
+    icon: 'pi pi-exclamation-triangle',
+  })
+  if (!userConfirm) return
+
+  files.value = []
+
+  toast.add({
+    severity: 'success',
+    summary: 'ClearOK',
+    detail: "Une erreur est survenue lors de l'authentification",
+    life: 3000,
+  })
+}
+
+const uploadMission = async (checkResult: CustomFile) => {
+  checkResult.loading = true
+
+  let accessToken = ''
+  // Trying to get auth token without user interaction
+  try {
+    accessToken = await getAccessTokenSilently({
+      scope: 'add:mission',
+      audience: API_BASE,
+    })
+  } catch (error) {
+    console.error(error)
+  }
+  // Trying to get auth token with user interaction if previous attempts failed
   if (!accessToken) {
+    try {
+      accessToken = await getAccessTokenWithPopup({
+        scope: 'add:mission',
+        audience: API_BASE,
+      })
+    } catch (error) {
+      console.error(error)
+    }
+  }
+  // If previous attempts failed
+  if (!accessToken) {
+    toast.add({
+      severity: 'error',
+      summary: 'AuthError',
+      detail: "Une erreur est survenue lors de l'authentification",
+      life: 3000,
+    })
     replace('/')
+    checkResult.loading = false
     return
   }
-  console.log(accessToken)
 
   const formData = new FormData()
-  formData.set('file', file)
+  formData.set('file', checkResult.file)
   try {
-    await $fetch(`${runtimeConfig.API_MISSION_ENDPOINT}/add`, {
+    await $fetch(`${API_MISSION_ENDPOINT}/add`, {
       method: 'POST',
       body: formData,
       headers: {
@@ -224,34 +315,85 @@ const uploadMission = async ({ file }: CustomFile) => {
       },
     })
 
-    // TODO: Show OK
+    checkResult.uploaded = true
   } catch (error) {
-    // TODO: Show error
+    const err = error as Error
+    toast.add({
+      severity: 'error',
+      summary: err.name ?? 'FileError',
+      detail: 'Une erreur est survenue lors de la vérification: ' + err.message,
+    })
   }
+  checkResult.loading = false
 }
 
-const handleSubmit = (e: Event) => {
+const uploadAll = (e: Event) => {
   e.stopPropagation()
   e.preventDefault()
   // allowing parallel processes
   const promises: Promise<any>[] = []
 
-  for (const file of filesToUp.value) {
-    promises.push(uploadMission(file))
+  for (const mission of filesToUp.value) {
+    promises.push(uploadMission(mission))
   }
 
   // Run all promises in parallel, whatever it returns
   return Promise.allSettled(promises)
 }
 
-const fileSizeToMB = (fileSize: number) =>
-  (fileSize / (1024 * 1024)).toLocaleString('fr', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
+const openDetail = (checkResult: CustomFile) => {
+  const detail = checkResult.mission || checkResult.error
+  if (detail) {
+    const hasError = 'nbBlockingErr' in detail
+    const dialogRef = dialog.open(UploadResult, {
+      props: {
+        header: `Mission ${hasError ? 'non ' : ''}conforme`,
+        style: {
+          width: '50vw',
+          background: `var(--${hasError ? 'red' : 'green'}-300)`,
+        },
+        breakpoints: {
+          '960px': '75vw',
+          '640px': '90vw',
+        },
+        modal: true,
+      },
+      templates: {
+        footer: () => (
+          <>
+            <Button
+              disabled={hasError}
+              onClick={() => {
+                uploadMission(checkResult)
+                dialogRef.close()
+              }}
+              icon="pi pi-cloud-upload"
+              label="Publier"
+            />
+            <Button
+              icon="pi pi-times"
+              onClick={() => dialogRef.close()}
+              label="Fermer"
+              class="p-button-secondary"
+              style="margin-left: 0.5em"
+            />
+          </>
+        ),
+      },
+      data: { detail },
+    })
+  }
+}
 
-// TODO: Show modal on click
-
+const getImageURL = ({ mission, uploaded, error }: CustomFile) => {
+  if (mission && uploaded && mission.loadScreen.val) {
+    return `${API_MISSION_IMAGE}/${mission.loadScreen.val}`
+  }
+  if (error !== undefined) {
+    return errorImg
+  }
+  return placeholder
+}
 
 definePageMeta({
   middleware: ['auth'],
@@ -261,76 +403,62 @@ definePageMeta({
 </script>
 
 <style scoped>
-.dropzone {
-  position: relative;
-  height: 400px;
-  width: 400px;
-}
-.dropzone > div {
-  height: 100%;
-}
-.dropzone-message {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #bd5734;
-  text-align: center;
+.data-undefined {
+  /* font-style: italic; */
+  color: var(--red-500);
 }
 
-.dropzone-files {
-  height: 100%;
-  width: 100%;
-  border: 3px dashed #bd5734bf;
-  background-color: #a79e84bf;
-  border-radius: 30px;
+.files {
   padding: 1rem;
-
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: 120px;
-  gap: 8px;
+  padding-right: 0;
+  display: flex;
+  overflow: auto;
 }
 
-.dropzone-actions {
+/* ! Responsive */
+.files > * {
+  margin-right: 1rem;
+  flex: 0 0 370px;
+  width: 370px;
+  height: 475px;
+}
+
+.image-container {
+  height: 13rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.image-container:deep(img) {
+  width: 115%;
+  margin-left: -7.5%;
+}
+
+.files-actions {
   margin-top: 1rem;
   display: flex;
 }
 
-.dropzone-actions > button {
-  margin: 0 0.5rem;
+.main-card {
+  background: #ffffff88;
 }
 
-.mission-file {
+.files .p-card,
+.files:deep(.p-card-body) {
   display: flex;
   flex-direction: column;
-  text-align: center;
-  overflow: hidden;
-
-  background-color: #d2dbe265;
-  padding: 0.5rem;
-  border-radius: 1rem;
 }
 
-.mission-file-size {
-  margin-bottom: 1rem;
+.files:deep(.p-card-body),
+.files:deep(.p-card-content) {
+  flex: 1;
 }
 
-.mission-file-name {
+.lobby-text {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.mission-file-pending {
-  background-color: #d2dbe2;
-}
-.mission-file-error {
-  background-color: #e09090;
-}
-.mission-file-success {
-  background-color: #90e0ab;
+  width: 100%;
 }
 </style>
