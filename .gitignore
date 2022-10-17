@@ -11,3 +11,7 @@ upload
 .markdownlint.json
 .vscode
 gdc-toolbox.code-workspace
+
+/GdcToolboxApi/*/bin
+/GdcToolboxApi/*/obj
+*/.vs
