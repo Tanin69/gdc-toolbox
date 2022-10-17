@@ -38,11 +38,11 @@ const moduleName = path.basename(__filename);
 const LOG_PREF = `${moduleName}->`;
 
 //Requests the DB and renders a page with the results
-exports.showMission = function(req, res) {
+exports.showMission = function (req, res) {
 
     const brfMissionPbo = req.params.missionPbo;
-     
-    Mission.findOne({"missionPbo.val": brfMissionPbo})
+
+    Mission.findOne({ "missionPbo.val": brfMissionPbo })
         .exec(function (err, dataMission) {
             if (err) { return next(err); }
             if (dataMission) {
@@ -51,10 +51,10 @@ exports.showMission = function(req, res) {
                 res.status(200).json(dataMission);
                 console.log(`\n${LOG_PREF} ${brfMissionPbo} : affichage du briefing`);
             } else {
-                res.status(404).json({Error: `${brfMissionPbo} : mission not found`});
+                res.status(404).json({ Error: `${brfMissionPbo} : mission not found` });
                 console.log(`\n${LOG_PREF} ${brfMissionPbo} : mission non trouvée dans la BDD`);
             }
-            
-    });
+
+        });
 
 };

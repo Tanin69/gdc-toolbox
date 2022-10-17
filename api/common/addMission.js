@@ -4,7 +4,7 @@
  * Used by : missionAddController and ./private/bulkImport
  * @param {Object} - A JSON object with all collection properties
  * @returns {boolean|err} - true if success, err object in other case
- * @todo - labels should be initialized here and not in checkMission.js and grabMissionINfos.js 
+ * @todo - labels should be initialized here and not in checkMission.js and grabMissionInfos.js 
  */
 
 //App module imports
@@ -19,8 +19,8 @@ exports.addMission = function (jsRes) {
     console.info(`${DBG_PREF} ${receivedPboName} : début de l'ajout de la mission à la base de données`);
 
     //Checks if the mission already exists in DB. If true, delete it before adding data
-    Mission.findOneAndDelete({"missionPbo.val": receivedPboName}, function(err, data){    
-        if(err){
+    Mission.findOneAndDelete({ "missionPbo.val": receivedPboName }, function (err, data) {
+        if (err) {
             console.error(`Error during findMission: ${err}`);
             return next(err);
         } else {
@@ -130,9 +130,9 @@ exports.addMission = function (jsRes) {
             "label": jsRes.IFA3mod.label,
         }
     });
-    
+
     mission.save(function (err, mission) {
-        if(err){
+        if (err) {
             console.error(`${DBG_PREF} ${receivedPboName} - Error during DB saving: ${err}`);
             return next(err);
         } else {
@@ -140,7 +140,7 @@ exports.addMission = function (jsRes) {
             return true;
         }
     });
-    
+
     /*
     .then(() => {
         console.log(`${DBG_PREF} ${receivedPboName} : la mission a été ajoutée à la base`);

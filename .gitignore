@@ -11,3 +11,4 @@ upload
 .markdownlint.json
 .vscode
 gdc-toolbox.code-workspace
+/docker

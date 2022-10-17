@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.5.0 - 2020/04/?? (not published)
+
+* Authorization handling via auth0 (what a big piece !). Protected endpoints :
+  * /api/mission/add
+  * /api/mission/update
+
 ## 0.4.0 - 2020-04-24
 
 ### Changed
@@ -14,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * Routes adaptation
   * APIs output as JSON everywhere
   * Update API reworked
+* As a consequence, from v0.4.0, CHANGELOG.md (this file) and BACKLOG.md are specific for the api and for the client.
 
 ### Added
 
