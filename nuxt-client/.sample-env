@@ -1,3 +1,4 @@
+# Shouldn't include trailing /
 API_BASE=
 # Auth0 configuration
 AUTH0_DOMAIN=

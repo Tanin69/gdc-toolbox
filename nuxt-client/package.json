@@ -7,13 +7,15 @@
     "preview": "nuxt preview"
   },
   "devDependencies": {
-    "@types/tabulator-tables": "^5.1.1",
-    "nuxt": "^3.0.0-rc.1"
+    "@types/bytes": "^3.1.1",
+    "nuxt": "^3.0.0-rc.11"
   },
   "dependencies": {
     "@auth0/auth0-vue": "^1.0.0",
     "@fortawesome/fontawesome-free": "^6.1.1",
-    "tabulator-tables": "^5.2.2",
-    "vue3-dropzone": "^2.0.1"
+    "bytes": "^3.1.2",
+    "dayjs": "^1.11.5",
+    "primeicons": "^6.0.1",
+    "primevue": "^3.17.0"
   }
 }
