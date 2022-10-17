@@ -1,42 +1,44 @@
 <template>
-  <div class="gdc-display-flex w3-display-middle">
-    <div class="gdc-flex">
-      <NuxtLink to="/mission" style="text-decoration: none">
-        <div
-          class="gdc-height-full gdc-display-flex gdc-flexDirection-col gdc-alignItems-center w3-round-large w3-padding-16 gdc-color-tonic w3-hover-sepia"
-          style="opacity: 0.9"
-        >
-          <img
-            src="/assets/img/list_missions.png"
-            alt="List missions"
-            width="144"
-            height="144"
-          />
-          <h3 class="w3-center">Liste des missions</h3>
-        </div>
-      </NuxtLink>
-    </div>
-
-    <div class="gdc-flex" v-if="isAuthenticated">
-      <NuxtLink to="/mission/add" style="text-decoration: none">
-        <div
-          class="gdc-height-full gdc-display-flex gdc-flexDirection-col gdc-alignItems-center w3-round-large w3-padding-16 gdc-color-tonic w3-hover-sepia"
-          style="opacity: 0.9"
-        >
-          <img
-            src="/assets/img/publish_mission.png"
-            alt="Publish mission"
-            width="144"
-            height="144"
-          />
-          <h3 class="w3-center">Publier une mission</h3>
-        </div>
-      </NuxtLink>
-    </div>
+  <div class="container">
+    <NuxtLink to="/mission" style="text-decoration: none">
+      <Card>
+        <template #header>
+          <div class="img-container">
+            <img
+              src="/assets/img/list_missions.png"
+              alt="List missions"
+              width="144"
+              height="144"
+            />
+          </div>
+        </template>
+        <template #title> Liste des missions </template>
+      </Card>
+    </NuxtLink>
+    <NuxtLink
+      to="/mission/add"
+      style="text-decoration: none"
+      v-if="isAuthenticated"
+    >
+      <Card>
+        <template #header>
+          <div class="img-container">
+            <img
+              src="/assets/img/publish_mission.png"
+              alt="Publish mission"
+              width="144"
+              height="144"
+            />
+          </div>
+        </template>
+        <template #title> Publier une mission </template>
+      </Card>
+    </NuxtLink>
   </div>
 </template>
 
 <script lang="ts" setup>
+import Card from 'primevue/card'
 import background from '@/assets/img/backgrounds/home.jpg'
 import { useAuth0 } from '@auth0/auth0-vue'
 
@@ -47,3 +49,38 @@ definePageMeta({
   background,
 })
 </script>
+
+<style scoped>
+.container {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.container > * {
+  margin: 0 1rem;
+}
+
+.img-container {
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.img-container img {
+  width: auto;
+}
+
+.p-card {
+  opacity: 0.9;
+  transition: background-color 0.25s;
+}
+
+.p-card:hover {
+  background-color: var(--surface-hover);
+}
+
+.p-card:deep(.p-card-content) {
+  display: none;
+}
+</style>
