@@ -1,8 +1,5 @@
 <template>
-  <NuxtLayout
-    name="default"
-    :header="route.meta.title || route.meta.subtitle || 'GDC Toolbox'"
-  >
+  <NuxtLayout name="default">
     <NuxtPage />
   </NuxtLayout>
 </template>

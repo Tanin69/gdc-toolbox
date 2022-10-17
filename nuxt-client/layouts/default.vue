@@ -1,23 +1,26 @@
 <template>
-  <div>
+  <div style="height: 100%; display: flex; flex-direction: column">
+    <Toast />
+    <ConfirmPopup />
+    <DynamicDialog />
+
     <NavBar />
-    <div
-      class="w3-card-4 w3-padding w3-opacity w3-sand w3-hide-small w3-hide-medium"
-      v-if="props.header"
-    >
-      <div style="text-align: center">
-        <h2>{{ props.header }}</h2>
-      </div>
-    </div>
-    <main>
+    <main style="flex: 1">
       <slot />
     </main>
-    <FooterBar />
   </div>
 </template>
 
 <script lang="ts" setup>
-const props = defineProps({
-  header: String,
-})
+import Toast from 'primevue/toast'
+import ConfirmPopup from 'primevue/confirmpopup'
+import DynamicDialog from 'primevue/dynamicdialog'
 </script>
+
+<style>
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+</style>
