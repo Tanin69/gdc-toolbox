@@ -5,7 +5,7 @@ services:
     image: mongo
     volumes:
       - ./docker/db:/data/db
-      # - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./docker/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
   gdc_api:
     container_name: gdc_api
     image: 'node:12'

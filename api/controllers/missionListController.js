@@ -23,7 +23,7 @@
 const Mission = require("../models/mission");
 
 //Request the DB and return all missions in JSON format.
-exports.listMissions = async function (req, res) {
+exports.listMissions = async function (req, res, next) {
 	// TODO: Cache data. In prod we have to wait the server for 2 secs.
 	//  Redis ? Maybe too complex to setup
 	//  Files ? Can take a lot of disk space, and can be stressfull for HDD
