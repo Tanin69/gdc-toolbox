@@ -1,5 +1,0 @@
-# .env
-PORT=3100
-# directory where images are published. Must 
-OUTPUT_DIR="D:/Dev/Projets/gdc-server-dev/api/public/img/brf/"
-API_MISSION_ENDPOINT="http://localhost:3000/api/mission"
