@@ -2,7 +2,7 @@
   <Card class="main-card">
     <template #content>
       <DataTable
-        :value="(!error && missions) ?? Array.from({ length: 20 })"
+        :value="missionsTable"
         :loading="pending"
         :rows="rowsPerPage"
         paginator
@@ -20,6 +20,12 @@
           <div style="display: flex; align-items: center">
             <h3 style="margin-right: 0.5rem">Liste des missions</h3>
             <Badge :value="missions?.length ?? '???'"></Badge>
+            <Button
+              icon="pi pi-sync"
+              title="Rafraichir"
+              style="margin-left: auto"
+              @click="retryFetch"
+            />
           </div>
         </template>
 
@@ -202,6 +208,24 @@ const confirm = useConfirm()
 const { isAuthenticated, getAccessTokenSilently, getAccessTokenWithPopup } =
   useAuth0()
 
+const rowsPerPage = ref(10)
+const playableLoading = ref(false)
+const filters = ref({
+  'missionTitle.val': {
+    operator: FilterOperator.AND,
+    constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+  },
+})
+const {
+  data: missions,
+  error,
+  pending,
+  refresh,
+} = useLazyFetch<Mission[] | null>(`${API_MISSION_ENDPOINT}/list`)
+const missionsTable = computed(() =>
+  missions.value || error ? [] : Array.from({ length: 20 })
+)
+
 /**
  * Wrapper of PrimeVUE's Confirm to make it async
  *
@@ -321,19 +345,14 @@ const updatePlayable = async (event: Event, data: Mission) => {
   playableLoading.value = false
 }
 
-const rowsPerPage = ref(10)
-const playableLoading = ref(false)
-const filters = ref({
-  'missionTitle.val': {
-    operator: FilterOperator.AND,
-    constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-  },
-})
-const {
-  data: missions,
-  error,
-  pending,
-} = useLazyFetch<Mission[] | null>(`${API_MISSION_ENDPOINT}/list`)
+/**
+ * Retry fetch data
+ */
+const retryFetch = async () => {
+  missions.value = null
+  error.value = null
+  await refresh()
+}
 
 // Awaiting an error while fetching
 watch(error, (err) => {
