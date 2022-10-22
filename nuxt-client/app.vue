@@ -26,7 +26,8 @@ useHead(() => ({
       (route.meta.background
         ? `url('${route.meta.background}')`
         : `url('${defaultBackground}')`) +
-      ';',
+      ';' +
+      'background-size: cover; background-attachment: fixed;',
   },
   viewport: 'width=device-width, initial-scale=1',
   charset: 'utf-8',

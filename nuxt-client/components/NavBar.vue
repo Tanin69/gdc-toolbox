@@ -43,3 +43,9 @@ const links: MenuItem[] = [
   },
 ]
 </script>
+
+<style>
+.p-toolbar {
+  background: #ffffffcc;
+}
+</style>
