@@ -6,7 +6,11 @@
 
     <NavBar />
     <main style="flex: 1">
-      <slot />
+      <Card class="container">
+        <template #content>
+          <slot />
+        </template>
+      </Card>
     </main>
   </div>
 </template>
@@ -15,6 +19,7 @@
 import Toast from 'primevue/toast'
 import ConfirmPopup from 'primevue/confirmpopup'
 import DynamicDialog from 'primevue/dynamicdialog'
+import Card from 'primevue/card'
 </script>
 
 <style>
@@ -22,5 +27,10 @@ import DynamicDialog from 'primevue/dynamicdialog'
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+}
+
+.container {
+  background-color: transparent;
+  box-shadow: none;
 }
 </style>
