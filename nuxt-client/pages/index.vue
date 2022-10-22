@@ -5,8 +5,8 @@
         <template #header>
           <div class="img-container">
             <img
-              src="/assets/img/list_missions.png"
-              alt="List missions"
+              :src="listImg"
+              alt="Liste des missions"
               width="144"
               height="144"
             />
@@ -24,8 +24,8 @@
         <template #header>
           <div class="img-container">
             <img
-              src="/assets/img/publish_mission.png"
-              alt="Publish mission"
+              :src="publishImg"
+              alt="Publier une mission"
               width="144"
               height="144"
             />
@@ -40,6 +40,8 @@
 <script lang="ts" setup>
 import Card from 'primevue/card'
 import background from '@/assets/img/backgrounds/home.jpg'
+import listImg from '@/assets/img/list_missions.png'
+import publishImg from '@/assets/img/publish_mission.png'
 import { useAuth0 } from '@auth0/auth0-vue'
 
 const { isAuthenticated } = useAuth0()
