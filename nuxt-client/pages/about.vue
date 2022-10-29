@@ -67,35 +67,15 @@
       <template #title> Liens utiles </template>
       <template #content>
         <div class="button-list">
-          <Button
-            label="GitHub"
-            icon="pi pi-github"
-            class="p-button-secondary"
-            @click="
-              () => openLink('https://github.com/gie-gdc-dev/gdc-toolbox/')
-            "
-          />
-          <Button
-            label="Roadmap"
-            icon="pi pi-map"
-            class="p-button-info"
-            @click="
-              () => openLink('https://github.com/orgs/gie-gdc-dev/projects/2')
-            "
-          />
-          <Button
-            label="Grèce de Canard"
-            icon="pi pi-globe"
-            @click="() => openLink('https://grecedecanards.fr/')"
-          />
-          <Button
-            label="Discord"
-            icon="pi pi-discord"
-            class="p-button-secondary"
-            @click="
-              () => openLink('https://discord.com/invite/0e8ZrNIUVAuEwoUe')
-            "
-          />
+          <div v-for="(link, key) in otherLinks" :key="key">
+            <a :href="link.url">
+              <Button
+                :label="link.name"
+                :icon="`pi ${link.icon}`"
+                :class="link.class"
+              />
+            </a>
+          </div>
         </div>
       </template>
     </Card>
@@ -159,6 +139,34 @@ const devs = ref<User[]>([
   },
 ])
 
+const otherLinks = ref<
+  { url: string; name: string; icon: string; class?: string }[]
+>([
+  {
+    name: 'GitHub',
+    icon: 'pi-github',
+    class: 'p-button-secondary',
+    url: 'https://github.com/gie-gdc-dev/gdc-toolbox/',
+  },
+  {
+    name: 'Roadmap',
+    icon: 'pi-map',
+    class: 'p-button-info',
+    url: 'https://github.com/orgs/gie-gdc-dev/projects/2',
+  },
+  {
+    name: 'Grèce de Canard',
+    icon: 'pi-globe',
+    url: 'https://grecedecanards.fr/',
+  },
+  {
+    name: 'Discord',
+    icon: 'pi-discord',
+    class: 'p-button-secondary',
+    url: 'https://discord.com/invite/0e8ZrNIUVAuEwoUe',
+  },
+])
+
 const contribCount = ref(0)
 const {
   data: contributors,
@@ -208,5 +216,8 @@ definePageMeta({
 }
 .button-list > * {
   margin-right: 1rem;
+}
+.button-list a {
+  text-decoration: none;
 }
 </style>
