@@ -221,10 +221,16 @@ const {
   error,
   pending,
   refresh,
-} = useLazyFetch<Mission[] | null>(`${API_MISSION_ENDPOINT}/list`)
-const missionsTable = computed(() =>
-  missions.value || error ? [] : Array.from({ length: 20 })
-)
+} = useLazyFetch('/api/mission/list')
+const missionsTable = computed(() => {
+  if (missions.value) {
+    return missions.value
+  }
+  if (error.value) {
+    return []
+  }
+  return Array.from({ length: 20 })
+})
 
 /**
  * Wrapper of PrimeVUE's Confirm to make it async
