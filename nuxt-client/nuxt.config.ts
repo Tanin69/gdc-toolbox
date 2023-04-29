@@ -19,8 +19,17 @@ export default defineNuxtConfig({
 
     public: {
       BASE_TITLE: 'GDC Toolbox',
+      /**
+       * @deprecated Use `/api/...` once migrated
+       */
       API_BASE: process.env.API_BASE,
+      /**
+       * @deprecated Use `/api/mission` once migrated
+       */
       API_MISSION_ENDPOINT: process.env.API_BASE + '/api/mission',
+      /**
+       * @deprecated Use `/api/...` once migrated
+       */
       API_MISSION_IMAGE: process.env.API_BASE + '/img/brf',
       AUTH0_DOMAIN: process.env.AUTH0_DOMAIN,
       AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
