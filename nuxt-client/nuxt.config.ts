@@ -20,6 +20,9 @@ export default defineNuxtConfig({
       API_MISSION_IMAGE: process.env.API_BASE + '/img/brf',
       AUTH0_DOMAIN: process.env.AUTH0_DOMAIN,
       AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
+      MONGO_URL: process.env.MONGO_URL,
+      MONGO_NAME: process.env.MONGO_DB_NAME,
+      MONGO_COLLECTION: process.env.MONGO_COLLECTION_NAME,
     },
   },
 })
