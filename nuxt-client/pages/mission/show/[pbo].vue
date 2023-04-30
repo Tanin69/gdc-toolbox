@@ -185,6 +185,10 @@ definePageMeta({
   /* box-shadow: 0 10px 10px 0 rgb(0 0 0 / 20%); */
 }
 
+.gdc-mission-info {
+  width: 90%;
+}
+
 .gdc-mission-info ul {
   list-style-type: none;
   padding: 0;
