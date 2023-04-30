@@ -133,7 +133,7 @@ const {
 const { public: runtimeConfig } = useRuntimeConfig()
 
 const { data: mission, error } = useLazyFetch<Mission | null>(
-  `${runtimeConfig.API_MISSION_ENDPOINT}/show/${route.params.pbo}`
+  `/api/mission/${route.params.pbo}`
 )
 const imageURL = computed(() => {
   if (mission.value && mission.value.loadScreen.val) {

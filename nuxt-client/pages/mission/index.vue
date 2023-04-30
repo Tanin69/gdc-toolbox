@@ -103,7 +103,7 @@
               <Button
                 icon="pi pi-eye"
                 class="p-button-text"
-                @click="callShowMission(data)"
+                @click="callShowMission(data?.missionId)"
               />
             </span>
             <span v-else class="data-undefined"> Non renseigné </span>
@@ -253,8 +253,8 @@ const asyncConfirm = (
  *
  * @param data The mission
  */
-const callShowMission = ({ missionPbo: { val: pbo } }: Mission) => {
-  navigateTo(`/mission/show/${pbo}`)
+const callShowMission = (missionId: string) => {  
+  navigateTo(`/mission/show/${missionId}`)
 }
 
 /**

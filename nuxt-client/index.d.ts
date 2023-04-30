@@ -13,6 +13,7 @@ type MissionField<T> = {
 }
 
 type Mission = {
+  missionId: string
   missionTitle: MissionField<string>
   missionVersion: MissionField<number>
   missionMap: MissionField<string>
