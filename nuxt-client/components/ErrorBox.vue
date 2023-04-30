@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="w3-card-4 w3-padding w3-sand w3-display-middle"
-    style="opacity: 0.9"
-  >
+  <div style="opacity: 0.9">
     <div style="text-align: center">
       <img :src="ErrorImage" style="max-width: 20%; height: auto" />
       <h1>{{ error }}</h1>
@@ -26,3 +23,9 @@ const { error } = defineProps<{
   error: string
 }>()
 </script>
+
+<style>
+.gdc-text-strike {
+  text-decoration: line-through;
+}
+</style>
