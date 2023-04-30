@@ -12,7 +12,11 @@
         <Splitter :layout="isSplitVertical ? 'vertical' : undefined">
           <SplitterPanel :size="100 / 3" class="gdc-mission-side">
             <div class="gdc-mission-image">
-              <img :src="imageURL" alt="Image illustrative du briefing" />
+              <img
+                :src="imageURL"
+                alt="Image illustrative du briefing"
+                @error="onImageError"
+              />
             </div>
 
             <i>
@@ -122,11 +126,17 @@ const { data: mission, error } = useLazyFetch<Mission | null>(
   `/api/mission/${route.params.pbo}`
 )
 const imageURL = computed(() => {
-  // if (mission.value && mission.value.loadScreen.val) {
-  //   return `${runtimeConfig.API_MISSION_IMAGE}/${mission.value.loadScreen.val}`
-  // }
+  if (mission.value && mission.value.loadScreen.val) {
+    return `${runtimeConfig.API_MISSION_IMAGE}/${mission.value.loadScreen.val}`
+  }
   return placeholder
 })
+
+const onImageError = () => {
+  if (mission.value) {
+    mission.value.loadScreen.val = ''
+  }
+}
 
 const onResize = () => {
   isSplitVertical.value = window.innerWidth < 601
