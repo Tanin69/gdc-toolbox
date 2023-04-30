@@ -4,7 +4,7 @@
     style="opacity: 0.9"
   >
     <div style="text-align: center">
-      <img src="/assets/img/err.png" style="max-width: 20%; height: auto" />
+      <img :src="ErrorImage" style="max-width: 20%; height: auto" />
       <h1>{{ error }}</h1>
       <p>
         C'est sûrement de la faute
@@ -20,6 +20,8 @@
 </template>
 
 <script lang="ts" setup>
+import ErrorImage from '@/assets/img/err.png'
+
 const { error } = defineProps<{
   error: string
 }>()

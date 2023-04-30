@@ -2,18 +2,18 @@
   <Card class="main-card">
     <template #content>
       <DataTable
+        v-model:filters="filters"
         :value="missionsTable"
         :loading="pending"
         :rows="rowsPerPage"
+        :expandedRows="missionsTable"
+        :sort-order="-1"
         paginator
         responsive-layout="scroll"
         sort-field="pboFileDateM.val"
-        :sort-order="-1"
-        v-model:filters="filters"
         filterDisplay="menu"
         rowHover
         stripedRows
-        :expandedRows="missions"
         show-gridlines
       >
         <template #header>
@@ -253,7 +253,7 @@ const asyncConfirm = (
  *
  * @param data The mission
  */
-const callShowMission = (missionId: string) => {  
+const callShowMission = (missionId: string) => {
   navigateTo(`/mission/show/${missionId}`)
 }
 

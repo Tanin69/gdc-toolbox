@@ -1,129 +1,113 @@
 <template>
-  <div>
-    <Transition name="page">
-      <div v-if="error" class="error-container">
-        <ErrorBox :error="`Une erreur est survenue (${error.name})`">
-          <button class="w3-button gdc-color-tonic" @click="back">
-            Revenir en arrière
-          </button>
-        </ErrorBox>
-      </div>
-    </Transition>
-    <div>
+  <Card class="main-card">
+    <template #content>
       <!--Titre briefing-->
-      <div class="w3-container">
-        <div class="gdc-briefing-title">
-          {{ mission ? mission.missionTitle.val : route.params.pbo }}
-        </div>
-      </div>
+      <h1 class="gdc-briefing-title">
+        {{ mission ? mission.missionTitle.val : route.params.pbo }}
+      </h1>
 
       <!--layout fluide + responsive-->
-      <div class="w3-row" style="padding-bottom: 2rem">
+      <div style="padding-bottom: 2rem">
         <!--colonne gauche-->
-        <div class="w3-container w3-third w3-padding gdc-mission-panel">
-          <div class="w3-margin-top w3-center">
-            <div class="w3-center">
-              <img
-                :src="imageURL"
-                class="w3-round w3-image w3-card-4"
-                alt="Image illustrative du briefing"
-              />
+        <Splitter :layout="isSplitVertical ? 'vertical' : undefined">
+          <SplitterPanel :size="100 / 3" class="gdc-mission-side">
+            <div class="gdc-mission-image">
+              <img :src="imageURL" alt="Image illustrative du briefing" />
             </div>
-            <div
-              class="w3-panel w3-leftbar w3-text"
-              style="font-style: italic; text-align: left"
-            >
-              <i class="w3-small gdc-color-dark">
-                {{ mission ? mission.onLoadMission.val : '...' }}
-              </i>
-            </div>
-          </div>
 
-          <div
-            class="w3-card-4 w3-padding w3-margin-top gdc-color-light"
-            @click="showInfos = !showInfos"
-          >
-            <div class="gdc-display-flex gdc-alignItems-center">
+            <i>
+              {{ mission ? mission.onLoadMission.val : '...' }}
+            </i>
+
+            <Divider />
+
+            <h4 style="margin: 0; color: var(--primary-color)">
               Infos sur la mission&nbsp;
-              <i
-                class="fa fa-caret-down gdc-transform-transition"
-                :style="[
-                  showInfos && 'transform: rotateZ(-180deg)',
-                  'margin-left: auto',
-                ]"
-              ></i>
-            </div>
-          </div>
-          <Transition name="slide-up">
-            <div class="gdc-color-light gdc-mission-info" v-if="showInfos">
-              <ul class="w3-ul">
-                <li class="w3-bar">
-                  <div class="w3-bar-item">
-                    <span>Carte&nbsp;:&nbsp;</span>
-                    <span>{{ mission ? mission.missionMap.val : '...' }}</span>
-                  </div>
+            </h4>
+
+            <div class="gdc-mission-info">
+              <ul>
+                <li>
+                  <span style="color: var(--primary-color)">
+                    Carte :&nbsp;
+                  </span>
+                  {{ mission ? mission.missionMap.val : '...' }}
                 </li>
-                <li class="w3-bar">
-                  <div class="w3-bar-item">
-                    <span>Version&nbsp;:&nbsp;</span>
-                    <span>{{
-                      mission ? mission.missionVersion.val : '...'
-                    }}</span>
-                  </div>
+
+                <li>
+                  <span style="color: var(--primary-color)">
+                    Version :&nbsp;
+                  </span>
+                  {{ mission ? mission.missionVersion.val : '...' }}
                 </li>
-                <li class="w3-bar">
-                  <div class="w3-bar-item">
-                    <span>Type de jeu&nbsp;:&nbsp;</span>
-                    <span>{{ mission ? mission.gameType.val : '...' }}</span>
-                  </div>
+
+                <li>
+                  <span style="color: var(--primary-color)">
+                    Type de jeu :&nbsp;
+                  </span>
+                  {{ mission ? mission.gameType.val : '...' }}
                 </li>
-                <li class="w3-bar">
-                  <div class="w3-bar-item">
-                    <span>Texte lobby&nbsp;:&nbsp;</span
-                    ><span>{{
-                      mission ? mission.overviewText.val : '...'
-                    }}</span>
-                  </div>
+
+                <li>
+                  <span style="color: var(--primary-color)">
+                    Texte lobby :&nbsp;
+                  </span>
+                  {{ mission ? mission.overviewText.val : '...' }}
                 </li>
-                <li class="w3-bar">
-                  <div class="w3-bar-item">
-                    <span>Auteur&nbsp;:&nbsp;</span>
-                    <span>{{ mission ? mission.author.val : '...' }}</span>
-                  </div>
+
+                <li>
+                  <span style="color: var(--primary-color)">
+                    Auteur :&nbsp;
+                  </span>
+                  {{ mission ? mission.author.val : '...' }}
                 </li>
-                <li class="w3-bar">
-                  <div class="w3-bar-item">
-                    <span>Nombre de joueurs&nbsp;:</span><br />
-                    <span>
-                      Minimum : {{ mission ? mission.minPlayers.val : '...' }},
-                      maximum : {{ mission ? mission.maxPlayers.val : '...' }}
-                    </span>
-                  </div>
+
+                <li>
+                  <span style="color: var(--primary-color)">
+                    Nombre de joueurs :&nbsp;
+                  </span>
+                  {{ mission ? mission.minPlayers.val : '...' }}
+                  &nbsp;-&nbsp;
+                  {{ mission ? mission.maxPlayers.val : '...' }}
                 </li>
               </ul>
             </div>
-          </Transition>
-        </div>
+          </SplitterPanel>
 
-        <!--colonne droite-->
-        <div class="w3-container w3-twothird w3-padding" v-if="mission">
-          <div v-for="item in mission.missionBriefing">
-            <h4
-              class="w3-tag w3-xlarge w3-padding gdc-color-tonic"
-              style="transform: rotate(-5deg)"
-            >
-              {{ item[0] }}
-            </h4>
-            <!-- WARN: XSS ?! -->
-            <p class="gdc-color-dark" v-html="item[1]"></p>
-          </div>
-        </div>
+          <!--colonne droite-->
+          <SplitterPanel :size="2 * (100 / 3)" style="padding: 1rem">
+            <Transition name="page">
+              <ErrorBox
+                v-if="error"
+                :error="`Une erreur est survenue (${error.name})`"
+              >
+                <Button @click="back"> Revenir en arrière </Button>
+              </ErrorBox>
+            </Transition>
+
+            <template v-if="mission">
+              <div v-for="item in mission.missionBriefing">
+                <h4 style="color: var(--primary-color)">
+                  {{ item[0] }}
+                </h4>
+                <!-- WARN: XSS ?! -->
+                <p v-html="item[1]"></p>
+              </div>
+            </template>
+          </SplitterPanel>
+        </Splitter>
       </div>
-    </div>
-  </div>
+    </template>
+  </Card>
 </template>
 
 <script lang="ts" setup>
+import background from '@/assets/img/backgrounds/listMissions.jpg'
+import Splitter from 'primevue/splitter'
+import SplitterPanel from 'primevue/splitterpanel'
+import Button from 'primevue/button'
+import Divider from 'primevue/divider'
+import Card from 'primevue/card'
 import placeholder from '@/assets/img/cpc_badge.png'
 
 const {
@@ -132,46 +116,81 @@ const {
 } = useRouter()
 const { public: runtimeConfig } = useRuntimeConfig()
 
+const isSplitVertical = ref(false)
+
 const { data: mission, error } = useLazyFetch<Mission | null>(
   `/api/mission/${route.params.pbo}`
 )
 const imageURL = computed(() => {
-  if (mission.value && mission.value.loadScreen.val) {
-    return `${runtimeConfig.API_MISSION_IMAGE}/${mission.value.loadScreen.val}`
-  }
+  // if (mission.value && mission.value.loadScreen.val) {
+  //   return `${runtimeConfig.API_MISSION_IMAGE}/${mission.value.loadScreen.val}`
+  // }
   return placeholder
+})
+
+const onResize = () => {
+  isSplitVertical.value = window.innerWidth < 601
+}
+
+onMounted(() => {
+  onResize()
+  window.addEventListener('resize', onResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', onResize)
 })
 
 const showInfos = ref(true)
 definePageMeta({
   title: 'Briefing de mission',
+  background,
 })
 </script>
 
 <style scoped>
 @media (min-width: 601px) {
-  .gdc-mission-panel {
-    position: sticky;
-    top: 0;
-  }
-  .gdc-mission-panel img {
+  .gdc-mission-image img {
     max-height: 35vh;
   }
+}
+
+.gdc-mission-image {
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.main-card {
+  background: #ffffff88;
+}
+
+.main-card:deep(.p-card-content) {
+  padding: 0;
 }
 
 .gdc-briefing-title {
   font-family: 'Bangers', serif;
   letter-spacing: 0.1em;
   font-size: 4vw;
-  color: rgb(200, 200, 200);
+  margin: 0;
+  margin-bottom: 1rem;
 }
 
-.gdc-mission-info {
-  border-top: 1px solid #c1bba8;
-  box-shadow: 0 10px 10px 0 rgb(0 0 0 / 20%);
+.gdc-mission-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 1rem;
+  /* border-top: 1px solid #c1bba8; */
+  /* box-shadow: 0 10px 10px 0 rgb(0 0 0 / 20%); */
 }
 
-.error-container > * {
-  transform: translate(-25%, -50%);
+.gdc-mission-info ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.gdc-mission-info ul li {
+  margin-top: 1rem;
 }
 </style>

@@ -2,6 +2,7 @@
  * CSS extracted from primevue :
  * https://github.com/primefaces/primevue/blob/master/public/themes/saga-blue/theme.css
 **/
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Roboto&display=swap');
 
 :root {
   --surface-a: #ffffff;
@@ -3752,7 +3753,9 @@ body,
 }
 
 .p-organizationchart
-  .p-organizationchart-node-content.p-organizationchart-selectable-node:not(.p-highlight):hover {
+  .p-organizationchart-node-content.p-organizationchart-selectable-node:not(
+    .p-highlight
+  ):hover {
   background: #f8e7e2;
   color: #495057;
 }
