@@ -38,7 +38,7 @@ const dialogRef = inject<
     close: (params?: DynamicDialogCloseOptions['data']) => void
   }>
 >('dialogRef')
-const { detail } = dialogRef.value.data
+const { detail } = dialogRef?.value.data ?? { detail: null }
 
 type Entries<T extends Object> = [keyof T, T[keyof T]][]
 type DetailField = {
@@ -49,7 +49,7 @@ type DetailField = {
 
 const { API_MISSION_IMAGE } = useRuntimeConfig()
 
-const hasError = computed(() => 'nbBlockingErr' in detail)
+const hasError = computed(() => detail && 'nbBlockingErr' in detail)
 const detailEntries = computed(() => {
   const data = {} as Record<keyof Mission | keyof MissionError, DetailField>
   if (detail) {
@@ -72,7 +72,7 @@ const detailEntries = computed(() => {
           data[key] = {
             ...obj,
             val: field.isOK,
-            isBlocking: field.isBlocking,
+            isBlocking: field.isBlocking ?? false,
           }
         } else if ('val' in field) {
           data[key] = {
@@ -109,7 +109,7 @@ const formatValue = (
       // Trying to parse image
       if (key === 'loadScreen') {
         result = (
-          <a href={imageURL.value} target="_blank">
+          <a href={imageURL.value ?? ''} target="_blank">
             {val}
           </a>
         )
@@ -147,7 +147,7 @@ const formatValue = (
 }
 
 const imageURL = computed(() => {
-  if (!('nbBlockingErr' in detail) && detail.loadScreen.val) {
+  if (!(detail && 'nbBlockingErr' in detail) && detail?.loadScreen.val) {
     return `${API_MISSION_IMAGE}/${detail.loadScreen.val}`
   }
   return null

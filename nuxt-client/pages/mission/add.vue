@@ -194,8 +194,6 @@ const checkFiles = async ({ files: droppedFiles }: { files: File[] }) => {
         }
       )
         .then((data) => {
-          console.log("blablabla", data);
-          
           files.value[index] = {
             file,
             mission: 'nbBlockingErr' in data ? undefined : data,
@@ -233,7 +231,7 @@ const abortFile = async (checkResult: CustomFile, event: Event) => {
       const userConfirm = await asyncConfirm({
         message: `Le fichier "${file.file.name}" n'a pas encore été publié. Voulez-vous vraiment l'annuler ?`,
         icon: 'pi pi-exclamation-triangle',
-        target: event.currentTarget as HTMLElement | null,
+        target: (event.currentTarget as HTMLElement | null) ?? undefined,
       })
       if (!userConfirm) return
     }
@@ -272,12 +270,14 @@ const abortAll = async () => {
 const uploadMission = async (checkResult: CustomFile) => {
   checkResult.loading = true
 
-  let accessToken = ''
+  let accessToken = undefined
   // Trying to get auth token without user interaction
   try {
     accessToken = await getAccessTokenSilently({
-      scope: 'add:mission',
-      audience: API_BASE,
+      authorizationParams: {
+        scope: 'add:mission',
+        audience: API_BASE,
+      },
     })
   } catch (error) {
     console.error(error)
@@ -286,8 +286,10 @@ const uploadMission = async (checkResult: CustomFile) => {
   if (!accessToken) {
     try {
       accessToken = await getAccessTokenWithPopup({
-        scope: 'add:mission',
-        audience: API_BASE,
+        authorizationParams: {
+          scope: 'add:mission',
+          audience: API_BASE,
+        },
       })
     } catch (error) {
       console.error(error)
@@ -309,7 +311,7 @@ const uploadMission = async (checkResult: CustomFile) => {
   const formData = new FormData()
   formData.set('file', checkResult.file)
   try {
-    await $fetch(`/api/mission/add`, {
+    await $fetch('/api/mission/add', {
       method: 'POST',
       body: formData,
       headers: {

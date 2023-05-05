@@ -276,12 +276,14 @@ const updatePlayable = async (event: Event, data: Mission) => {
 
   playableLoading.value = true
 
-  let accessToken = ''
+  let accessToken = undefined
   // Trying to get auth token without user interaction
   try {
     accessToken = await getAccessTokenSilently({
-      scope: 'update:mission',
-      audience: API_BASE,
+      authorizationParams: {
+        scope: 'update:mission',
+        audience: API_BASE,
+      },
     })
   } catch (error) {
     console.error(error)
@@ -290,8 +292,10 @@ const updatePlayable = async (event: Event, data: Mission) => {
   if (!accessToken) {
     try {
       accessToken = await getAccessTokenWithPopup({
-        scope: 'update:mission',
-        audience: API_BASE,
+        authorizationParams: {
+          scope: 'update:mission',
+          audience: API_BASE,
+        },
       })
     } catch (error) {
       console.error(error)
