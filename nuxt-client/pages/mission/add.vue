@@ -186,7 +186,7 @@ const checkFiles = async ({ files: droppedFiles }: { files: File[] }) => {
 
     promises.push(
       $fetch<Mission | MissionError>(
-        'http://localhost:8082/check',
+        '/api/mission/check',
         // `${API_MISSION_ENDPOINT}/check`,
         {
           method: 'POST',
@@ -194,6 +194,8 @@ const checkFiles = async ({ files: droppedFiles }: { files: File[] }) => {
         }
       )
         .then((data) => {
+          console.log("blablabla", data);
+          
           files.value[index] = {
             file,
             mission: 'nbBlockingErr' in data ? undefined : data,
@@ -307,7 +309,7 @@ const uploadMission = async (checkResult: CustomFile) => {
   const formData = new FormData()
   formData.set('file', checkResult.file)
   try {
-    await $fetch(`${API_MISSION_ENDPOINT}/add`, {
+    await $fetch(`/api/mission/add`, {
       method: 'POST',
       body: formData,
       headers: {

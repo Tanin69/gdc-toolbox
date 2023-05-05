@@ -16,6 +16,9 @@ export default defineNuxtConfig({
     MONGO_URL: process.env.MONGO_URL,
     MONGO_NAME: process.env.MONGO_DB_NAME,
     MONGO_COLLECTION: process.env.MONGO_COLLECTION_NAME,
+    AUTH0_AUDIENCE: process.env.AUTH0_AUDIENCE,
+    PBO_MANAGER: process.env.PBO_MANAGER,
+    UPLOAD_TEMP_DIR: process.env.TEMP_DIR!.replace(/(?:\r\n|\r|\n)/g, ''),
 
     public: {
       BASE_TITLE: 'GDC Toolbox',
