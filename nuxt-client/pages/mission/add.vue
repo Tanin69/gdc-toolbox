@@ -5,7 +5,7 @@
         <FileUpload
           name="files[]"
           customUpload
-          @uploader="checkFiles"
+          @uploader="uploadFiles"
           multiple
           auto
           accept=".pbo"
@@ -22,13 +22,6 @@
 
         <div class="files-actions">
           <Button
-            icon="pi pi-cloud-upload"
-            :disabled="filesToUp.length <= 0"
-            @click="uploadAll"
-            style="flex: 1; margin: 0 1rem"
-            label="Tout publier"
-          />
-          <Button
             icon="pi pi-trash"
             :disabled="files.length <= 0"
             @click="abortAll"
@@ -39,6 +32,7 @@
         </div>
       </template>
     </Card>
+
     <div class="files">
       <Card v-for="(item, i) in filesToShow" :key="i">
         <template #header>
@@ -87,13 +81,6 @@
           </div>
         </template>
         <template #footer>
-          <Button
-            :loading="item.loading"
-            :disabled="item.uploaded || item.error !== undefined"
-            @click="uploadMission(item)"
-            icon="pi pi-cloud-upload"
-            label="Publier"
-          />
           <Button
             :loading="item.loading"
             @click="openDetail(item)"
@@ -172,33 +159,75 @@ const asyncConfirm = (
     })
   })
 
-const checkFiles = async ({ files: droppedFiles }: { files: File[] }) => {
+/**
+ * Refresh Auth0 token silently
+ */
+const getAccessToken = async () => {
+  let accessToken = undefined
+  const authorizationParams = {
+    scope: 'add:mission',
+    audience: API_BASE,
+  }
+  // Trying to get auth token without user interaction
+  try {
+    accessToken = await getAccessTokenSilently({ authorizationParams })
+  } catch (error) {
+    console.error(error)
+  }
+  // Trying to get auth token with user interaction if previous attempts failed
+  if (!accessToken) {
+    try {
+      accessToken = await getAccessTokenWithPopup({ authorizationParams })
+    } catch (error) {
+      console.error(error)
+    }
+  }
+  // If previous attempts failed
+  if (!accessToken) {
+    toast.add({
+      severity: 'error',
+      summary: 'AuthError',
+      detail: "Une erreur est survenue lors de l'authentification",
+      life: 3000,
+    })
+    return
+  }
+
+  return accessToken
+}
+
+const uploadFiles = async ({ files: droppedFiles }: { files: File[] }) => {
   // allowing parallel processes
   const promises: Promise<void>[] = []
+
+  const accessToken = await getAccessToken()
+  if (!accessToken) {
+    replace('/')
+    return
+  }
 
   for (const file of droppedFiles) {
     // Add files to UI
     const index = files.value.length
-    files.value.push({ file, loading: true })
+    files.value.push({ file, uploaded: false, loading: true })
 
     const formData = new FormData()
     formData.append('file', file)
 
     promises.push(
-      $fetch<Mission | MissionError>(
-        '/api/mission/check',
-        // `${API_MISSION_ENDPOINT}/check`,
-        {
-          method: 'POST',
-          body: formData,
-        }
-      )
+      $fetch<Mission | MissionError>('/api/mission/check', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
         .then((data) => {
           files.value[index] = {
             file,
             mission: 'nbBlockingErr' in data ? undefined : data,
             error: 'nbBlockingErr' in data ? data : undefined,
-            uploaded: false,
+            uploaded: true,
             loading: false,
           }
           if (droppedFiles.length === 1) {
@@ -206,6 +235,7 @@ const checkFiles = async ({ files: droppedFiles }: { files: File[] }) => {
           }
         })
         .catch((err: Error) => {
+          files.value[index].loading = false
           toast.add({
             severity: 'error',
             summary: err.name ?? 'FileError',
@@ -267,84 +297,6 @@ const abortAll = async () => {
   })
 }
 
-const uploadMission = async (checkResult: CustomFile) => {
-  checkResult.loading = true
-
-  let accessToken = undefined
-  // Trying to get auth token without user interaction
-  try {
-    accessToken = await getAccessTokenSilently({
-      authorizationParams: {
-        scope: 'add:mission',
-        audience: API_BASE,
-      },
-    })
-  } catch (error) {
-    console.error(error)
-  }
-  // Trying to get auth token with user interaction if previous attempts failed
-  if (!accessToken) {
-    try {
-      accessToken = await getAccessTokenWithPopup({
-        authorizationParams: {
-          scope: 'add:mission',
-          audience: API_BASE,
-        },
-      })
-    } catch (error) {
-      console.error(error)
-    }
-  }
-  // If previous attempts failed
-  if (!accessToken) {
-    toast.add({
-      severity: 'error',
-      summary: 'AuthError',
-      detail: "Une erreur est survenue lors de l'authentification",
-      life: 3000,
-    })
-    replace('/')
-    checkResult.loading = false
-    return
-  }
-
-  const formData = new FormData()
-  formData.set('file', checkResult.file)
-  try {
-    await $fetch('/api/mission/add', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-
-    checkResult.uploaded = true
-  } catch (error) {
-    const err = error as Error
-    toast.add({
-      severity: 'error',
-      summary: err.name ?? 'FileError',
-      detail: 'Une erreur est survenue lors de la vérification: ' + err.message,
-    })
-  }
-  checkResult.loading = false
-}
-
-const uploadAll = (e: Event) => {
-  e.stopPropagation()
-  e.preventDefault()
-  // allowing parallel processes
-  const promises: Promise<any>[] = []
-
-  for (const mission of filesToUp.value) {
-    promises.push(uploadMission(mission))
-  }
-
-  // Run all promises in parallel, whatever it returns
-  return Promise.allSettled(promises)
-}
-
 const openDetail = (checkResult: CustomFile) => {
   const detail = checkResult.mission || checkResult.error
   if (detail) {
@@ -364,24 +316,13 @@ const openDetail = (checkResult: CustomFile) => {
       },
       templates: {
         footer: () => (
-          <>
-            <Button
-              disabled={hasError}
-              onClick={() => {
-                uploadMission(checkResult)
-                dialogRef.close()
-              }}
-              icon="pi pi-cloud-upload"
-              label="Publier"
-            />
-            <Button
-              icon="pi pi-times"
-              onClick={() => dialogRef.close()}
-              label="Fermer"
-              class="p-button-secondary"
-              style="margin-left: 0.5em"
-            />
-          </>
+          <Button
+            icon="pi pi-times"
+            onClick={() => dialogRef.close()}
+            label="Fermer"
+            class="p-button-secondary"
+            style="margin-left: 0.5em"
+          />
         ),
       },
       data: { detail },
