@@ -128,7 +128,7 @@ type CustomFile = {
 }
 
 const {
-  public: { API_BASE, API_MISSION_ENDPOINT, API_MISSION_IMAGE },
+  public: { API_BASE, API_MISSION_IMAGE },
 } = useRuntimeConfig()
 const { replace } = useRouter()
 const { getAccessTokenSilently, getAccessTokenWithPopup } = useAuth0()
@@ -139,9 +139,6 @@ const dialog = useDialog()
 const files = ref<CustomFile[]>([])
 
 const filesToShow = computed(() => [...files.value].reverse())
-const filesToUp = computed(() =>
-  files.value.filter(({ uploaded, error }) => uploaded === false && !error)
-)
 
 /**
  * Wrapper of PrimeVUE's Confirm to make it async
@@ -226,7 +223,10 @@ const uploadFiles = async ({ files: droppedFiles }: { files: File[] }) => {
           files.value[index] = {
             file,
             mission: 'nbBlockingErr' in data ? undefined : data,
-            error: 'nbBlockingErr' in data ? data : undefined,
+            error:
+              'nbBlockingErr' in data && data.nbBlockingErr > 0
+                ? data
+                : undefined,
             uploaded: true,
             loading: false,
           }
@@ -300,7 +300,7 @@ const abortAll = async () => {
 const openDetail = (checkResult: CustomFile) => {
   const detail = checkResult.mission || checkResult.error
   if (detail) {
-    const hasError = 'nbBlockingErr' in detail
+    const hasError = 'nbBlockingErr' in detail && detail.nbBlockingErr > 0
     const dialogRef = dialog.open(UploadResult, {
       props: {
         header: `Mission ${hasError ? 'non ' : ''}conforme`,
