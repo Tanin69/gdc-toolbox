@@ -199,7 +199,6 @@ const uploadFiles = async ({ files: droppedFiles }: { files: File[] }) => {
 
   const accessToken = await getAccessToken()
   if (!accessToken) {
-    replace('/')
     return
   }
 
