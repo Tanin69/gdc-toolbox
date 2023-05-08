@@ -1,7 +1,7 @@
 import { spawnSync } from 'child_process'
 import dayjs from 'dayjs'
 import { writeFile, unlink, readdir, stat, readFile } from 'fs/promises'
-import { join } from 'path'
+import { resolve } from 'path'
 import { checkReport, initMissionFieldError } from './helper'
 
 export default defineEventHandler(async (event) => {
@@ -30,8 +30,8 @@ export default defineEventHandler(async (event) => {
   // Unpbo file
   const now = dayjs().unix()
   const filenameWithoutExt = body[0].filename.replace(/^(.*)\..*$/, '$1')
-  const tempFilePath = join(UPLOAD_TEMP_DIR, `${filenameWithoutExt}.pbo`)
-  const extractedFilePath = join(
+  const tempFilePath = resolve(UPLOAD_TEMP_DIR, `${filenameWithoutExt}.pbo`)
+  const extractedFilePath = resolve(
     UPLOAD_TEMP_DIR,
     `${filenameWithoutExt}_${now}`
   )
@@ -111,7 +111,7 @@ export default defineEventHandler(async (event) => {
 const asyncFileExist = async (path: string) => {
   let fileExist = true
   try {
-    await stat(join(path, 'description.ext'))
+    await stat(path)
   } catch (error) {
     if ((error as any).code === 'ENOENT') {
       fileExist = false
@@ -125,7 +125,7 @@ const asyncFileExist = async (path: string) => {
 function checkMissionName(name: string): MissionFieldError {
   let report: MissionFieldError
   const isMissionNameOk: boolean = new RegExp(
-    /(CPC-.*]-.*)-V(\d*)\.(.*)(\.pbo)/i
+    /^x(CPC-.*]-.*)-V(\d*)\.(.*)(\.pbo)$/i
   ).test(name)
 
   if (!isMissionNameOk) {
@@ -148,7 +148,7 @@ function checkMissionName(name: string): MissionFieldError {
 async function checkForSqmFile(path: string): Promise<MissionFieldError> {
   let report: MissionFieldError
 
-  if (!(await asyncFileExist(join(path, 'mission.sqm')))) {
+  if (!(await asyncFileExist(resolve(path, 'mission.sqm')))) {
     report = initMissionFieldError(
       false,
       'Le dossier ne contient pas de fichier "mission.sqm"',
@@ -168,7 +168,7 @@ async function checkForSqmFile(path: string): Promise<MissionFieldError> {
 async function checkForDescriptionExtFile(path: string) {
   let report: MissionFieldError
 
-  if (!(await asyncFileExist(join(path, 'description.ext')))) {
+  if (!(await asyncFileExist(resolve(path, 'description.ext')))) {
     report = initMissionFieldError(
       false,
       'Le dossier ne contient pas de fichier "mission.sqm"',
@@ -195,14 +195,14 @@ const getAllFiles = async (
 
   await Promise.all(
     files.map(async function (file) {
-      if ((await stat(dirPath + '/' + file)).isDirectory()) {
+      if ((await stat(resolve(dirPath, file))).isDirectory()) {
         arrayOfFiles = await getAllFiles(
           basePath,
-          dirPath + '/' + file,
+          resolve(dirPath, file),
           arrayOfFiles
         )
       } else {
-        arrayOfFiles.push(join(basePath, dirPath, '/', file))
+        arrayOfFiles.push(resolve(basePath, dirPath, file))
       }
     })
   )
@@ -239,7 +239,7 @@ async function checkForBinarizedMissionFile(
 ): Promise<MissionFieldError> {
   let report: MissionFieldError
 
-  const fileContent = `${await readFile(join(path, 'mission.sqm'))}`
+  const fileContent = `${await readFile(resolve(path, 'mission.sqm'))}`
   const regex = new RegExp(/^version/)
 
   if (regex.test(fileContent)) {
@@ -262,7 +262,7 @@ async function checkForBinarizedMissionFile(
 async function checkForHC(path: string) {
   let report: MissionFieldError
 
-  const fileContent = `${await readFile(join(path, 'mission.sqm'))}`
+  const fileContent = `${await readFile(resolve(path, 'mission.sqm'))}`
   const regex = new RegExp(
     /.*name="HC_Slot";\s*isPlayable=1;[^type="HeadlessClient_F";]/m
   )
