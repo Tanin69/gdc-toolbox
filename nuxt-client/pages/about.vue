@@ -146,13 +146,13 @@ const otherLinks = ref<
     name: 'GitHub',
     icon: 'pi-github',
     class: 'p-button-secondary',
-    url: 'https://github.com/gie-gdc-dev/gdc-toolbox/',
+    url: 'https://github.com/GdC-Framework/gdc-toolbox/',
   },
   {
     name: 'Roadmap',
     icon: 'pi-map',
     class: 'p-button-info',
-    url: 'https://github.com/orgs/gie-gdc-dev/projects/2',
+    url: 'https://github.com/orgs/GdC-Framework/projects/2',
   },
   {
     name: 'Grèce de Canard',
@@ -173,7 +173,7 @@ const {
   error,
   pending,
 } = useLazyFetch<any[]>(
-  `https://api.github.com/repos/gie-gdc-dev/gdc-toolbox/contributors`
+  `https://api.github.com/repos/GdC-Framework/gdc-toolbox/contributors`
 )
 
 const openLink = (url: string) => {
