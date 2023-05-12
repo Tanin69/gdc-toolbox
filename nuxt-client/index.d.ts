@@ -40,6 +40,10 @@ type MissionFieldError = {
   label: string
 }
 
+type MissionUploadResult = {
+  
+}
+
 type MissionError = {
   fileIsPbo: MissionFieldError
   filenameConvention: MissionFieldError

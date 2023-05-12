@@ -1,8 +1,23 @@
 import { spawnSync } from 'child_process'
 import dayjs from 'dayjs'
-import { writeFile, unlink, readdir, stat, readFile } from 'fs/promises'
+import { writeFile, unlink, readdir, stat, readFile, mkdir } from 'fs/promises'
 import { resolve } from 'path'
-import { checkReport, initMissionFieldError } from './helper'
+import { addMissionToPool, checkReport, getAllFiles, initMissionFieldError } from './helper'
+
+type DefaultCheckConfiguration = {
+  isBlocking: boolean,
+  key: keyof MissionError
+}
+
+const defaultErrorConfig: DefaultCheckConfiguration[] = [
+  { key:'fileIsPbo', isBlocking: true },
+  { key:'filenameConvention', isBlocking: true },
+  { key:'descriptionExtFound', isBlocking: false },
+  { key:'missionSqmFound', isBlocking: true },
+  { key:'briefingSqfFound', isBlocking: true },
+  { key:'missionSqmNotBinarized', isBlocking: false },
+  { key:'HCSlotFound', isBlocking: false },
+]
 
 export default defineEventHandler(async (event) => {
   const { PBO_MANAGER, UPLOAD_TEMP_DIR } = useRuntimeConfig()
@@ -12,6 +27,10 @@ export default defineEventHandler(async (event) => {
   // Just make sure nothing's wrong
   if (!body || !body[0].filename) {
     return createError('File not found')
+  }
+
+  if (!(await asyncFileExist(UPLOAD_TEMP_DIR))) {
+    await mkdir(UPLOAD_TEMP_DIR)
   }
 
   const report: MissionError = {
@@ -47,7 +66,6 @@ export default defineEventHandler(async (event) => {
     tempFilePath,
     extractedFilePath,
   ])
-  await unlink(tempFilePath)
 
   // Checking unpbo worked well
   if (pboUnwrapped.status != 0) {
@@ -105,6 +123,14 @@ export default defineEventHandler(async (event) => {
 
   checkReport(report)
 
+  if (report.isMissionValid) {
+    await addMissionToPool(body[0].filename, tempFilePath, extractedFilePath)
+  }
+
+  // Need to be done after mission was added to pool
+  await unlink(tempFilePath)
+  await unlink(extractedFilePath) 
+
   return report
 })
 
@@ -129,10 +155,9 @@ function checkMissionName(name: string): MissionFieldError {
   ).test(name)
 
   if (!isMissionNameOk) {
-    report = initMissionFieldError(
-      false,
-      'Le nom de la mission ne respecte pas le format',
-      true
+    report = checkIfErrorIsBlocking(
+      'filenameConvention', 
+      'Le nom de la mission ne respecte pas le format'
     )
   } else {
     report = initMissionFieldError(
@@ -149,10 +174,9 @@ async function checkForSqmFile(path: string): Promise<MissionFieldError> {
   let report: MissionFieldError
 
   if (!(await asyncFileExist(resolve(path, 'mission.sqm')))) {
-    report = initMissionFieldError(
-      false,
-      'Le dossier ne contient pas de fichier "mission.sqm"',
-      true
+    report = checkIfErrorIsBlocking(
+      'missionSqmFound', 
+      'Le dossier ne contient pas de fichier "mission.sqm"'
     )
   } else {
     report = initMissionFieldError(
@@ -169,15 +193,14 @@ async function checkForDescriptionExtFile(path: string) {
   let report: MissionFieldError
 
   if (!(await asyncFileExist(resolve(path, 'description.ext')))) {
-    report = initMissionFieldError(
-      false,
-      'Le dossier ne contient pas de fichier "mission.sqm"',
-      true
+    report = checkIfErrorIsBlocking(
+      'descriptionExtFound', 
+      'Le dossier ne contient pas de fichier "description.ext"'
     )
   } else {
     report = initMissionFieldError(
       true,
-      'Le dossier contient un fichier "mission.sqm"',
+      'Le dossier contient un fichier "description.ext"',
       false
     )
   }
@@ -185,43 +208,18 @@ async function checkForDescriptionExtFile(path: string) {
   return report
 }
 
-const getAllFiles = async (
-  basePath: string,
-  dirPath: string,
-  arrayOfFiles: any[]
-) => {
-  const files = await readdir(dirPath)
-  arrayOfFiles = arrayOfFiles || []
-
-  await Promise.all(
-    files.map(async function (file) {
-      if ((await stat(resolve(dirPath, file))).isDirectory()) {
-        arrayOfFiles = await getAllFiles(
-          basePath,
-          resolve(dirPath, file),
-          arrayOfFiles
-        )
-      } else {
-        arrayOfFiles.push(resolve(basePath, dirPath, file))
-      }
-    })
-  )
-  return arrayOfFiles
-}
-
 async function checkForBriefingFile(path: string) {
   let report: MissionFieldError
 
-  const briefingRegex = new RegExp(/briefing\.sqf/i)
+  const briefingRegex = new RegExp(/^briefing\.sqf$/i)
   const hasBriefing = (await getAllFiles(path, path, [])).some((elem: string) =>
     briefingRegex.test(elem)
   )
 
   if (!hasBriefing) {
-    report = initMissionFieldError(
-      false,
-      'La mission ne contient pas de fichier briefing',
-      false
+    report = checkIfErrorIsBlocking(
+      'briefingSqfFound', 
+      'La mission ne contient pas de fichier briefing'
     )
   } else {
     report = initMissionFieldError(
@@ -249,10 +247,9 @@ async function checkForBinarizedMissionFile(
       false
     )
   } else {
-    report = initMissionFieldError(
-      false,
-      'Le fichier mission est binarisé',
-      true
+    report = checkIfErrorIsBlocking(
+      "missionSqmNotBinarized",
+      'Le fichier mission est binarisé'
     )
   }
 
@@ -270,10 +267,18 @@ async function checkForHC(path: string) {
   if (regex.test(fileContent)) {
     report = initMissionFieldError(true, 'La mission a un HC', false)
   } else {
-    report = initMissionFieldError(false, "La mission n'a pas de HC", true)
+    report = checkIfErrorIsBlocking(
+      "HCSlotFound",
+      "La mission n'a pas de HC"
+    )
   }
 
   return report
+}
+
+const checkIfErrorIsBlocking:(field: keyof MissionError, reason: string) => MissionFieldError = (field: keyof MissionError, reason: string) => {
+  const isBlocking = defaultErrorConfig.find(item => item.key === field)?.isBlocking || false;
+  return initMissionFieldError(false, reason, isBlocking);
 }
 
 const generateDummyReport = (isErr: boolean): MissionError | Mission => {

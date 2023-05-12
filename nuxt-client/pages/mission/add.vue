@@ -184,7 +184,7 @@ const getAccessToken = async () => {
     toast.add({
       severity: 'error',
       summary: 'AuthError',
-      detail: "Une erreur est survenue lors de l'authentification",
+      detail: "Une erreur est survenue lors de l'authentification\nVérifiez que vous autorisez les popup pour ce site",
       life: 3000,
     })
     return
@@ -197,10 +197,10 @@ const uploadFiles = async ({ files: droppedFiles }: { files: File[] }) => {
   // allowing parallel processes
   const promises: Promise<void>[] = []
 
-  const accessToken = await getAccessToken()
-  if (!accessToken) {
-    return
-  }
+  // const accessToken = await getAccessToken()
+  // if (!accessToken) {    
+  //   return
+  // }
 
   for (const file of droppedFiles) {
     // Add files to UI
@@ -215,7 +215,6 @@ const uploadFiles = async ({ files: droppedFiles }: { files: File[] }) => {
         method: 'POST',
         body: formData,
         headers: {
-          Authorization: `Bearer ${accessToken}`,
         },
       })
         .then((data) => {

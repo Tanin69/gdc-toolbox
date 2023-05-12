@@ -1,3 +1,5 @@
+import { resolve } from 'path'
+
 // https://v3.nuxtjs.org/api/configuration/nuxt.config
 export default defineNuxtConfig({
   ssr: false, // Fixing Auth0... At what cost... ?
@@ -18,7 +20,8 @@ export default defineNuxtConfig({
     MONGO_COLLECTION: process.env.MONGO_COLLECTION_NAME,
     AUTH0_AUDIENCE: process.env.AUTH0_AUDIENCE,
     PBO_MANAGER: process.env.PBO_MANAGER,
-    UPLOAD_TEMP_DIR: process.env.TEMP_DIR!.replace(/(?:\r\n|\r|\n)/g, ''),
+    UPLOAD_TEMP_DIR: resolve(process.env.TEMP_DIR!),
+    MISSIONS_DIR: resolve(process.env.TEMP_DIR!),
 
     public: {
       BASE_TITLE: 'GDC Toolbox',
