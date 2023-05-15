@@ -150,9 +150,7 @@ const asyncFileExist = async (path: string) => {
 
 function checkMissionName(name: string): MissionFieldError {
   let report: MissionFieldError
-  const isMissionNameOk: boolean = new RegExp(
-    /^(CPC-(CO|COM|TVT|GM).*]-.*)-V(\d*)\.(.*)(\.pbo)$/i
-  ).test(name)
+  const isMissionNameOk: boolean = /^(CPC-(CO|COM|TVT|GM).*]-.*)-V(\d*)\.(.*)(\.pbo)$/i.test(name)
 
   if (!isMissionNameOk) {
     report = checkIfErrorIsBlocking(
