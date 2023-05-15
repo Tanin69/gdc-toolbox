@@ -1,7 +1,7 @@
 import { spawnSync } from 'child_process'
 import dayjs from 'dayjs'
-import { writeFile, unlink, readdir, stat, readFile, mkdir } from 'fs/promises'
-import { resolve } from 'path'
+import { writeFile, unlink, rm, stat, readFile, mkdir } from 'fs/promises'
+import { resolve, basename } from 'path'
 import { addMissionToPool, checkReport, getAllFiles, initMissionFieldError } from './helper'
 
 type DefaultCheckConfiguration = {
@@ -124,12 +124,12 @@ export default defineEventHandler(async (event) => {
   checkReport(report)
 
   if (report.isMissionValid) {
-    await addMissionToPool(body[0].filename, tempFilePath, extractedFilePath)
+    await addMissionToPool(body[0].filename, extractedFilePath)
   }
 
   // Need to be done after mission was added to pool
   await unlink(tempFilePath)
-  await unlink(extractedFilePath) 
+  await rm(extractedFilePath, { recursive: true })
 
   return report
 })
@@ -151,7 +151,7 @@ const asyncFileExist = async (path: string) => {
 function checkMissionName(name: string): MissionFieldError {
   let report: MissionFieldError
   const isMissionNameOk: boolean = new RegExp(
-    /^x(CPC-.*]-.*)-V(\d*)\.(.*)(\.pbo)$/i
+    /^(CPC-(CO|COM|TVT|GM).*]-.*)-V(\d*)\.(.*)(\.pbo)$/i
   ).test(name)
 
   if (!isMissionNameOk) {
@@ -211,9 +211,9 @@ async function checkForDescriptionExtFile(path: string) {
 async function checkForBriefingFile(path: string) {
   let report: MissionFieldError
 
-  const briefingRegex = new RegExp(/^briefing\.sqf$/i)
-  const hasBriefing = (await getAllFiles(path, path, [])).some((elem: string) =>
-    briefingRegex.test(elem)
+  const briefingRegex = new RegExp(/^.*briefing.*\.sqf$/i)
+  const hasBriefing = (await getAllFiles(path, path, [])).some(
+    (elem: string) => briefingRegex.test(elem)
   )
 
   if (!hasBriefing) {

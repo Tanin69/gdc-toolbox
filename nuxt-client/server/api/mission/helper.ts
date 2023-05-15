@@ -1,6 +1,7 @@
 import { WithId } from "mongodb";
 import { readdir, stat, readFile } from 'fs/promises'
-import { resolve, basename } from "path";
+import { resolve, basename } from "path"
+import sanitizeHtml from 'sanitize-html';
 
 export default function finalizeMissionType(missionList: WithId<Mission> | WithId<Mission>[]): Mission[] {
     const finalizedDatas: Mission[] = [];
@@ -80,7 +81,7 @@ export async function getAllFiles(
     return arrayOfFiles
   }
 
-export async function addMissionToPool(fileName: string, tempFilePath: string, extractedFilePath: string) {
+export async function addMissionToPool(fileName: string, extractedFilePath: string): Promise<void> {
     const { MISSIONS_DIR } = useRuntimeConfig()
     const regex = new RegExp(/(CPC-.*]-.*)-V(\d*)\.(.*)\.pbo/i)
     const parsedMissionName = regex.exec(fileName)
@@ -95,31 +96,39 @@ export async function addMissionToPool(fileName: string, tempFilePath: string, e
         missionVersion: {label: 'Version de la mission', val: +parsedMissionName[2]},
         missionMap: {label: 'Carte de la mission', val: parsedMissionName[3]},
         gameType: {label: 'Type de jeu', val: ''},
-        author: {label: '', val: ''},
-        minPlayers: {label: '', val: 0},
-        maxPlayers: {label: '', val: 0},
-        onLoadName: {label: '', val: ''},
-        onLoadMission: {label: '', val: ''},
-        overviewText: {label: '', val: ''},
-        missionPbo: {label: '', val: ''},
-        pboFileSize: {label: '', val: ''},
-        pboFileDateM: {label: '', val: new Date()},
-        owner: {label: '', val: ''},
-        missionIsPlayable: {label: '', val: false},
+        author: {label: 'Auteur', val: ''},
+        minPlayers: {label: 'Nombre minimum de joueurs', val: 0},
+        maxPlayers: {label: 'Nombre maximum de joueurs', val: 0},
+        onLoadName: {label: "Titre de l'écran de chargement", val: ''},
+        onLoadMission: {label: "Texte de l'écran de chargement", val: ''},
+        overviewText: {label: 'Texte du lobby', val: ''},
+        missionPbo: {label: 'Nom du fichier pbo', val: ''},
+        pboFileSize: {label: 'Taille du fichier pbo', val: ''},
+        pboFileDateM: {label: 'Date de publication de la mission', val: new Date()},
+        owner: {label: 'Propriétaire de la mission', val: 'GDC-Toolbox'},
+        missionIsPlayable: {label: 'La mission est jouable', val: false},
         missionBriefing: [],
-        loadScreen: {label: '', val: ''},
-        IFA3mod: {label: '', val: false},
+        loadScreen: {label: "Image de l'écran de chargement", val: ''},
+        IFA3mod: {label: 'Mission IFA3', val: false},
     }
 
     const allFiles = await getAllFiles(extractedFilePath, extractedFilePath, []);
 
     if (allFiles.map(item => basename(item)).includes("description.ext")) {
-        grabInfoFromDescriptionExt(allFiles.find(item => basename(item) == "description.ext"), missionData)
+        await grabInfoFromDescriptionExt(allFiles.find(item => basename(item) == "description.ext"), missionData)
     }
+
+    if (allFiles.map(item => basename(item)).includes("briefing.sqf")) {
+        await buildBriefing(allFiles.find(item => basename(item) == "briefing.sqf"), missionData)
+    }
+
+    await getInfosFromMissionSqmFile(allFiles.find(item => basename(item) == "mission.sqm"), missionData)
+
+    console.log(missionData)    
 }
 
 async function grabInfoFromDescriptionExt(filePath: string, report: Mission): Promise<Mission> {
-    const fileContent = await (await readFile(filePath)).toString()
+    const fileContent = (await readFile(filePath)).toString()
 
     report.author.val = searchMissionInfo("author", fileContent)
     report.onLoadName.val = searchMissionInfo("onLoadName", fileContent)
@@ -141,4 +150,73 @@ function searchMissionInfo(field: string, missionFileData: string) {
     } else {
         return "Inconnu"
     }
+}
+
+async function buildBriefing(sqfPath: string, missionData: Mission): Promise<Mission> {
+    //Look for createDiaryRecord entries
+    const regex = /player.*creatediaryrecord\s*\[\s*"\s*diary\s*"\s*,\s*\[\s*"([^"]*)"\s*,\s*"([^"]*)/gmi
+    let str = (await readFile(sqfPath)).toString()
+    let m
+    while ((m = regex.exec(str)) !== null) {
+        // This is necessary to avoid infinite loops with zero-width matches
+        if (m.index === regex.lastIndex) {
+            regex.lastIndex++
+        }
+        //m[1] (capture group $1) is the tab title, m[2] ($2 the tab content). Add it all to array
+        //Cleaning tab content : line end
+        m[2] = m[2].replace(/\r?\n/gi, "")
+        //Cleaning tab content : <marker... tags
+        m[2] = m[2].replace(/(<\s*marker\s*name\s*='\S+'>)([^>]*)(<\/marker>)/gi, "$2")
+        //Cleaning tab content : <img... tags
+        m[2] = m[2].replace(/(<\s*img[^>]*>)/gi, "")
+        //Sanitizises html to prevent code injection
+        m[1] = sanitizeHtml(m[1])
+        m[2] = sanitizeHtml(m[2], {
+            allowedTags: sanitizeHtml.defaults.allowedTags.concat(['font']),
+            allowedAttributes: {
+                font: ['color']
+            },
+        })
+        missionData.missionBriefing.unshift([m[1], m[2]])
+    }
+
+    return missionData
+}
+
+async function getInfosFromMissionSqmFile(filePath: string, missionData: Mission): Promise<Mission> {
+    
+    const fileContent = (await readFile(filePath)).toString()
+
+    // Check for author key
+    if (!missionData.author.val) {
+        const regex = new RegExp(/class ScenarioData\s*{\s*author="(.*)"/gm);
+        const match = regex.exec(fileContent);
+        if (match !== null) {
+            match[1] = match[1].replace(/\"/g, "")
+            missionData.author.val = match[1]
+        }
+    }
+
+    if (!missionData.loadScreen.val) {
+        missionData.loadScreen.val = searchMissionInfo('loadScreen', fileContent)
+    }
+
+    // TODO: prepare image for preview
+
+    if (!missionData.minPlayers.val) {
+        missionData.minPlayers.val = +searchMissionInfo('minPlayers', fileContent)
+    }
+
+    if (!missionData.maxPlayers.val) {
+        missionData.maxPlayers.val = +searchMissionInfo('maxPlayers', fileContent)
+    }
+
+    // Search for IFA
+    const regIFA = new RegExp(/WW2_Core/gm)
+    const matchIFA = regIFA.exec(fileContent)
+    if (matchIFA !== null) {
+        missionData.IFA3mod.val = true
+    }
+
+    return missionData
 }
