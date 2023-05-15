@@ -16,6 +16,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     createAuth0({
       domain,
       clientId,
+      cacheLocation: 'localstorage',
       authorizationParams: {
         redirect_uri: window.location.origin + '/auth',
         ui_locales: 'fr',

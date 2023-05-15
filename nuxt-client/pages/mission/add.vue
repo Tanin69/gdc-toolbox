@@ -197,10 +197,10 @@ const uploadFiles = async ({ files: droppedFiles }: { files: File[] }) => {
   // allowing parallel processes
   const promises: Promise<void>[] = []
 
-  // const accessToken = await getAccessToken()
-  // if (!accessToken) {    
-  //   return
-  // }
+  const accessToken = await getAccessToken()
+  if (!accessToken) {    
+    return
+  }
 
   for (const file of droppedFiles) {
     // Add files to UI
