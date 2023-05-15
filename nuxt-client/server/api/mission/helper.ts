@@ -1,4 +1,4 @@
-import { WithId } from "mongodb";
+import { Db, WithId } from "mongodb";
 import { readdir, stat, readFile } from 'fs/promises'
 import { resolve, basename } from "path"
 import sanitizeHtml from 'sanitize-html';
@@ -81,9 +81,9 @@ export async function getAllFiles(
     return arrayOfFiles
   }
 
-export async function addMissionToPool(fileName: string, extractedFilePath: string): Promise<void> {
-    const { MISSIONS_DIR } = useRuntimeConfig()
-    const regex = new RegExp(/(CPC-.*]-.*)-V(\d*)\.(.*)\.pbo/i)
+export async function addMissionToPool(fileName: string, extractedFilePath: string, databaseHandler: Db): Promise<void> {    
+    const { MISSIONS_DIR, MONGO_COLLECTION } = useRuntimeConfig()
+    const regex = /(CPC-.*]-.*)-V(\d*)\.(.*)\.pbo/i
     const parsedMissionName = regex.exec(fileName)
 
     if (!parsedMissionName) {
@@ -124,7 +124,8 @@ export async function addMissionToPool(fileName: string, extractedFilePath: stri
 
     await getInfosFromMissionSqmFile(allFiles.find(item => basename(item) == "mission.sqm"), missionData)
 
-    console.log(missionData)    
+    const dbUpload = await databaseHandler.collection<Mission>(MONGO_COLLECTION).insertOne(missionData)
+    console.log(dbUpload.insertedId);
 }
 
 async function grabInfoFromDescriptionExt(filePath: string, report: Mission): Promise<Mission> {

@@ -52,6 +52,7 @@ type MissionError = {
   briefingSqfFound: MissionFieldError
   missionSqmNotBinarized: MissionFieldError
   HCSlotFound: MissionFieldError
+  versionAlreadyExist: MissionFieldError
   isMissionValid: boolean
   isMissionArchived: boolean
   nbBlockingErr: number

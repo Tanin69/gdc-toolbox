@@ -2,7 +2,8 @@ import { spawnSync } from 'child_process'
 import dayjs from 'dayjs'
 import { writeFile, unlink, rm, stat, readFile, mkdir } from 'fs/promises'
 import { resolve, basename } from 'path'
-import { addMissionToPool, checkReport, getAllFiles, initMissionFieldError } from './helper'
+import finalizeMissionType, { addMissionToPool, checkReport, getAllFiles, initMissionFieldError } from './helper'
+import { Db } from 'mongodb'
 
 type DefaultCheckConfiguration = {
   isBlocking: boolean,
@@ -41,6 +42,7 @@ export default defineEventHandler(async (event) => {
     briefingSqfFound: { isOK: true, label: '' },
     missionSqmNotBinarized: { isOK: true, label: '' },
     HCSlotFound: { isOK: true, label: '' },
+    versionAlreadyExist: { isOK: true, label: '' },
     isMissionValid: false,
     isMissionArchived: false,
     nbBlockingErr: 0,
@@ -83,6 +85,10 @@ export default defineEventHandler(async (event) => {
   }
 
   // Let's check missions data
+
+  // Mission already exist ?
+  report.versionAlreadyExist = checkIfVersionAlreadyExist(event.context.db, filenameWithoutExt)
+
   // Mission name
   report.filenameConvention = checkMissionName(body[0].filename)
 
@@ -124,7 +130,7 @@ export default defineEventHandler(async (event) => {
   checkReport(report)
 
   if (report.isMissionValid) {
-    await addMissionToPool(body[0].filename, extractedFilePath)
+    // await addMissionToPool(body[0].filename, extractedFilePath, event.context.db)
   }
 
   // Need to be done after mission was added to pool
@@ -146,6 +152,18 @@ const asyncFileExist = async (path: string) => {
     }
   }
   return fileExist
+}
+
+async function checkIfVersionAlreadyExist(dbClient: Db, missionName: string): Prmoise<MissionFieldError> {
+  const { MONGO_COLLECTION } = useRuntimeConfig()
+  const collection = dbClient.collection<Mission>(MONGO_COLLECTION)
+  const query = await collection.find({ "missionTitle.val": missionName }).toArray()
+  
+  console.log(query);
+  
+
+  return { label: '', isOK: true }
+
 }
 
 function checkMissionName(name: string): MissionFieldError {
@@ -314,6 +332,10 @@ const generateDummyReport = (isErr: boolean): MissionError | Mission => {
       HCSlotFound: {
         isOK: false,
         label: "La mission n'a pas de HC (dummy)",
+      },
+      versionAlreadyExist: {
+        isOK: false,
+        label: 'La version de la mission existe déjà'
       },
       isMissionValid: false,
       isMissionArchived: false,
