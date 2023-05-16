@@ -21,7 +21,7 @@ export default defineNuxtConfig({
     AUTH0_AUDIENCE: process.env.AUTH0_AUDIENCE,
     PBO_MANAGER: process.env.PBO_MANAGER,
     UPLOAD_TEMP_DIR: resolve(process.env.TEMP_DIR!),
-    MISSIONS_DIR: resolve(process.env.TEMP_DIR!),
+    MISSIONS_DIR: resolve(process.env.MISSIONS_DIR!),
 
     public: {
       BASE_TITLE: 'GDC Toolbox',
