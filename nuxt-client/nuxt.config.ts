@@ -22,6 +22,7 @@ export default defineNuxtConfig({
     PBO_MANAGER: process.env.PBO_MANAGER,
     UPLOAD_TEMP_DIR: resolve(process.env.TEMP_DIR!),
     MISSIONS_DIR: resolve(process.env.MISSIONS_DIR!),
+    IMAGE_DIR: resolve(process.env.IMAGES_DIR!),
 
     public: {
       BASE_TITLE: 'GDC Toolbox',

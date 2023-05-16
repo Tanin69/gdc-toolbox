@@ -1,5 +1,5 @@
 import { Db, WithId } from "mongodb";
-import { readdir, stat, readFile, appendFile } from 'fs/promises'
+import { readdir, stat, readFile, appendFile, rename, copyFile } from 'fs/promises'
 import { resolve, basename } from "path"
 import sanitizeHtml from 'sanitize-html';
 
@@ -81,7 +81,7 @@ export async function getAllFiles(
     return arrayOfFiles
   }
 
-export async function addMissionToPool(fileName: string, extractedFilePath: string, databaseHandler: Db): Promise<void> {    
+export async function addMissionToPool(fileName: string, pboFilePath: string, extractedFilePath: string, databaseHandler: Db): Promise<void> {    
     const { MISSIONS_DIR, MONGO_COLLECTION } = useRuntimeConfig()
     const regex = /(CPC-.*]-.*)-V(\d*)\.(.*)\.pbo/i
     const parsedMissionName = regex.exec(fileName)
@@ -124,8 +124,12 @@ export async function addMissionToPool(fileName: string, extractedFilePath: stri
 
     await getInfosFromMissionSqmFile(allFiles.find(item => basename(item) == "mission.sqm"), missionData)
 
-    const dbUpload = await databaseHandler.collection<Mission>(MONGO_COLLECTION).insertOne(missionData)
-    console.log(dbUpload.insertedId);
+    if (missionData.loadScreen.val != '') {
+        await copyImageForPreview(missionData.loadScreen.val, extractedFilePath, parsedMissionName[1])
+    }
+
+    await databaseHandler.collection<Mission>(MONGO_COLLECTION).insertOne(missionData)
+    await rename(pboFilePath, resolve(MISSIONS_DIR, fileName))
 }
 
 async function grabInfoFromDescriptionExt(filePath: string, report: Mission): Promise<Mission> {
@@ -220,6 +224,14 @@ async function getInfosFromMissionSqmFile(filePath: string, missionData: Mission
     }
 
     return missionData
+}
+
+async function copyImageForPreview(imageFilePath: string, extractedFilePath: string, missionName: string) {
+    const filenameWithoutExt = basename(imageFilePath)
+    const { IMAGE_DIR } = useRuntimeConfig()
+    const originalFilePath = resolve(extractedFilePath, imageFilePath)
+    const copyFilePath = resolve(IMAGE_DIR, `${missionName}_preview`)
+    await copyFile(originalFilePath, copyFilePath)
 }
 
 

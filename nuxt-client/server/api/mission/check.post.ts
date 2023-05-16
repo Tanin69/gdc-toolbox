@@ -1,8 +1,8 @@
 import { spawnSync } from 'child_process'
 import dayjs from 'dayjs'
 import { writeFile, unlink, rm, stat, readFile, mkdir } from 'fs/promises'
-import { resolve, basename } from 'path'
-import finalizeMissionType, { addMissionToPool, checkReport, getAllFiles, initMissionFieldError } from './helper'
+import { resolve } from 'path'
+import { addMissionToPool, checkReport, getAllFiles, initMissionFieldError } from './helper'
 import { Db } from 'mongodb'
 
 type DefaultCheckConfiguration = {
@@ -18,6 +18,7 @@ const defaultErrorConfig: DefaultCheckConfiguration[] = [
   { key:'briefingSqfFound', isBlocking: true },
   { key:'missionSqmNotBinarized', isBlocking: false },
   { key:'HCSlotFound', isBlocking: false },
+  { key:'versionAlreadyExist', isBlocking: true }
 ]
 
 export default defineEventHandler(async (event) => {
@@ -87,7 +88,7 @@ export default defineEventHandler(async (event) => {
   // Let's check missions data
 
   // Mission already exist ?
-  report.versionAlreadyExist = checkIfVersionAlreadyExist(event.context.db, filenameWithoutExt)
+  report.versionAlreadyExist = await checkIfVersionAlreadyExist(event.context.db, filenameWithoutExt)
 
   // Mission name
   report.filenameConvention = checkMissionName(body[0].filename)
@@ -96,9 +97,7 @@ export default defineEventHandler(async (event) => {
   report.missionSqmFound = await checkForSqmFile(extractedFilePath)
 
   // description.ext
-  report.descriptionExtFound = await checkForDescriptionExtFile(
-    extractedFilePath
-  )
+  report.descriptionExtFound = await checkForDescriptionExtFile(extractedFilePath)
 
   // briefing.sqf
   report.briefingSqfFound = await checkForBriefingFile(extractedFilePath)
@@ -130,11 +129,10 @@ export default defineEventHandler(async (event) => {
   checkReport(report)
 
   if (report.isMissionValid) {
-    // await addMissionToPool(body[0].filename, extractedFilePath, event.context.db)
+    await addMissionToPool(body[0].filename, tempFilePath, extractedFilePath, event.context.db)
   }
 
   // Need to be done after mission was added to pool
-  await unlink(tempFilePath)
   await rm(extractedFilePath, { recursive: true })
 
   return report
@@ -154,16 +152,25 @@ const asyncFileExist = async (path: string) => {
   return fileExist
 }
 
-async function checkIfVersionAlreadyExist(dbClient: Db, missionName: string): Prmoise<MissionFieldError> {
+async function checkIfVersionAlreadyExist(dbClient: Db, missionName: string): Promise<MissionFieldError> {
   const { MONGO_COLLECTION } = useRuntimeConfig()
   const collection = dbClient.collection<Mission>(MONGO_COLLECTION)
-  const query = await collection.find({ "missionTitle.val": missionName }).toArray()
-  
-  console.log(query);
-  
 
-  return { label: '', isOK: true }
+  const missionNameRegExpParser = /(CPC-.*]-.*)-V(\d*)\.(.*)/i
+  const parsedMissionName = missionNameRegExpParser.exec(missionName)
+  const formattedMissionName: string = parsedMissionName![1].replace(/(\[|\])/, '\\$1')
+  const versionToUpload = +parsedMissionName![2]
+  const query = await collection.find({ "missionTitle.val": new RegExp(formattedMissionName) }).toArray()
+  
+  let report: MissionFieldError = { isOK: true, label: `La version ${parsedMissionName![2]} de la mission n'a pas encore été publiée`, isBlocking: false }
+  if (query.length !== 0) {
+    const datasWithSameVersion = query.filter((elem) => elem.missionVersion.val === versionToUpload)
+    if (datasWithSameVersion.length > 0) {
+      report = checkIfErrorIsBlocking('versionAlreadyExist', `La version ${parsedMissionName![2]} de la mission a déjà été publiée`)
+    }
+  }
 
+  return report
 }
 
 function checkMissionName(name: string): MissionFieldError {
