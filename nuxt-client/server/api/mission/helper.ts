@@ -1,5 +1,5 @@
 import { Db, WithId } from "mongodb";
-import { readdir, stat, readFile } from 'fs/promises'
+import { readdir, stat, readFile, appendFile } from 'fs/promises'
 import { resolve, basename } from "path"
 import sanitizeHtml from 'sanitize-html';
 
@@ -220,4 +220,20 @@ async function getInfosFromMissionSqmFile(filePath: string, missionData: Mission
     }
 
     return missionData
+}
+
+
+async function copyCollectionToNewCollection(dbClient: Db) {
+    const { MONGO_COLLECTION } = useRuntimeConfig()
+    const initialDatas = await dbClient.collection<Mission>(MONGO_COLLECTION).find({}).toArray()
+    console.log(initialDatas.length);
+    const allInsertedIds = []
+    for await (const iterator of initialDatas) {
+        const result = await dbClient.collection<Mission>(`${MONGO_COLLECTION}-copy`).insertOne(iterator)
+        allInsertedIds.push(result.insertedId)
+        console.log("Inserted id " + result.insertedId)
+    }
+
+    await appendFile('./temp.txt', allInsertedIds.map((item) => `${item.toString()}`).join('\n'))
+    console.log("Done");
 }
