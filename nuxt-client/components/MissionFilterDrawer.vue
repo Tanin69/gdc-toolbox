@@ -182,7 +182,7 @@ const onFilter = <P extends FilterKeys>(
   value: MissionFilters[P]
 ) => {
   const v = { ...$props.modelValue }
-  v[property] = value || undefined
+  v[property] = value !== '' ? value : undefined
   $emit('update:modelValue', v)
 }
 
