@@ -12,3 +12,4 @@ upload
 .vscode
 gdc-toolbox.code-workspace
 /docker
+/data

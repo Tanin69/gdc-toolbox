@@ -1,12 +1,9 @@
-import { Db, MongoClient } from "mongodb";
+import { Db, MongoClient } from 'mongodb'
 
-const {
- MONGO_URL,
- MONGO_NAME,
-} = useRuntimeConfig()
+const { MONGO_URL, MONGO_NAME } = useRuntimeConfig()
+const dbClient = new MongoClient(MONGO_URL)
 
 export default defineEventHandler(async (event) => {
-	const dbClient = new MongoClient(MONGO_URL);
-	await dbClient.connect();
-	event.context.db = dbClient.db(MONGO_NAME);
-});
+  await dbClient.connect()
+  event.context.db = dbClient.db(MONGO_NAME)
+})
