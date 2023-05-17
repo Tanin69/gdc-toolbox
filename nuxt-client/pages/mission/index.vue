@@ -9,6 +9,7 @@
         :expandedRows="missionsTable"
         :sort-order="-1"
         :class="[compacted && 'compacted']"
+        dataKey="missionId"
         paginator
         responsive-layout="scroll"
         sort-field="pboFileDateM.val"
