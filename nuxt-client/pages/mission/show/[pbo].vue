@@ -118,7 +118,6 @@ const {
   currentRoute: { value: route },
   back,
 } = useRouter()
-const { public: runtimeConfig } = useRuntimeConfig()
 
 const isSplitVertical = ref(false)
 
@@ -127,7 +126,8 @@ const { data: mission, error } = useLazyFetch<Mission | null>(
 )
 const imageURL = computed(() => {
   if (mission.value && mission.value.loadScreen.val) {
-    return `${runtimeConfig.API_MISSION_IMAGE}/${mission.value.loadScreen.val}`
+    // TODO: update once endpoint is available
+    return `/${mission.value.loadScreen.val}`
   }
   return placeholder
 })

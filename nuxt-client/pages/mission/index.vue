@@ -230,9 +230,7 @@ import { useAuth0 } from '@auth0/auth0-vue'
 import type { MissionFilters } from '~/components/MissionFilterDrawer.vue'
 import Fuse from 'fuse.js'
 
-const {
-  public: { API_MISSION_ENDPOINT, API_BASE },
-} = useRuntimeConfig()
+const runtimeConfig = useRuntimeConfig()
 const toast = useToast()
 const confirm = useConfirm()
 const { isAuthenticated, getAccessTokenSilently, getAccessTokenWithPopup } =
@@ -276,8 +274,6 @@ const missionsTable = computed(() => {
         list = fzfMissions
           .search({ [key]: value.trim() })
           .map((res) => res.item)
-        // filter = (m: Mission) =>
-        //   m[key].val.toString().toLowerCase().includes(value.toLowerCase())
       }
       // Apply number filter
       else if (typeof value === 'number') {
@@ -374,7 +370,7 @@ const getAccessToken = async () => {
   let accessToken = undefined
   const authorizationParams = {
     scope: 'update:mission',
-    audience: API_BASE,
+    audience: window.location.originAUTH0_AUDIENCE,
   }
   // Trying to get auth token without user interaction
   try {
@@ -435,8 +431,8 @@ const updatePlayable = async (event: Event, data: Mission) => {
     const isCurrPlayable = data.missionIsPlayable.val
 
     // Updating status in DB
-    const response = await fetch(
-      `${API_MISSION_ENDPOINT}/update/${pbo}?missionIsPlayable=${!isCurrPlayable}`,
+    const response = await $fetch(
+      `/api/update/${pbo}?missionIsPlayable=${!isCurrPlayable}`,
       {
         method: 'PUT',
         headers: {
@@ -444,9 +440,9 @@ const updatePlayable = async (event: Event, data: Mission) => {
         },
       }
     )
-    if (!response.ok) {
-      throw response
-    }
+    // if (!response.ok) {
+    //   throw response
+    // }
 
     data.missionIsPlayable.val = !isCurrPlayable
     // Showing toast if success

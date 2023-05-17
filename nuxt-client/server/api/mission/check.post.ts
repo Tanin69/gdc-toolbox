@@ -2,28 +2,33 @@ import { spawnSync } from 'child_process'
 import dayjs from 'dayjs'
 import { writeFile, unlink, rm, stat, readFile, mkdir } from 'fs/promises'
 import { resolve } from 'path'
-import { addMissionToPool, checkReport, getAllFiles, initMissionFieldError } from './helper'
+import {
+  addMissionToPool,
+  checkReport,
+  getAllFiles,
+  initMissionFieldError,
+} from './helper'
 import { Db } from 'mongodb'
 
 type DefaultCheckConfiguration = {
-  isBlocking: boolean,
+  isBlocking: boolean
   key: keyof MissionError
 }
 
 const defaultErrorConfig: DefaultCheckConfiguration[] = [
-  { key:'fileIsPbo', isBlocking: true },
-  { key:'filenameConvention', isBlocking: true },
-  { key:'descriptionExtFound', isBlocking: false },
-  { key:'missionSqmFound', isBlocking: true },
-  { key:'briefingSqfFound', isBlocking: true },
-  { key:'missionSqmNotBinarized', isBlocking: false },
-  { key:'HCSlotFound', isBlocking: false },
-  { key:'versionAlreadyExist', isBlocking: true }
+  { key: 'fileIsPbo', isBlocking: true },
+  { key: 'filenameConvention', isBlocking: true },
+  { key: 'descriptionExtFound', isBlocking: false },
+  { key: 'missionSqmFound', isBlocking: true },
+  { key: 'briefingSqfFound', isBlocking: true },
+  { key: 'missionSqmNotBinarized', isBlocking: false },
+  { key: 'HCSlotFound', isBlocking: false },
+  { key: 'versionAlreadyExist', isBlocking: true },
 ]
 
-export default defineEventHandler(async (event) => {
-  const { PBO_MANAGER, UPLOAD_TEMP_DIR } = useRuntimeConfig()
+const runtimeConfig = useRuntimeConfig()
 
+export default defineEventHandler(async (event) => {
   const body = await readMultipartFormData(event)
 
   // Just make sure nothing's wrong
@@ -31,8 +36,8 @@ export default defineEventHandler(async (event) => {
     return createError('File not found')
   }
 
-  if (!(await asyncFileExist(UPLOAD_TEMP_DIR))) {
-    await mkdir(UPLOAD_TEMP_DIR)
+  if (!(await asyncFileExist(runtimeConfig.UPLOAD_TEMP_DIR))) {
+    await mkdir(runtimeConfig.UPLOAD_TEMP_DIR)
   }
 
   const report: MissionError = {
@@ -52,19 +57,22 @@ export default defineEventHandler(async (event) => {
   // Unpbo file
   const now = dayjs().unix()
   const filenameWithoutExt = body[0].filename.replace(/^(.*)\..*$/, '$1')
-  const tempFilePath = resolve(UPLOAD_TEMP_DIR, `${filenameWithoutExt}.pbo`)
+  const tempFilePath = resolve(
+    runtimeConfig.UPLOAD_TEMP_DIR,
+    `${filenameWithoutExt}.pbo`
+  )
   const extractedFilePath = resolve(
-    UPLOAD_TEMP_DIR,
+    runtimeConfig.UPLOAD_TEMP_DIR,
     `${filenameWithoutExt}_${now}`
   )
 
   // For devs that doesn't use Windows or doesn't want to install PBO_MANAGER
-  if (!PBO_MANAGER && process.env.NODE_ENV !== 'production') {
+  if (!runtimeConfig.PBO_MANAGER && process.env.NODE_ENV !== 'production') {
     return generateDummyReport(Math.random() > 0.5)
   }
 
   await writeFile(tempFilePath, body[0].data)
-  const pboUnwrapped = spawnSync(PBO_MANAGER, [
+  const pboUnwrapped = spawnSync(runtimeConfig.PBO_MANAGER, [
     '-unpack',
     tempFilePath,
     extractedFilePath,
@@ -88,7 +96,11 @@ export default defineEventHandler(async (event) => {
   // Let's check missions data
 
   // Mission already exist ?
-  report.versionAlreadyExist = await checkIfVersionAlreadyExist(event.context.db, filenameWithoutExt)
+  report.versionAlreadyExist = await checkIfVersionAlreadyExist(
+    event.context.db,
+    runtimeConfig.MONGO_COLLECTION,
+    filenameWithoutExt
+  )
 
   // Mission name
   report.filenameConvention = checkMissionName(body[0].filename)
@@ -97,7 +109,9 @@ export default defineEventHandler(async (event) => {
   report.missionSqmFound = await checkForSqmFile(extractedFilePath)
 
   // description.ext
-  report.descriptionExtFound = await checkForDescriptionExtFile(extractedFilePath)
+  report.descriptionExtFound = await checkForDescriptionExtFile(
+    extractedFilePath
+  )
 
   // briefing.sqf
   report.briefingSqfFound = await checkForBriefingFile(extractedFilePath)
@@ -129,7 +143,12 @@ export default defineEventHandler(async (event) => {
   checkReport(report)
 
   if (report.isMissionValid) {
-    await addMissionToPool(body[0].filename, tempFilePath, extractedFilePath, event.context.db)
+    await addMissionToPool(
+      body[0].filename,
+      tempFilePath,
+      extractedFilePath,
+      event.context.db
+    )
   }
 
   // Need to be done after mission was added to pool
@@ -152,21 +171,40 @@ const asyncFileExist = async (path: string) => {
   return fileExist
 }
 
-async function checkIfVersionAlreadyExist(dbClient: Db, missionName: string): Promise<MissionFieldError> {
-  const { MONGO_COLLECTION } = useRuntimeConfig()
-  const collection = dbClient.collection<Mission>(MONGO_COLLECTION)
+async function checkIfVersionAlreadyExist(
+  dbClient: Db,
+  collectionName: string,
+  missionName: string
+): Promise<MissionFieldError> {
+  const collection = dbClient.collection<Mission>(collectionName)
 
   const missionNameRegExpParser = /(CPC-.*]-.*)-V(\d*)\.(.*)/i
   const parsedMissionName = missionNameRegExpParser.exec(missionName)
-  const formattedMissionName: string = parsedMissionName![1].replace(/(\[|\])/, '\\$1')
+  const formattedMissionName: string = parsedMissionName![1].replace(
+    /(\[|\])/,
+    '\\$1'
+  )
   const versionToUpload = +parsedMissionName![2]
-  const query = await collection.find({ "missionTitle.val": new RegExp(formattedMissionName) }).toArray()
-  
-  let report: MissionFieldError = { isOK: true, label: `La version ${parsedMissionName![2]} de la mission n'a pas encore été publiée`, isBlocking: false }
+  const query = await collection
+    .find({ 'missionTitle.val': new RegExp(formattedMissionName) })
+    .toArray()
+
+  let report: MissionFieldError = {
+    isOK: true,
+    label: `La version ${
+      parsedMissionName![2]
+    } de la mission n'a pas encore été publiée`,
+    isBlocking: false,
+  }
   if (query.length !== 0) {
-    const datasWithSameVersion = query.filter((elem) => elem.missionVersion.val === versionToUpload)
+    const datasWithSameVersion = query.filter(
+      (elem) => elem.missionVersion.val === versionToUpload
+    )
     if (datasWithSameVersion.length > 0) {
-      report = checkIfErrorIsBlocking('versionAlreadyExist', `La version ${parsedMissionName![2]} de la mission a déjà été publiée`)
+      report = checkIfErrorIsBlocking(
+        'versionAlreadyExist',
+        `La version ${parsedMissionName![2]} de la mission a déjà été publiée`
+      )
     }
   }
 
@@ -175,11 +213,12 @@ async function checkIfVersionAlreadyExist(dbClient: Db, missionName: string): Pr
 
 function checkMissionName(name: string): MissionFieldError {
   let report: MissionFieldError
-  const isMissionNameOk: boolean = /^(CPC-(CO|COM|TVT|GM).*]-.*)-V(\d*)\.(.*)(\.pbo)$/i.test(name)
+  const isMissionNameOk: boolean =
+    /^(CPC-(CO|COM|TVT|GM).*]-.*)-V(\d*)\.(.*)(\.pbo)$/i.test(name)
 
   if (!isMissionNameOk) {
     report = checkIfErrorIsBlocking(
-      'filenameConvention', 
+      'filenameConvention',
       'Le nom de la mission ne respecte pas le format'
     )
   } else {
@@ -198,7 +237,7 @@ async function checkForSqmFile(path: string): Promise<MissionFieldError> {
 
   if (!(await asyncFileExist(resolve(path, 'mission.sqm')))) {
     report = checkIfErrorIsBlocking(
-      'missionSqmFound', 
+      'missionSqmFound',
       'Le dossier ne contient pas de fichier "mission.sqm"'
     )
   } else {
@@ -217,7 +256,7 @@ async function checkForDescriptionExtFile(path: string) {
 
   if (!(await asyncFileExist(resolve(path, 'description.ext')))) {
     report = checkIfErrorIsBlocking(
-      'descriptionExtFound', 
+      'descriptionExtFound',
       'Le dossier ne contient pas de fichier "description.ext"'
     )
   } else {
@@ -235,13 +274,13 @@ async function checkForBriefingFile(path: string) {
   let report: MissionFieldError
 
   const briefingRegex = new RegExp(/^.*briefing.*\.sqf$/i)
-  const hasBriefing = (await getAllFiles(path, path, [])).some(
-    (elem: string) => briefingRegex.test(elem)
+  const hasBriefing = (await getAllFiles(path, path, [])).some((elem: string) =>
+    briefingRegex.test(elem)
   )
 
   if (!hasBriefing) {
     report = checkIfErrorIsBlocking(
-      'briefingSqfFound', 
+      'briefingSqfFound',
       'La mission ne contient pas de fichier briefing'
     )
   } else {
@@ -271,7 +310,7 @@ async function checkForBinarizedMissionFile(
     )
   } else {
     report = checkIfErrorIsBlocking(
-      "missionSqmNotBinarized",
+      'missionSqmNotBinarized',
       'Le fichier mission est binarisé'
     )
   }
@@ -290,18 +329,19 @@ async function checkForHC(path: string) {
   if (regex.test(fileContent)) {
     report = initMissionFieldError(true, 'La mission a un HC', false)
   } else {
-    report = checkIfErrorIsBlocking(
-      "HCSlotFound",
-      "La mission n'a pas de HC"
-    )
+    report = checkIfErrorIsBlocking('HCSlotFound', "La mission n'a pas de HC")
   }
 
   return report
 }
 
-const checkIfErrorIsBlocking:(field: keyof MissionError, reason: string) => MissionFieldError = (field: keyof MissionError, reason: string) => {
-  const isBlocking = defaultErrorConfig.find(item => item.key === field)?.isBlocking || false;
-  return initMissionFieldError(false, reason, isBlocking);
+const checkIfErrorIsBlocking: (
+  field: keyof MissionError,
+  reason: string
+) => MissionFieldError = (field: keyof MissionError, reason: string) => {
+  const isBlocking =
+    defaultErrorConfig.find((item) => item.key === field)?.isBlocking || false
+  return initMissionFieldError(false, reason, isBlocking)
 }
 
 const generateDummyReport = (isErr: boolean): MissionError | Mission => {
@@ -342,7 +382,7 @@ const generateDummyReport = (isErr: boolean): MissionError | Mission => {
       },
       versionAlreadyExist: {
         isOK: false,
-        label: 'La version de la mission existe déjà'
+        label: 'La version de la mission existe déjà',
       },
       isMissionValid: false,
       isMissionArchived: false,

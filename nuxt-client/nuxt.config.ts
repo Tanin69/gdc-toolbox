@@ -18,7 +18,6 @@ export default defineNuxtConfig({
     MONGO_URL: process.env.MONGO_URL,
     MONGO_NAME: process.env.MONGO_DB_NAME,
     MONGO_COLLECTION: process.env.MONGO_COLLECTION_NAME,
-    AUTH0_AUDIENCE: process.env.AUTH0_AUDIENCE,
     PBO_MANAGER: process.env.PBO_MANAGER,
     UPLOAD_TEMP_DIR: resolve(process.env.TEMP_DIR!),
     MISSIONS_DIR: resolve(process.env.MISSIONS_DIR!),

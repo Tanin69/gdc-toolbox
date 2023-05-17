@@ -1,7 +1,7 @@
 import { Db, ObjectId } from 'mongodb'
 import finalizeMissionType from './helper'
 
-const { MONGO_COLLECTION } = useRuntimeConfig()
+const runtimeConfig = useRuntimeConfig()
 
 export default defineEventHandler(async (event) => {
   const missionId: string | undefined = event.context.params?.id
@@ -10,7 +10,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const dbClient: Db = event.context.db
-  const collection = dbClient.collection<Mission>(MONGO_COLLECTION)
+  const collection = dbClient.collection<Mission>(
+    runtimeConfig.MONGO_COLLECTION
+  )
   const datas = await collection.findOne({ _id: new ObjectId(missionId) })
 
   if (!datas) {

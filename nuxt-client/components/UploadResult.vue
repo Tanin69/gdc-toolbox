@@ -47,8 +47,6 @@ type DetailField = {
   isBlocking: boolean
 }
 
-const { API_MISSION_IMAGE } = useRuntimeConfig()
-
 const hasError = computed(() => detail && 'nbBlockingErr' in detail)
 const detailEntries = computed(() => {
   const data = {} as Record<keyof Mission | keyof MissionError, DetailField>
@@ -148,7 +146,8 @@ const formatValue = (
 
 const imageURL = computed(() => {
   if (!(detail && 'nbBlockingErr' in detail) && detail?.loadScreen.val) {
-    return `${API_MISSION_IMAGE}/${detail.loadScreen.val}`
+    // TODO: update once endpoint is available
+    return `/${detail.loadScreen.val}`
   }
   return null
 })

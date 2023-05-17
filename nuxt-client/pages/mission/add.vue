@@ -127,10 +127,7 @@ type CustomFile = {
   loading: boolean
 }
 
-const {
-  public: { API_BASE, API_MISSION_IMAGE },
-} = useRuntimeConfig()
-const { replace } = useRouter()
+const runtimeConfig = useRuntimeConfig()
 const { getAccessTokenSilently, getAccessTokenWithPopup } = useAuth0()
 const toast = useToast()
 const confirm = useConfirm()
@@ -163,7 +160,7 @@ const getAccessToken = async () => {
   let accessToken = undefined
   const authorizationParams = {
     scope: 'add:mission',
-    audience: API_BASE,
+    audience: window.location.origin,
   }
   // Trying to get auth token without user interaction
   try {
@@ -184,7 +181,8 @@ const getAccessToken = async () => {
     toast.add({
       severity: 'error',
       summary: 'AuthError',
-      detail: "Une erreur est survenue lors de l'authentification\nVérifiez que vous autorisez les popup pour ce site",
+      detail:
+        "Une erreur est survenue lors de l'authentification\nVérifiez que vous autorisez les popup pour ce site",
       life: 3000,
     })
     return
@@ -330,7 +328,8 @@ const openDetail = (checkResult: CustomFile) => {
 
 const getImageURL = ({ mission, uploaded, error }: CustomFile) => {
   if (mission && uploaded && mission.loadScreen.val) {
-    return `${API_MISSION_IMAGE}/${mission.loadScreen.val}`
+    // TODO: update once endpoint is available
+    return `/${mission.loadScreen.val}`
   }
   if (error !== undefined) {
     return errorImg
