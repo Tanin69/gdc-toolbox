@@ -8,6 +8,7 @@
         :rows="rowsPerPage"
         :expandedRows="missionsTable"
         :sort-order="-1"
+        :class="[compacted && 'compacted']"
         paginator
         responsive-layout="scroll"
         sort-field="pboFileDateM.val"
@@ -20,10 +21,18 @@
           <div style="display: flex; align-items: center">
             <h3 style="margin-right: 0.5rem">Liste des missions</h3>
             <Badge :value="missions?.length ?? '???'"></Badge>
+
+            <div style="display: flex; align-items: center; margin-left: auto">
+              <span style="margin-right: 0.5rem; font-weight: 400"
+                >Mode compact</span
+              >
+              <InputSwitch v-model="compacted" />
+            </div>
+
             <Button
               icon="pi pi-sync"
               title="Rafraichir"
-              style="margin-left: auto"
+              style="margin-left: 1rem"
               @click="retryFetch"
             />
           </div>
@@ -42,6 +51,7 @@
             <span v-else class="data-undefined"> Non renseigné </span>
           </template>
         </Column>
+
         <Column header="IFA3" sortable field="IFA3mod.val">
           <template #body="{ data }">
             <Skeleton v-if="!data" />
@@ -52,6 +62,7 @@
             <i v-else class="pi pi-times boolval-ko" />
           </template>
         </Column>
+
         <Column header="Jouable" sortable field="missionIsPlayable.val">
           <template #body="{ data }">
             <Skeleton v-if="!data" />
@@ -76,6 +87,7 @@
             />
           </template>
         </Column>
+
         <Column header="Titre" sortable field="missionTitle.val">
           <!-- TODO: Can filter -->
           <!--
@@ -96,10 +108,14 @@
             <span v-else class="data-undefined"> Non renseigné </span>
           </template>
         </Column>
+
         <Column header="Briefing" sortable field="briefingSqfFound.isOK">
           <template #body="{ data }">
             <Skeleton v-if="!data" />
-            <span v-else-if="data?.briefingSqfFound?.isOK || data?.missionBriefing" class="data">
+            <span
+              v-else-if="data?.briefingSqfFound?.isOK || data?.missionBriefing"
+              class="data"
+            >
               <Button
                 icon="pi pi-eye"
                 class="p-button-text"
@@ -109,6 +125,7 @@
             <span v-else class="data-undefined"> Non renseigné </span>
           </template>
         </Column>
+
         <Column header="Date de publication" sortable field="pboFileDateM.val">
           <template #body="{ data }">
             <Skeleton v-if="!data" />
@@ -118,6 +135,7 @@
             <span v-else class="data-undefined"> Non renseigné </span>
           </template>
         </Column>
+
         <Column header="Version" sortable field="missionVersion.val">
           <template #body="{ data }">
             <Skeleton v-if="!data" />
@@ -127,6 +145,7 @@
             <span v-else class="data-undefined"> Non renseigné </span>
           </template>
         </Column>
+
         <Column header="Carte" sortable field="missionMap.val">
           <!-- TODO: Can filter -->
           <template #body="{ data }">
@@ -137,6 +156,7 @@
             <span v-else class="data-undefined"> Non renseigné </span>
           </template>
         </Column>
+
         <Column header="Auteur" sortable field="author.val">
           <!-- TODO: Can filter -->
           <template #body="{ data }">
@@ -147,6 +167,7 @@
             <span v-else class="data-undefined"> Non renseigné </span>
           </template>
         </Column>
+
         <Column header="Nombre de joueurs" sortable field="minPlayers.val">
           <template #body="{ data }">
             <Skeleton v-if="!data" />
@@ -163,7 +184,8 @@
             </div>
           </template>
         </Column>
-        <template #expansion="{ data }">
+
+        <template v-if="!compacted" #expansion="{ data }">
           <span class="bold-text" style="margin-right: 0.25rem">
             Texte lobby :
           </span>
@@ -190,6 +212,7 @@ import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import InputText from 'primevue/inputtext'
+import InputSwitch from 'primevue/inputswitch'
 import Skeleton from 'primevue/skeleton'
 import Badge from 'primevue/badge'
 import { useToast } from 'primevue/usetoast'
@@ -208,20 +231,22 @@ const confirm = useConfirm()
 const { isAuthenticated, getAccessTokenSilently, getAccessTokenWithPopup } =
   useAuth0()
 
-const rowsPerPage = ref(10)
 const playableLoading = ref(false)
+const compacted = ref(false)
 const filters = ref({
   'missionTitle.val': {
     operator: FilterOperator.AND,
     constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
   },
 })
+
 const {
   data: missions,
   error,
   pending,
   refresh,
 } = useLazyFetch('/api/mission/list')
+
 const missionsTable = computed(() => {
   if (missions.value) {
     return missions.value
@@ -231,6 +256,7 @@ const missionsTable = computed(() => {
   }
   return Array.from({ length: 20 })
 })
+const rowsPerPage = computed(() => (compacted.value ? 21 : 7))
 
 /**
  * Wrapper of PrimeVUE's Confirm to make it async
@@ -258,6 +284,44 @@ const callShowMission = (missionId: string) => {
 }
 
 /**
+ * Refresh Auth0 token silently
+ */
+const getAccessToken = async () => {
+  let accessToken = undefined
+  const authorizationParams = {
+    scope: 'update:mission',
+    audience: API_BASE,
+  }
+  // Trying to get auth token without user interaction
+  try {
+    accessToken = await getAccessTokenSilently({ authorizationParams })
+  } catch (error) {
+    console.error(error)
+  }
+  // Trying to get auth token with user interaction if previous attempts failed
+  if (!accessToken) {
+    try {
+      accessToken = await getAccessTokenWithPopup({ authorizationParams })
+    } catch (error) {
+      console.error(error)
+    }
+  }
+  // If previous attempts failed
+  if (!accessToken) {
+    toast.add({
+      severity: 'error',
+      summary: 'AuthError',
+      detail:
+        "Une erreur est survenue lors de l'authentification\nVérifiez que vous autorisez les popup pour ce site",
+      life: 3000,
+    })
+    return
+  }
+
+  return accessToken
+}
+
+/**
  * Update the playable state
  *
  * @param data The mission
@@ -276,39 +340,8 @@ const updatePlayable = async (event: Event, data: Mission) => {
 
   playableLoading.value = true
 
-  let accessToken = undefined
-  // Trying to get auth token without user interaction
-  try {
-    accessToken = await getAccessTokenSilently({
-      authorizationParams: {
-        scope: 'update:mission',
-        audience: API_BASE,
-      },
-    })
-  } catch (error) {
-    console.error(error)
-  }
-  // Trying to get auth token with user interaction if previous attempts failed
+  const accessToken = await getAccessToken()
   if (!accessToken) {
-    try {
-      accessToken = await getAccessTokenWithPopup({
-        authorizationParams: {
-          scope: 'update:mission',
-          audience: API_BASE,
-        },
-      })
-    } catch (error) {
-      console.error(error)
-    }
-  }
-  // If previous attempts failed
-  if (!accessToken) {
-    toast.add({
-      severity: 'error',
-      summary: 'AuthError',
-      detail: "Une erreur est survenue lors de l'authentification",
-      life: 3000,
-    })
     playableLoading.value = false
     return
   }
@@ -438,6 +471,10 @@ h3 {
 
 .p-datatable .p-datatable-tbody > tr {
   background: #fffffae5;
+}
+
+.p-datatable.compacted .p-datatable-tbody > tr > td {
+  padding: 0rem 1rem;
 }
 
 .main-card {
