@@ -82,6 +82,7 @@
         <InputNumber
           :model-value="modelValue.minPlayers"
           :useGrouping="false"
+          :min="0"
           placeholder="Nombre minimum"
           showButtons
           style="width: 100%"
@@ -94,6 +95,7 @@
         <InputNumber
           :model-value="modelValue.maxPlayers"
           :useGrouping="false"
+          :min="0"
           placeholder="Nombre maximum"
           showButtons
           style="width: 100%"
