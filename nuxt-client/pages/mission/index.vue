@@ -2,7 +2,6 @@
   <Card class="main-card">
     <template #content>
       <DataTable
-        v-model:filters="filters"
         :value="missionsTable"
         :loading="pending"
         :rows="rowsPerPage"
@@ -13,7 +12,6 @@
         paginator
         responsive-layout="scroll"
         sort-field="pboFileDateM.val"
-        filterDisplay="menu"
         rowHover
         stripedRows
         show-gridlines
@@ -21,7 +19,7 @@
         <template #header>
           <div style="display: flex; align-items: center">
             <h3 style="margin-right: 0.5rem">Liste des missions</h3>
-            <Badge :value="missions?.length ?? '???'"></Badge>
+            <Badge :value="missionCount"></Badge>
 
             <div style="display: flex; align-items: center; margin-left: auto">
               <span style="margin-right: 0.5rem; font-weight: 400"
@@ -29,6 +27,13 @@
               >
               <InputSwitch v-model="compacted" />
             </div>
+
+            <Button
+              icon="pi pi-filter"
+              title="Filtrer"
+              style="margin-left: 1rem"
+              @click="isFilterVisible = true"
+            />
 
             <Button
               icon="pi pi-sync"
@@ -53,7 +58,7 @@
           </template>
         </Column>
 
-        <Column header="IFA3" sortable field="IFA3mod.val">
+        <Column header="IFA3" sortable dataType="boolean" field="IFA3mod.val">
           <template #body="{ data }">
             <Skeleton v-if="!data" />
             <i
@@ -64,7 +69,12 @@
           </template>
         </Column>
 
-        <Column header="Jouable" sortable field="missionIsPlayable.val">
+        <Column
+          header="Jouable"
+          sortable
+          dataType="boolean"
+          field="missionIsPlayable.val"
+        >
           <template #body="{ data }">
             <Skeleton v-if="!data" />
             <Button
@@ -91,16 +101,6 @@
 
         <Column header="Titre" sortable field="missionTitle.val">
           <!-- TODO: Can filter -->
-          <!--
-        <template #filter="{ filterModel }">
-          <InputText
-            type="text"
-            v-model="filterModel.value"
-            class="p-column-filter"
-            placeholder="Search by name"
-          />
-        </template>
-        -->
           <template #body="{ data }">
             <Skeleton v-if="!data" width="20rem" />
             <span v-else-if="data?.missionTitle?.val" class="data">
@@ -202,6 +202,12 @@
         </template>
         <!-- #endregion -->
       </DataTable>
+
+      <MissionFilterDrawer
+        v-model="filters"
+        v-model:show="isFilterVisible"
+        :availableValues="availableValues"
+      />
     </template>
   </Card>
 </template>
@@ -212,17 +218,16 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
-import InputText from 'primevue/inputtext'
 import InputSwitch from 'primevue/inputswitch'
 import Skeleton from 'primevue/skeleton'
 import Badge from 'primevue/badge'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
-import { FilterMatchMode, FilterOperator } from 'primevue/api'
 import type { ToastMessageOptions } from 'primevue/toast'
 import type { ConfirmationOptions } from 'primevue/confirmationoptions'
 import dayjs from '@/ts/dayjs'
 import { useAuth0 } from '@auth0/auth0-vue'
+import type { MissionFilters } from '~/components/MissionFilterDrawer.vue'
 
 const {
   public: { API_MISSION_ENDPOINT, API_BASE },
@@ -234,12 +239,8 @@ const { isAuthenticated, getAccessTokenSilently, getAccessTokenWithPopup } =
 
 const playableLoading = ref(false)
 const compacted = ref(false)
-const filters = ref({
-  'missionTitle.val': {
-    operator: FilterOperator.AND,
-    constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-  },
-})
+const isFilterVisible = ref(true)
+const filters = ref<MissionFilters>({})
 
 const {
   data: missions,
@@ -250,14 +251,80 @@ const {
 
 const missionsTable = computed(() => {
   if (missions.value) {
-    return missions.value
+    let list = [...missions.value]
+    // Apply filters
+    for (const [k, v] of Object.entries(filters.value)) {
+      const key = k as keyof MissionFilters
+      const value = v as MissionFilters[keyof MissionFilters]
+
+      let filter: ((m: any) => boolean) | undefined
+      // Apply string filter
+      if (typeof value === 'string') {
+        filter = (m: Mission) =>
+          m[key].val.toString().toLowerCase().includes(value.toLowerCase())
+      }
+      // Apply number filter
+      else if (typeof value === 'number') {
+        if (key === 'maxPlayers') {
+          filter = (m: Mission) => m.maxPlayers.val <= value
+        } else if (key === 'minPlayers') {
+          filter = (m: Mission) => m.minPlayers.val >= value
+        } else {
+          filter = (m: Mission) => +m[key].val === value
+        }
+      }
+      // Apply boolean filter
+      else if (typeof value === 'boolean') {
+        filter = (m: Mission) => !!m[key].val === value
+      }
+
+      // Skip value if null or undefined
+      if (filter) {
+        list = list.filter(filter)
+      }
+    }
+
+    return list
   }
   if (error.value) {
     return []
   }
   return Array.from({ length: 20 })
 })
+const availableValues = computed(() => {
+  const authors = new Set<string>()
+  const types = new Set<string>()
+  const maps = new Set<string>()
+
+  for (const mission of missions.value ?? []) {
+    if (mission.author.val && mission.author.val !== 'false') {
+      authors.add(mission.author.val)
+    }
+    if (mission.gameType.val && mission.gameType.val !== 'false') {
+      types.add(mission.gameType.val.toUpperCase())
+    }
+    if (mission.missionMap.val && mission.missionMap.val !== 'false') {
+      maps.add(mission.missionMap.val)
+    }
+  }
+
+  return {
+    authors,
+    types,
+    maps,
+  }
+})
 const rowsPerPage = computed(() => (compacted.value ? 21 : 7))
+const missionCount = computed(() => {
+  if (!missions.value) {
+    return '????'
+  }
+
+  if (missionsTable.value.length !== missions.value.length) {
+    return `${missionsTable.value.length} / ${missions.value?.length}`
+  }
+  return `${missions.value?.length}`
+})
 
 /**
  * Wrapper of PrimeVUE's Confirm to make it async
