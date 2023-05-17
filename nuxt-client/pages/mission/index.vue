@@ -228,6 +228,7 @@ import type { ConfirmationOptions } from 'primevue/confirmationoptions'
 import dayjs from '@/ts/dayjs'
 import { useAuth0 } from '@auth0/auth0-vue'
 import type { MissionFilters } from '~/components/MissionFilterDrawer.vue'
+import Fuse from 'fuse.js'
 
 const {
   public: { API_MISSION_ENDPOINT, API_BASE },
@@ -247,7 +248,19 @@ const {
   error,
   pending,
   refresh,
-} = useLazyFetch('/api/mission/list')
+} = useLazyFetch<Mission[]>('/api/mission/list')
+
+const fzfMissions = new Fuse<Mission>([], {
+  keys: [
+    { name: 'missionTitle', getFn: (m) => m.missionTitle.val },
+    { name: 'missionMap', getFn: (m) => m.missionMap.val },
+    { name: 'gameType', getFn: (m) => m.gameType.val },
+    { name: 'author', getFn: (m) => m.author.val },
+  ] satisfies { name: keyof MissionFilters; getFn: (m: Mission) => string }[],
+})
+watch(missions, (missions) => {
+  fzfMissions.setCollection(missions ?? [])
+})
 
 const missionsTable = computed(() => {
   if (missions.value) {
@@ -260,8 +273,11 @@ const missionsTable = computed(() => {
       let filter: ((m: any) => boolean) | undefined
       // Apply string filter
       if (typeof value === 'string') {
-        filter = (m: Mission) =>
-          m[key].val.toString().toLowerCase().includes(value.toLowerCase())
+        list = fzfMissions
+          .search({ [key]: value.trim() })
+          .map((res) => res.item)
+        // filter = (m: Mission) =>
+        //   m[key].val.toString().toLowerCase().includes(value.toLowerCase())
       }
       // Apply number filter
       else if (typeof value === 'number') {

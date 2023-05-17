@@ -116,6 +116,7 @@ import AutoComplete, {
 } from 'primevue/autocomplete'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
+import Fuse from 'fuse.js'
 
 type FilterKeys =
   | 'missionTitle'
@@ -171,20 +172,25 @@ const authorSuggestions = computed(
   () => searchedAuthors.value ?? availableOptions.value.authors
 )
 
+const fzfAuthors = new Fuse<string>([], {})
+watch(availableOptions, ({ authors }) => {
+  fzfAuthors.setCollection(authors)
+})
+
 const onFilter = <P extends FilterKeys>(
   property: P,
   value: MissionFilters[P]
 ) => {
   const v = { ...$props.modelValue }
-  v[property] = value
+  v[property] = value || undefined
   $emit('update:modelValue', v)
 }
 
 const onSearchAuthors = (e: AutoCompleteCompleteEvent) => {
   if (e.query) {
-    searchedAuthors.value = availableOptions.value.authors.filter((a) =>
-      a.toLowerCase().includes(e.query.toLowerCase())
-    )
+    searchedAuthors.value = fzfAuthors
+      .search(e.query.trim())
+      .map((res) => res.item)
   } else {
     searchedAuthors.value = null
   }
