@@ -99,7 +99,7 @@
         <Column header="Briefing" sortable field="briefingSqfFound.isOK">
           <template #body="{ data }">
             <Skeleton v-if="!data" />
-            <span v-else-if="data?.briefingSqfFound?.isOK" class="data">
+            <span v-else-if="data?.briefingSqfFound?.isOK || data?.missionBriefing" class="data">
               <Button
                 icon="pi pi-eye"
                 class="p-button-text"
