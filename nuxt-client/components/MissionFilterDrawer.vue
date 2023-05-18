@@ -24,6 +24,7 @@
           :model-value="modelValue.gameType"
           :options="availableOptions.types"
           placeholder="Type de mission"
+          showClear
           style="width: 100%"
           @update:model-value="onFilter('gameType', $event)"
         />
