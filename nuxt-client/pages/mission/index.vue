@@ -30,14 +30,14 @@
 
             <Button
               icon="pi pi-filter"
-              title="Filtrer"
+              v-tooltip.top="'Filtrer'"
               style="margin-left: 1rem"
               @click="isFilterVisible = true"
             />
 
             <Button
               icon="pi pi-sync"
-              title="Rafraîchir"
+              v-tooltip.top="'Rafraîchir'"
               style="margin-left: 1rem"
               @click="retryFetch"
             />

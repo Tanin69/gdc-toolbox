@@ -8,7 +8,7 @@
     <template #header>
       <Button
         icon="pi pi-filter-slash"
-        title="Retirer les filtres"
+        v-tooltip="'Retirer les filtres'"
         text
         rounded
         @click="$emit('update:modelValue', {})"

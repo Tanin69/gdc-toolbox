@@ -4,7 +4,7 @@
       <Button
         icon="pi pi-home"
         class="p-button-text"
-        title="Retour à l'acceuil"
+        v-tooltip="'Retour à l’accueil'"
         @click="navigateTo('/')"
       />
       <SplitButton
