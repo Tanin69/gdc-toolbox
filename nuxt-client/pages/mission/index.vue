@@ -37,7 +37,7 @@
 
             <Button
               icon="pi pi-sync"
-              title="Rafraichir"
+              title="Rafraîchir"
               style="margin-left: 1rem"
               @click="retryFetch"
             />
@@ -100,7 +100,6 @@
         </Column>
 
         <Column header="Titre" sortable field="missionTitle.val">
-          <!-- TODO: Can filter -->
           <template #body="{ data }">
             <Skeleton v-if="!data" width="20rem" />
             <span v-else-if="data?.missionTitle?.val" class="data">
@@ -148,7 +147,6 @@
         </Column>
 
         <Column header="Carte" sortable field="missionMap.val">
-          <!-- TODO: Can filter -->
           <template #body="{ data }">
             <Skeleton v-if="!data" />
             <span v-else-if="data?.missionMap?.val" class="data">
@@ -159,7 +157,6 @@
         </Column>
 
         <Column header="Auteur" sortable field="author.val">
-          <!-- TODO: Can filter -->
           <template #body="{ data }">
             <Skeleton v-if="!data" />
             <span v-else-if="data?.author?.val" class="data">
@@ -238,7 +235,7 @@ const { isAuthenticated, getAccessTokenSilently, getAccessTokenWithPopup } =
 
 const playableLoading = ref(false)
 const compacted = ref(false)
-const isFilterVisible = ref(true)
+const isFilterVisible = ref(false)
 const filters = ref<MissionFilters>({})
 
 const {
