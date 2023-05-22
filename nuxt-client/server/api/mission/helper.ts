@@ -287,11 +287,17 @@ async function copyImageForPreview(
   extractedFilePath: string,
   missionName: string
 ) {
-  const filenameWithoutExt = basename(imageFilePath)
   const { IMAGE_DIR } = useRuntimeConfig()
   const originalFilePath = resolve(extractedFilePath, imageFilePath)
   const copyFilePath = resolve(IMAGE_DIR, `${missionName}_preview`)
-  await copyFile(originalFilePath, copyFilePath)
+  try {
+    await stat(originalFilePath)
+    await copyFile(originalFilePath, copyFilePath)
+  } catch (error) {
+    if ((error as any).code !== 'ENOENT') {
+      throw error
+    }
+  }  
 }
 
 async function copyCollectionToNewCollection(dbClient: Db) {

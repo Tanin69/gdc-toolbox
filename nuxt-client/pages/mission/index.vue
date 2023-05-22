@@ -424,12 +424,12 @@ const updatePlayable = async (event: Event, data: Mission) => {
   }
 
   try {
-    const pbo = data.missionPbo.val
+    const pbo = data.missionId
     const isCurrPlayable = data.missionIsPlayable.val
 
     // Updating status in DB
     const response = await $fetch(
-      `/api/update/${pbo}?missionIsPlayable=${!isCurrPlayable}`,
+      `/api/mission/${pbo}/setPlayable?missionIsPlayable=${!isCurrPlayable}`,
       {
         method: 'PUT',
         headers: {
