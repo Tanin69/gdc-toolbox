@@ -1,5 +1,5 @@
 import { Db, ObjectId } from 'mongodb'
-import finalizeMissionType from './helper'
+import finalizeMissionType from '../helper'
 
 const runtimeConfig = useRuntimeConfig()
 

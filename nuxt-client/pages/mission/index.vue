@@ -428,22 +428,18 @@ const updatePlayable = async (event: Event, data: Mission) => {
     const isCurrPlayable = data.missionIsPlayable.val
 
     // Updating status in DB
-    const response = await $fetch(
-      "/api/mission/setPlayable",
-      {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: {
-          missionId: pbo,
-          isPlayable: !isCurrPlayable
-        }
-      }
-    )
-    // if (!response.ok) {
-    //   throw response
-    // }
+    const response = await $fetch(`/api/mission/${pbo}/playable`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: {
+        isPlayable: !isCurrPlayable,
+      },
+    })
+    if (!('isSuccess' in response) || !response.isSuccess) {
+      throw new Error('Something wrong happened')
+    }
 
     data.missionIsPlayable.val = !isCurrPlayable
     // Showing toast if success

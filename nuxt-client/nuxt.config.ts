@@ -2,7 +2,8 @@ import { resolve } from 'path'
 
 // https://v3.nuxtjs.org/api/configuration/nuxt.config
 export default defineNuxtConfig({
-  ssr: false, // Fixing Auth0... At what cost... ?
+  // Fixing Auth0... At what cost... ?
+  ssr: false,
 
   css: [
     'primevue/resources/primevue.css',
@@ -28,5 +29,9 @@ export default defineNuxtConfig({
       AUTH0_DOMAIN: 'gdc.eu.auth0.com',
       AUTH0_CLIENT_ID: '',
     },
+  },
+
+  devtools: {
+    enabled: true,
   },
 })
