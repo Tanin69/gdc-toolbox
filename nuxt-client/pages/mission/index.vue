@@ -367,7 +367,6 @@ const getAccessToken = async () => {
   let accessToken = undefined
   const authorizationParams = {
     scope: 'update:mission',
-    audience: window.location.originAUTH0_AUDIENCE,
   }
   // Trying to get auth token without user interaction
   try {

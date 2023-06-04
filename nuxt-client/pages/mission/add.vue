@@ -160,7 +160,6 @@ const getAccessToken = async () => {
   let accessToken = undefined
   const authorizationParams = {
     scope: 'add:mission',
-    audience: window.location.origin,
   }
   // Trying to get auth token without user interaction
   try {
@@ -195,10 +194,10 @@ const uploadFiles = async ({ files: droppedFiles }: { files: File[] }) => {
   // allowing parallel processes
   const promises: Promise<void>[] = []
 
-  // const accessToken = await getAccessToken()
-  // if (!accessToken) {    
-  //   return
-  // }
+  const accessToken = await getAccessToken()
+  if (!accessToken) {
+    return
+  }
 
   for (const file of droppedFiles) {
     // Add files to UI
@@ -213,6 +212,7 @@ const uploadFiles = async ({ files: droppedFiles }: { files: File[] }) => {
         method: 'POST',
         body: formData,
         headers: {
+          Authorization: `Bearer ${accessToken}`,
         },
       })
         .then((data) => {

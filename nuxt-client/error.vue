@@ -27,8 +27,6 @@ const { error } = defineProps({
   error: Object,
 })
 
-console.log({ ...error })
-
 const handleError = () => clearError({ redirect: '/' })
 
 // Defining meta tags
