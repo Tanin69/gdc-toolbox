@@ -13,3 +13,4 @@ services:
     command: "yarn dev"
     ports:
       - 9229:9229 # Debug port
+      - 24678:24678 # HMR port
