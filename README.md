@@ -162,6 +162,8 @@ docker compose up -d
 #### Dev
 
 ```sh
+nvm use 18
+yarn
 docker compose -f docker-compose.yml -f docker-compose.debug.yml up -d
 ```
 
