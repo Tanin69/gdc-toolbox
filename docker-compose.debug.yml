@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  mongo:
+    ports:
+      - 27017:27017
+
+  gdctoolbox:
+    image: node:18
+    working_dir: /app
+    volumes:
+      - ./:/app
+    command: "yarn dev"
+    ports:
+      - 9229:9229 # Debug port

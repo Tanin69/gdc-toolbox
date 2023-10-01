@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:6.0
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD
+    volumes:
+      - ./docker/mongo:/data/db
+
+  gdctoolbox:
+    build: .
+    ports:
+      - 3000:3000
+    environment:
+      - NODE_ENV
+      - NITRO_PORT
+      - NUXT_PUBLIC_AUTH0_DOMAIN
+      - NUXT_PUBLIC_AUTH0_CLIENT_ID
+      - NUXT_MONGO_URL
+      - NUXT_MONGO_COLLECTION_NAME
+      - NUXT_PBO_MANAGER
+      - TEMP_DIR
+      - MISSIONS_DIR
+      - IMAGES_DIR
+    depends_on:
+      - mongo

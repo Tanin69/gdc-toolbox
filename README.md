@@ -25,7 +25,7 @@ Unless explicitly indicated, those features are provided by gdc-toolbox-api.
 ### Mission checking
 
 Checks the integrity of the mission .pbo file and compliance with certain rules. Each rule can be configured as blocking if it is not satisfied :
-  
+
 * file naming convention : the file name should follow a defined regexp (default: true)
 * pbo integrity : the file should be a real pbo and could be dpbo without any error (default: true)
 * briefing.sqf : a briefing.sqf should exist in the pbo file (default: true)
@@ -127,6 +127,43 @@ In the server directory, run ```npm install```
 
 * Copy ```.sample-env``` to ```.env```
 * Edit path with your configuration
+
+###  Docker
+
+#### Download and install Mikero tools on your server
+
+[Mikero tools](https://mikero.bytex.digital/Downloads).
+
+At least :
+
+* ExtractPbo
+* DeOgg
+* (maybe) DePbo
+
+**TODO: add a volume or somthing into docker-compose.yml**
+
+#### Clone git repository
+
+git clone <https://github.com/Tanin69/gdc-toolbox>
+
+#### Define environment variables
+
+* Copy ```.sample-env``` to ```.env```
+* Edit path with your configuration
+
+### Start
+
+#### Production
+
+```sh
+docker compose up -d
+```
+
+#### Dev
+
+```sh
+docker compose -f docker-compose.yml -f docker-compose.debug.yml up -d
+```
 
 ## Frequently Asked Questions
 
