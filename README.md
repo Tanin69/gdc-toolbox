@@ -167,6 +167,13 @@ yarn
 docker compose -f docker-compose.yml -f docker-compose.debug.yml up -d
 ```
 
+or use Makefile commands
+
+```sh
+make build
+make dev
+```
+
 ## Frequently Asked Questions
 
 ### Publishing a mission
